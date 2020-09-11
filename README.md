@@ -1,4 +1,4 @@
-# Engelsburg Infrastructure
+# Engelsburg infrastructure
 The Infrastructure of the Engelsburg-Gymnasium-Kassel
 
 # License
