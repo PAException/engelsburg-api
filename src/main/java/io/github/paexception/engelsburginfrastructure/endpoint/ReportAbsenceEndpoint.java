@@ -11,7 +11,7 @@ public class ReportAbsenceEndpoint {
 
     //get reports of specific lesson by teacher scope and lesson
 
-    //report absence for day (let controller do all entries for lessons) [maybe also ignore substitutes {just specific}] -> name of student, scope
+    //report absence for day (let controller do all entries for lessons) [maybe also ignore substitutes {just specific -> entfall, eigenv Arbeit}] -> name of student, scope
 
     //report absence for specific lesson
 

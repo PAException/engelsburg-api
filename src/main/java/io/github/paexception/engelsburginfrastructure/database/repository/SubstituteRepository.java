@@ -3,7 +3,10 @@ package io.github.paexception.engelsburginfrastructure.database.repository;
 import io.github.paexception.engelsburginfrastructure.database.model.SubstituteModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.sql.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SubstituteRepository extends JpaRepository<SubstituteModel, Integer> {
@@ -12,7 +15,9 @@ public interface SubstituteRepository extends JpaRepository<SubstituteModel, Int
 
     List<SubstituteModel> findAllByTeacher(String teacher);
 
-    List<SubstituteModel> findAllByLessonAndTeacher(int lesson, String teacher);
+    List<SubstituteModel> findAllByLessonAndTeacher(String lesson, String teacher);
+
+    Optional<SubstituteModel> findByDateAndLessonAndTeacher(Date date, String lesson, String teacher);
 
     List<SubstituteModel> findAllBySubstituteTeacher(String substituteTeacher);
 
