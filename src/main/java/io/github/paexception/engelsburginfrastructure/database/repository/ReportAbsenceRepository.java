@@ -3,7 +3,6 @@ package io.github.paexception.engelsburginfrastructure.database.repository;
 import io.github.paexception.engelsburginfrastructure.database.model.ReportAbsenceModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
 @Repository

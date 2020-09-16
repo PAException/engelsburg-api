@@ -15,7 +15,10 @@ import java.io.IOException;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -23,6 +26,7 @@ public class SubstituteUpdateService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SubstituteUpdateService.class.getSimpleName());
     @Autowired private SubstituteController substituteController;
+    private Date currentDate;
 
     @Scheduled(fixedRate = 5000000)
     public void updateSubstitutes() {
@@ -38,49 +42,60 @@ public class SubstituteUpdateService {
                             Integer.parseInt(element2.text().substring(element2.text().lastIndexOf('.')+1)))));
 
             for (int no : weeks.keySet()) {
-                Element substitution = Jsoup.connect("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/" + no + "/w/w00000.htm").get().getElementById("vertretung");
-                Date currentDate = this.parseDate(substitution.child(2).text().substring(0, substitution.child(2).text().lastIndexOf('.')), weeks.get(no));
-                for (Element element : substitution.getAllElements().subList(8, substitution.getAllElements().size())) {
-                    if (element.tagName().equals("table")) {
-                        if (element.hasClass("subst")) {
+                Element substitute = Jsoup.connect("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/" + no + "/w/w00000.htm").get().getElementById("vertretung");
+                this.currentDate = this.parseDate(substitute.child(2).text().substring(0, substitute.child(2).text().lastIndexOf('.')), weeks.get(no));
+
+                for (Element substituteContent : substitute.getAllElements().subList(8, substitute.getAllElements().size())) {
+                    if (substituteContent.tagName().equals("table")) {
+                        if (substituteContent.hasClass("subst")) {
                             List<SubstituteDTO> substitutes = new ArrayList<>();
-                            for (Element row : element.child(0).children()) {
-                                if (row.hasClass("odd") || row.hasClass("even")) {
-                                    if (substitutes.size()>0 && !row.child(0).text().matches("(.*)[0-9](.*)")) {
-                                        SubstituteDTO dto = substitutes.get(substitutes.size()-1);
-                                        substitutes.set(substitutes.size()-1, dto.appendText(row.children().get(row.children().size()-1).text()));
-                                    } else {
-                                        SubstituteDTO dto = new SubstituteDTO();
-                                        dto.setDate(currentDate);
-                                        dto.setClassName(row.child(0).text());
-                                        dto.setLesson(row.child(1).text());
-                                        if (!row.child(2).text().isBlank()) dto.setSubject(row.child(2).text());
-                                        dto.setSubstituteTeacher(row.child(3).text());
-                                        dto.setTeacher(row.child(4).text());
-                                        dto.setType(row.child(5).text());
-                                        if (!row.child(6).text().isBlank()) dto.setSubstituteOf(row.child(6).text());
-                                        dto.setRoom(row.child(7).text());
-                                        if (!row.child(8).text().isBlank()) dto.setText(row.child(8).text());
-                                        substitutes.add(dto);
-                                    }
-                                }
-                            }
-                            substitutes.forEach(dto -> substituteController.createOrUpdateSubstitute(dto));
+
+                            for (Element row : substituteContent.child(0).children())
+                                if (row.hasClass("odd") || row.hasClass("even"))
+                                    if (substitutes.size()>0 && !row.child(0).text().matches("(.*)[0-9](.*)"))
+                                        appendTextOnLastSubstitute(row, substitutes);
+                                    else substitutes.add(this.createSubstituteDTO(row));
+
+                            substitutes.forEach(dto -> this.substituteController.createOrUpdateSubstitute(dto));
                         } else {
                             //TODO Nachrichten
                         }
-                    } else {
-                        if (element.tagName().equals("p")) {
-                            Elements days = element.getElementsByTag("b");
-                            if (days.size()>0)
-                                currentDate = this.parseDate(days.get(0).text().substring(0, days.get(0).text().lastIndexOf('.')), weeks.get(no));
+                    } else if (substituteContent.tagName().equals("p")) {
+                        Elements days = substituteContent.getElementsByTag("b");
+                        if (days.size()>0) {
+                            String dayAndMonth = days.get(0).text().substring(0, days.get(0).text().lastIndexOf('.'));
+                            this.currentDate = this.parseDate(dayAndMonth, weeks.get(no));
                         }
                     }
                 }
             }
         } catch (IOException | ParseException e) {
-            LOGGER.error("Couldn't fetch Substitutions", e);
+            LOGGER.error("Couldn't fetch Substitutes", e);
         }
+    }
+
+    private SubstituteDTO createSubstituteDTO(Element row) {
+        SubstituteDTO dto = new SubstituteDTO();
+        dto.setDate(this.currentDate);
+        dto.setClassName(row.child(0).text());
+        dto.setLesson(row.child(1).text());
+        if (!row.child(2).text().isBlank()) dto.setSubject(row.child(2).text());
+        dto.setSubstituteTeacher(row.child(3).text());
+        dto.setTeacher(row.child(4).text());
+        dto.setType(row.child(5).text());
+        if (!row.child(6).text().isBlank()) dto.setSubstituteOf(row.child(6).text());
+        dto.setRoom(row.child(7).text());
+        if (!row.child(8).text().isBlank()) dto.setText(row.child(8).text());
+
+        return dto;
+    }
+
+    private void appendTextOnLastSubstitute(Element row, List<SubstituteDTO> substitutes) {
+        int indexOfLastSubstitute = substitutes.size()-1;
+        String textToAppend = row.children().get(row.children().size()-1).text();
+        SubstituteDTO dto = substitutes.get(indexOfLastSubstitute);
+
+        substitutes.set(indexOfLastSubstitute, dto.appendText(textToAppend));
     }
 
     private Date parseDate(String dayAndMonth, int year) throws ParseException {

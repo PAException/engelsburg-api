@@ -10,8 +10,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication(scanBasePackages = "io.github.paexception.engelsburginfrastructure")
 public class EngelsburgInfrastructureApplication {
 
-    public static final String SUBSTITUTE_PLAN_PASSWORD = System.getenv("SUBSTITUTE_PLAN_PASSWORD");
-
     public static void main(String[] args) {
         SpringApplication.run(EngelsburgInfrastructureApplication.class, args);
     }
