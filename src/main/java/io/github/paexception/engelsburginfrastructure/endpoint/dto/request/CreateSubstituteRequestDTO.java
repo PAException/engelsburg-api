@@ -1,4 +1,4 @@
-package io.github.paexception.engelsburginfrastructure.endpoint.dto;
+package io.github.paexception.engelsburginfrastructure.endpoint.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,7 @@ import java.sql.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SubstituteDTO {
+public class CreateSubstituteRequestDTO {
 
     @NotNull
     private Date date;
@@ -23,7 +23,7 @@ public class SubstituteDTO {
     private String room;
     private String text;
 
-    public SubstituteDTO appendText(String text) {
+    public CreateSubstituteRequestDTO appendText(String text) {
         this.text = this.text + " " + text;
 
         return this;

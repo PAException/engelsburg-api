@@ -1,7 +1,7 @@
 package io.github.paexception.engelsburginfrastructure.service;
 
 import io.github.paexception.engelsburginfrastructure.controller.SubstituteController;
-import io.github.paexception.engelsburginfrastructure.endpoint.dto.SubstituteDTO;
+import io.github.paexception.engelsburginfrastructure.endpoint.dto.request.CreateSubstituteRequestDTO;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -30,6 +30,7 @@ public class SubstituteUpdateService {
 
     @Scheduled(fixedRate = 5000000)
     public void updateSubstitutes() {
+        LOGGER.debug("Starting fetching substitutes");
         try {
             Document navbar = Jsoup.connect("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/frames/navbar.htm").get();
 
@@ -48,7 +49,7 @@ public class SubstituteUpdateService {
                 for (Element substituteContent : substitute.getAllElements().subList(8, substitute.getAllElements().size())) {
                     if (substituteContent.tagName().equals("table")) {
                         if (substituteContent.hasClass("subst")) {
-                            List<SubstituteDTO> substitutes = new ArrayList<>();
+                            List<CreateSubstituteRequestDTO> substitutes = new ArrayList<>();
 
                             for (Element row : substituteContent.child(0).children())
                                 if (row.hasClass("odd") || row.hasClass("even"))
@@ -69,13 +70,14 @@ public class SubstituteUpdateService {
                     }
                 }
             }
+            LOGGER.info("Fetched substitutes");
         } catch (IOException | ParseException e) {
             LOGGER.error("Couldn't fetch Substitutes", e);
         }
     }
 
-    private SubstituteDTO createSubstituteDTO(Element row) {
-        SubstituteDTO dto = new SubstituteDTO();
+    private CreateSubstituteRequestDTO createSubstituteDTO(Element row) {
+        CreateSubstituteRequestDTO dto = new CreateSubstituteRequestDTO();
         dto.setDate(this.currentDate);
         dto.setClassName(row.child(0).text());
         dto.setLesson(row.child(1).text());
@@ -90,10 +92,10 @@ public class SubstituteUpdateService {
         return dto;
     }
 
-    private void appendTextOnLastSubstitute(Element row, List<SubstituteDTO> substitutes) {
+    private void appendTextOnLastSubstitute(Element row, List<CreateSubstituteRequestDTO> substitutes) {
         int indexOfLastSubstitute = substitutes.size()-1;
         String textToAppend = row.children().get(row.children().size()-1).text();
-        SubstituteDTO dto = substitutes.get(indexOfLastSubstitute);
+        CreateSubstituteRequestDTO dto = substitutes.get(indexOfLastSubstitute);
 
         substitutes.set(indexOfLastSubstitute, dto.appendText(textToAppend));
     }

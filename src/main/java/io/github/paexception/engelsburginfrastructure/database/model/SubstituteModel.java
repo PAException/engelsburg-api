@@ -1,5 +1,6 @@
 package io.github.paexception.engelsburginfrastructure.database.model;
 
+import io.github.paexception.engelsburginfrastructure.endpoint.dto.response.SubstituteResponseDTO;
 import io.github.paexception.engelsburginfrastructure.util.Validation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -100,6 +101,21 @@ public class SubstituteModel {
         if (Validation.validateNotNullOrEmpty(text)) this.text = text;
 
         return this;
+    }
+
+    public SubstituteResponseDTO toResponseDTO() {
+        return new SubstituteResponseDTO(
+                this.date,
+                this.className,
+                this.lesson,
+                this.subject,
+                this.substituteTeacher,
+                this.teacher,
+                this.type,
+                this.substituteOf,
+                this.room,
+                this.text
+        );
     }
 
 }

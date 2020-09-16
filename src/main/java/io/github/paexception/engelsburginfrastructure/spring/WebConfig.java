@@ -1,4 +1,4 @@
-package io.github.paexception.engelsburginfrastructure.util;
+package io.github.paexception.engelsburginfrastructure.spring;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +19,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
+                .allowedOrigins("localhost:8080")
                 .allowedMethods("GET", "POST", "PATCH", "PUT", "DELETE")
                 .allowCredentials(false).maxAge(3600);
     }
