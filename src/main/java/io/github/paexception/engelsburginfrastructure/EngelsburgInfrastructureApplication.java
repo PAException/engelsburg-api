@@ -13,6 +13,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication(scanBasePackages = "io.github.paexception.engelsburginfrastructure")
 public class EngelsburgInfrastructureApplication {
 
+    public static final String SERVICE_TOKEN = System.getenv("SERVICE_TOKEN");
+
     @Getter private static final Logger LOGGER = LoggerFactory.getLogger(EngelsburgInfrastructureApplication.class.getSimpleName());
 
     public static void main(String[] args) {
