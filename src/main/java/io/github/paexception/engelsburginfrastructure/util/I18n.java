@@ -14,5 +14,6 @@ public class I18n {
     public static final String ALREADY_EXISTS = "ALREADY_EXISTS";
     public static final String WRONG_TYPE = "WRONG_TYPE";
     public static final String FAILED_DEPENDENCY = "FAILED_DEPENDENCY";
+    public static final String NOT_MODIFIED = "NOT_MODIFIED";
 
 }

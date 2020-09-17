@@ -39,7 +39,6 @@ public class SubstituteModel {
     @NotBlank
     private String type;
     private String substituteOf;
-    @NotBlank
     private String room;
     private String text;
 

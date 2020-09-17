@@ -17,6 +17,7 @@ public class Error extends ResponseEntity<Object> {
     public static final Error ALREADY_EXISTS = new Error(HttpStatus.CONFLICT, I18n.ALREADY_EXISTS);
     public static final Error WRONG_TYPE = new Error(HttpStatus.CONFLICT, I18n.WRONG_TYPE);
     public static final Error FAILED_DEPENDENCY = new Error(HttpStatus.FAILED_DEPENDENCY, I18n.FAILED_DEPENDENCY);
+    public static final Error NOT_MODIFIED = new Error(HttpStatus.NOT_MODIFIED, I18n.NOT_MODIFIED);
 
     private final int status;
     private final String messageKey;

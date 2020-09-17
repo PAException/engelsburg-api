@@ -9,6 +9,7 @@ import io.github.paexception.engelsburginfrastructure.endpoint.dto.request.GetSu
 import io.github.paexception.engelsburginfrastructure.endpoint.dto.response.GetSubstitutesResponseDTO;
 import io.github.paexception.engelsburginfrastructure.endpoint.dto.response.SubstituteResponseDTO;
 import io.github.paexception.engelsburginfrastructure.util.Error;
+import io.github.paexception.engelsburginfrastructure.util.HashComparator;
 import io.github.paexception.engelsburginfrastructure.util.Result;
 import io.github.paexception.engelsburginfrastructure.util.Validation;
 import org.apache.commons.lang3.time.DateUtils;
@@ -27,7 +28,7 @@ public class SubstituteController {
 
     public Result<SubstituteModel> createOrUpdateSubstitute(CreateSubstituteRequestDTO dto) {
         Optional<SubstituteModel> optionalSubstitute = this.substituteRepository
-                .findByDateAndLessonAndTeacher(dto.getDate(), dto.getLesson(), dto.getTeacher().toUpperCase());
+                .findByDateAndLessonContainingAndTeacher(dto.getDate(), dto.getLesson(), dto.getTeacher().toUpperCase());
 
         SubstituteModel substitute;
         if (optionalSubstitute.isEmpty()) substitute = new SubstituteModel(
@@ -58,7 +59,7 @@ public class SubstituteController {
         return Result.of(this.substituteRepository.save(substitute));
     }
 
-    public Result<GetSubstitutesResponseDTO> getSubstitutesByTeacher(GetSubstitutesByTeacherRequestDTO dto) {
+    public Result<GetSubstitutesResponseDTO> getSubstitutesByTeacher(GetSubstitutesByTeacherRequestDTO dto, String hash) {
         if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(dto.getDate()))
                 || System.currentTimeMillis()<dto.getDate()) && dto.getDate()!=0)
             return Result.of(Error.INVALID_PARAM, "Date can't be days in the past");
@@ -67,23 +68,23 @@ public class SubstituteController {
         if (Validation.validateNotNullOrEmpty(dto.getLesson())) {
             if (Validation.validateNotNullOrEmpty(dto.getClassName())) {
                 if (dto.getDate()==0) {
-                    substitutes = this.substituteRepository.findAllByDateAndTeacherAndLessonAndClassName(
+                    substitutes = this.substituteRepository.findAllByDateAndTeacherAndLessonContainingAndClassName(
                             new Date(System.currentTimeMillis()), dto.getTeacher(), dto.getLesson(), dto.getClassName()
                     );
-                    substitutes.addAll(this.substituteRepository.findAllByDateAndTeacherAndLessonAndClassName(
+                    substitutes.addAll(this.substituteRepository.findAllByDateAndTeacherAndLessonContainingAndClassName(
                             new Date(System.currentTimeMillis()+DAY_IN_MS), dto.getTeacher(), dto.getLesson(), dto.getClassName()
                     ));
-                }else substitutes = this.substituteRepository.findAllByDateAndTeacherAndLessonAndClassName(
+                }else substitutes = this.substituteRepository.findAllByDateAndTeacherAndLessonContainingAndClassName(
                         new Date(dto.getDate()), dto.getTeacher(), dto.getLesson(), dto.getClassName());
             } else {
                 if (dto.getDate()==0) {
-                    substitutes = this.substituteRepository.findAllByDateAndTeacherAndLesson(
+                    substitutes = this.substituteRepository.findAllByDateAndTeacherAndLessonContaining(
                             new Date(System.currentTimeMillis()), dto.getTeacher(), dto.getLesson()
                     );
-                    substitutes.addAll(this.substituteRepository.findAllByDateAndTeacherAndLesson(
+                    substitutes.addAll(this.substituteRepository.findAllByDateAndTeacherAndLessonContaining(
                             new Date(System.currentTimeMillis()+DAY_IN_MS), dto.getTeacher(), dto.getLesson()
                     ));
-                }else substitutes = this.substituteRepository.findAllByDateAndTeacherAndLesson(
+                }else substitutes = this.substituteRepository.findAllByDateAndTeacherAndLessonContaining(
                         new Date(dto.getDate()), dto.getTeacher(), dto.getLesson());
             }
         } else if (Validation.validateNotNullOrEmpty(dto.getClassName())) {
@@ -108,13 +109,10 @@ public class SubstituteController {
                     new Date(dto.getDate()), dto.getTeacher());
         }
 
-        List<SubstituteResponseDTO> responseDTOs = new ArrayList<>();
-        substitutes.forEach(substituteModel -> responseDTOs.add(substituteModel.toResponseDTO()));
-
-        return Result.of(new GetSubstitutesResponseDTO(responseDTOs));
+        return this.returnSubstitutes(substitutes, hash);
     }
 
-    public Result<GetSubstitutesResponseDTO> getSubstitutesBySubstituteTeacher(GetSubstitutesBySubstituteTeacherRequestDTO dto) {
+    public Result<GetSubstitutesResponseDTO> getSubstitutesBySubstituteTeacher(GetSubstitutesBySubstituteTeacherRequestDTO dto, String hash) {
         if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(dto.getDate()))
                 || System.currentTimeMillis()<dto.getDate()) && dto.getDate()!=0)
             return Result.of(Error.INVALID_PARAM, "Date can't be days in the past");
@@ -128,13 +126,10 @@ public class SubstituteController {
         } else substitutes = this.substituteRepository.findAllByDateAndSubstituteTeacher(
                 new Date(dto.getDate()), dto.getTeacher().toUpperCase());
 
-        List<SubstituteResponseDTO> responseDTOs = new ArrayList<>();
-        substitutes.forEach(substituteModel -> responseDTOs.add(substituteModel.toResponseDTO()));
-
-        return Result.of(new GetSubstitutesResponseDTO(responseDTOs));
+        return this.returnSubstitutes(substitutes, hash);
     }
 
-    public Result<GetSubstitutesResponseDTO> getSubstitutesByClassName(GetSubstitutesByClassNameRequestDTO dto) {
+    public Result<GetSubstitutesResponseDTO> getSubstitutesByClassName(GetSubstitutesByClassNameRequestDTO dto, String hash) {
         if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(dto.getDate()))
                 || System.currentTimeMillis()<dto.getDate()) && dto.getDate()!=0)
             return Result.of(Error.INVALID_PARAM, "Date can't be days in the past");
@@ -148,9 +143,34 @@ public class SubstituteController {
         } else substitutes = this.substituteRepository.findAllByDateAndClassName(
                 new Date(dto.getDate()), dto.getClassName());
 
+        return this.returnSubstitutes(substitutes, hash);
+    }
+
+    public Result<GetSubstitutesResponseDTO> getAllSubstitutes(long date, String hash) {
+        if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date))
+                || System.currentTimeMillis()<date) && date!=0)
+            return Result.of(Error.INVALID_PARAM, "Date can't be days in the past");
+
+        List<SubstituteModel> substitutes;
+        if (date==0) {
+            substitutes = this.substituteRepository.findAllByDate(new Date(System.currentTimeMillis()));
+            substitutes.addAll(this.substituteRepository.findAllByDate(new Date(System.currentTimeMillis()+DAY_IN_MS)));
+        } else substitutes = this.substituteRepository.findAllByDate(new Date(date));
+
+        return this.returnSubstitutes(substitutes, hash);
+    }
+
+    private Result<GetSubstitutesResponseDTO> returnSubstitutes(List<SubstituteModel> substitutes, String hash) {
         List<SubstituteResponseDTO> responseDTOs = new ArrayList<>();
         substitutes.forEach(substituteModel -> responseDTOs.add(substituteModel.toResponseDTO()));
 
-        return Result.of(new GetSubstitutesResponseDTO(responseDTOs));
+        GetSubstitutesResponseDTO responseDTO = new GetSubstitutesResponseDTO(responseDTOs, null);
+        String hashed = HashComparator.compare(responseDTO, hash);
+
+        if (hashed != null) {
+            responseDTO.setHash(hashed);
+            return Result.of(responseDTO);
+        } else return Result.of(Error.NOT_MODIFIED);
     }
+
 }

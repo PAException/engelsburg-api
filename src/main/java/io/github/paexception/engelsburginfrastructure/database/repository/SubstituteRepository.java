@@ -10,17 +10,19 @@ import java.util.Optional;
 @Repository
 public interface SubstituteRepository extends JpaRepository<SubstituteModel, Integer> {
 
-    Optional<SubstituteModel> findByDateAndLessonAndTeacher(Date date, String lesson, String teacher);
+    Optional<SubstituteModel> findByDateAndLessonContainingAndTeacher(Date date, String lesson, String teacher);
+
+    List<SubstituteModel> findAllByDate(Date date);
 
     List<SubstituteModel> findAllByDateAndClassName(Date date, String className);
 
     List<SubstituteModel> findAllByDateAndTeacher(Date date, String teacher);
 
-    List<SubstituteModel> findAllByDateAndTeacherAndLesson(Date date, String teacher, String lesson);
+    List<SubstituteModel> findAllByDateAndTeacherAndLessonContaining(Date date, String teacher, String lesson);
 
     List<SubstituteModel> findAllByDateAndTeacherAndClassName(Date date, String teacher, String className);
 
-    List<SubstituteModel> findAllByDateAndTeacherAndLessonAndClassName(Date date, String teacher, String lesson, String className);
+    List<SubstituteModel> findAllByDateAndTeacherAndLessonContainingAndClassName(Date date, String teacher, String lesson, String className);
 
     List<SubstituteModel> findAllByDateAndSubstituteTeacher(Date date, String substituteTeacher);
 

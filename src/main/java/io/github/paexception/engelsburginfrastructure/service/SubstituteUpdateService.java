@@ -81,13 +81,13 @@ public class SubstituteUpdateService {
         dto.setDate(this.currentDate);
         dto.setClassName(row.child(0).text());
         dto.setLesson(row.child(1).text());
-        if (!row.child(2).text().isBlank()) dto.setSubject(row.child(2).text());
+        if (row.child(2).text().matches("(.*)[0-9](.*)")) dto.setSubject(row.child(2).text());
         dto.setSubstituteTeacher(row.child(3).text());
         dto.setTeacher(row.child(4).text());
         dto.setType(row.child(5).text());
-        if (!row.child(6).text().isBlank()) dto.setSubstituteOf(row.child(6).text());
-        dto.setRoom(row.child(7).text());
-        if (!row.child(8).text().isBlank()) dto.setText(row.child(8).text());
+        if (row.child(6).text().matches("(.*)[0-9](.*)")) dto.setSubstituteOf(row.child(6).text());
+        if (!row.child(7).text().equals("---")) dto.setRoom(row.child(7).text());
+        if (!row.child(8).text().matches("\\h")) dto.setText(row.child(8).text());
 
         return dto;
     }
