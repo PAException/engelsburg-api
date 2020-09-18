@@ -1,6 +1,8 @@
 package io.github.paexception.engelsburginfrastructure.service;
 
 import io.github.paexception.engelsburginfrastructure.controller.SubstituteController;
+import io.github.paexception.engelsburginfrastructure.controller.SubstituteMessageController;
+import io.github.paexception.engelsburginfrastructure.endpoint.dto.request.CreateSubstituteMessageRequestDTO;
 import io.github.paexception.engelsburginfrastructure.endpoint.dto.request.CreateSubstituteRequestDTO;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -26,6 +28,7 @@ public class SubstituteUpdateService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SubstituteUpdateService.class.getSimpleName());
     @Autowired private SubstituteController substituteController;
+    @Autowired private SubstituteMessageController substituteMessageController;
     private Date currentDate;
 
     @Scheduled(fixedRate = 5000000)
@@ -57,9 +60,25 @@ public class SubstituteUpdateService {
                                         appendTextOnLastSubstitute(row, substitutes);
                                     else substitutes.add(this.createSubstituteDTO(row));
 
-                            substitutes.forEach(dto -> this.substituteController.createOrUpdateSubstitute(dto));
+                            this.substituteController.clearSubstitutes(this.currentDate);
+                            substitutes.forEach(dto -> this.substituteController.createSubstitute(dto));
                         } else {
-                            //TODO Nachrichten
+                            CreateSubstituteMessageRequestDTO dto = new CreateSubstituteMessageRequestDTO();
+                            dto.setDate(this.currentDate);
+
+                            Elements tableEntries = substituteContent.getElementsByTag("td");
+                            for (int i = 0; i < tableEntries.size(); i += 2) {
+                                Element entry = tableEntries.get(i);
+                                if (entry.text().startsWith("Abwesende Lehrer")) dto.setAbsenceTeachers(tableEntries.get(i+1).text());
+                                else if (entry.text().startsWith("Blockierte Räume")) dto.setBlockedRooms(tableEntries.get(i+1).text());
+                                else if (entry.text().startsWith("Betroffene Klassen")) dto.setAffectedClasses(tableEntries.get(i+1).text());
+                                else if (entry.text().startsWith("Betroffene Räume")) dto.setAffectedRooms(tableEntries.get(i+1).text());
+                                else if (entry.text().startsWith("Abwesende Klassen")) dto.setAbsenceClasses(tableEntries.get(i+1).text());
+                                else dto.setMessages(entry.text());
+                            }
+
+                            this.substituteMessageController.clearSubstituteMessages(this.currentDate);
+                            this.substituteMessageController.createSubstituteMessage(dto);
                         }
                     } else if (substituteContent.tagName().equals("p")) {
                         Elements days = substituteContent.getElementsByTag("b");

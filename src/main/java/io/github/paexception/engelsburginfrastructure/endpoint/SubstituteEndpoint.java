@@ -22,7 +22,7 @@ public class SubstituteEndpoint {
     }
 
     /**
-     * <b>Just returns all substitutes of the day and tomorrow</b>
+     * <b>Just returns all substitutes of the day and future</b>
      *
      * @param dto information and filters to get substitutes
      * @return adapted substitutes

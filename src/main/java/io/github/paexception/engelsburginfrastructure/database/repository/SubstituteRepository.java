@@ -5,12 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.sql.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface SubstituteRepository extends JpaRepository<SubstituteModel, Integer> {
-
-    Optional<SubstituteModel> findByDateAndLessonContainingAndTeacher(Date date, String lesson, String teacher);
 
     List<SubstituteModel> findAllByDate(Date date);
 
@@ -25,5 +22,21 @@ public interface SubstituteRepository extends JpaRepository<SubstituteModel, Int
     List<SubstituteModel> findAllByDateAndTeacherAndLessonContainingAndClassName(Date date, String teacher, String lesson, String className);
 
     List<SubstituteModel> findAllByDateAndSubstituteTeacher(Date date, String substituteTeacher);
+
+    List<SubstituteModel> findAllByDateGreaterThanEqual(Date date);
+
+    List<SubstituteModel> findAllByDateGreaterThanEqualAndClassName(Date date, String className);
+
+    List<SubstituteModel> findAllByDateGreaterThanEqualAndTeacher(Date date, String teacher);
+
+    List<SubstituteModel> findAllByDateGreaterThanEqualAndTeacherAndLessonContaining(Date date, String teacher, String lesson);
+
+    List<SubstituteModel> findAllByDateGreaterThanEqualAndTeacherAndClassName(Date date, String teacher, String className);
+
+    List<SubstituteModel> findAllByDateGreaterThanEqualAndTeacherAndLessonContainingAndClassName(Date date, String teacher, String lesson, String className);
+
+    List<SubstituteModel> findAllByDateGreaterThanEqualAndSubstituteTeacher(Date date, String substituteTeacher);
+
+	void deleteAllByDate(Date date);
 
 }

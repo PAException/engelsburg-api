@@ -1,8 +1,10 @@
 package io.github.paexception.engelsburginfrastructure.database.model;
 
+import io.github.paexception.engelsburginfrastructure.endpoint.dto.response.SubstituteMessageResponseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -23,11 +25,25 @@ public class SubstituteMessageModel {
     private int substituteMessageId;
 
     @NotNull
+    @Column(unique = true)
     private Date date;
     private String absenceTeachers;
+    private String absenceClasses;
     private String affectedClasses;
     private String affectedRooms;
     private String blockedRooms;
     private String messages;
+
+    public SubstituteMessageResponseDTO toResponseDTO() {
+        return new SubstituteMessageResponseDTO(
+                this.date,
+                this.absenceTeachers,
+                this.absenceClasses,
+                this.affectedClasses,
+                this.affectedRooms,
+                this.blockedRooms,
+                this.messages
+        );
+    }
 
 }

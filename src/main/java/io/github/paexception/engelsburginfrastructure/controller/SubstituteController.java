@@ -14,23 +14,18 @@ import io.github.paexception.engelsburginfrastructure.util.Validation;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import javax.transaction.Transactional;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import static io.github.paexception.engelsburginfrastructure.util.Constants.DAY_IN_MS;
 
 @Component
 public class SubstituteController {
 
     @Autowired private SubstituteRepository substituteRepository;
 
-    public void createOrUpdateSubstitute(CreateSubstituteRequestDTO dto) {
-        Optional<SubstituteModel> optionalSubstitute = this.substituteRepository
-                .findByDateAndLessonContainingAndTeacher(dto.getDate(), dto.getLesson(), dto.getTeacher().toUpperCase());
-
-        SubstituteModel substitute;
-        if (optionalSubstitute.isEmpty()) substitute = new SubstituteModel(
+    public void createSubstitute(CreateSubstituteRequestDTO dto) {
+        SubstituteModel substitute = new SubstituteModel(
                 -1,
                 dto.getDate(),
                 dto.getClassName(),
@@ -43,19 +38,8 @@ public class SubstituteController {
                 dto.getRoom(),
                 dto.getText()
         );
-        else substitute = optionalSubstitute.get()
-                .updateDate(dto.getDate())
-                .updateClassName(dto.getClassName())
-                .updateLesson(dto.getLesson())
-                .updateSubject(dto.getSubject())
-                .updateSubstituteTeacher(dto.getSubstituteTeacher())
-                .updateTeacher(dto.getTeacher().toUpperCase())
-                .updateType(dto.getType())
-                .updateSubstituteOf(dto.getSubstituteOf())
-                .updateRoom(dto.getRoom())
-                .updateText(dto.getText());
 
-        Result.of(this.substituteRepository.save(substitute));
+       this.substituteRepository.save(substitute);
     }
 
     public Result<GetSubstitutesResponseDTO> getSubstitutesByTeacher(GetSubstitutesByTeacherRequestDTO dto) {
@@ -67,43 +51,31 @@ public class SubstituteController {
         if (Validation.validateNotNullOrEmpty(dto.getLesson())) {
             if (Validation.validateNotNullOrEmpty(dto.getClassName())) {
                 if (dto.getDate()==0) {
-                    substitutes = this.substituteRepository.findAllByDateAndTeacherAndLessonContainingAndClassName(
+                    substitutes = this.substituteRepository.findAllByDateGreaterThanEqualAndTeacherAndLessonContainingAndClassName(
                             new Date(System.currentTimeMillis()), dto.getTeacher(), dto.getLesson(), dto.getClassName()
                     );
-                    substitutes.addAll(this.substituteRepository.findAllByDateAndTeacherAndLessonContainingAndClassName(
-                            new Date(System.currentTimeMillis()+DAY_IN_MS), dto.getTeacher(), dto.getLesson(), dto.getClassName()
-                    ));
                 }else substitutes = this.substituteRepository.findAllByDateAndTeacherAndLessonContainingAndClassName(
                         new Date(dto.getDate()), dto.getTeacher(), dto.getLesson(), dto.getClassName());
             } else {
                 if (dto.getDate()==0) {
-                    substitutes = this.substituteRepository.findAllByDateAndTeacherAndLessonContaining(
+                    substitutes = this.substituteRepository.findAllByDateGreaterThanEqualAndTeacherAndLessonContaining(
                             new Date(System.currentTimeMillis()), dto.getTeacher(), dto.getLesson()
                     );
-                    substitutes.addAll(this.substituteRepository.findAllByDateAndTeacherAndLessonContaining(
-                            new Date(System.currentTimeMillis()+DAY_IN_MS), dto.getTeacher(), dto.getLesson()
-                    ));
                 }else substitutes = this.substituteRepository.findAllByDateAndTeacherAndLessonContaining(
                         new Date(dto.getDate()), dto.getTeacher(), dto.getLesson());
             }
         } else if (Validation.validateNotNullOrEmpty(dto.getClassName())) {
             if (dto.getDate()==0) {
-                substitutes = this.substituteRepository.findAllByDateAndTeacherAndClassName(
+                substitutes = this.substituteRepository.findAllByDateGreaterThanEqualAndTeacherAndClassName(
                         new Date(System.currentTimeMillis()), dto.getTeacher(), dto.getClassName()
                 );
-                substitutes.addAll(this.substituteRepository.findAllByDateAndTeacherAndClassName(
-                        new Date(System.currentTimeMillis()+DAY_IN_MS), dto.getTeacher(), dto.getClassName()
-                ));
             } else substitutes = this.substituteRepository.findAllByDateAndTeacherAndClassName(
                     new Date(dto.getDate()), dto.getTeacher(), dto.getClassName());
         } else {
             if (dto.getDate()==0) {
-                substitutes = this.substituteRepository.findAllByDateAndTeacher(
+                substitutes = this.substituteRepository.findAllByDateGreaterThanEqualAndTeacher(
                         new Date(System.currentTimeMillis()), dto.getTeacher()
                 );
-                substitutes.addAll(this.substituteRepository.findAllByDateAndTeacher(
-                        new Date(System.currentTimeMillis()+DAY_IN_MS), dto.getTeacher()
-                ));
             } else substitutes = this.substituteRepository.findAllByDateAndTeacher(
                     new Date(dto.getDate()), dto.getTeacher());
         }
@@ -118,10 +90,8 @@ public class SubstituteController {
 
         List<SubstituteModel> substitutes;
         if (dto.getDate()==0) {
-            substitutes = this.substituteRepository.findAllByDateAndSubstituteTeacher(
+            substitutes = this.substituteRepository.findAllByDateGreaterThanEqualAndSubstituteTeacher(
                     new Date(System.currentTimeMillis()), dto.getTeacher().toUpperCase());
-            substitutes.addAll(this.substituteRepository.findAllByDateAndSubstituteTeacher(
-                    new Date(System.currentTimeMillis()+DAY_IN_MS), dto.getTeacher().toUpperCase()));
         } else substitutes = this.substituteRepository.findAllByDateAndSubstituteTeacher(
                 new Date(dto.getDate()), dto.getTeacher().toUpperCase());
 
@@ -135,10 +105,8 @@ public class SubstituteController {
 
         List<SubstituteModel> substitutes;
         if (dto.getDate()==0) {
-            substitutes = this.substituteRepository.findAllByDateAndClassName(
+            substitutes = this.substituteRepository.findAllByDateGreaterThanEqualAndClassName(
                     new Date(System.currentTimeMillis()), dto.getClassName().toUpperCase());
-            substitutes.addAll(this.substituteRepository.findAllByDateAndClassName(
-                    new Date(System.currentTimeMillis()+DAY_IN_MS), dto.getClassName().toUpperCase()));
         } else substitutes = this.substituteRepository.findAllByDateAndClassName(
                 new Date(dto.getDate()), dto.getClassName());
 
@@ -151,12 +119,16 @@ public class SubstituteController {
             return Result.of(Error.INVALID_PARAM, "Date can't be days in the past");
 
         List<SubstituteModel> substitutes;
-        if (date==0) {
-            substitutes = this.substituteRepository.findAllByDate(new Date(System.currentTimeMillis()));
-            substitutes.addAll(this.substituteRepository.findAllByDate(new Date(System.currentTimeMillis()+DAY_IN_MS)));
-        } else substitutes = this.substituteRepository.findAllByDate(new Date(date));
+        if (date==0)
+            substitutes = this.substituteRepository.findAllByDateGreaterThanEqual(new Date(System.currentTimeMillis()));
+        else substitutes = this.substituteRepository.findAllByDate(new Date(date));
 
         return this.returnSubstitutes(substitutes);
+    }
+
+    @Transactional
+    public void clearSubstitutes(Date date) {
+        this.substituteRepository.deleteAllByDate(date);
     }
 
     private Result<GetSubstitutesResponseDTO> returnSubstitutes(List<SubstituteModel> substitutes) {
