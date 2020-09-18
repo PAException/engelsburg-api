@@ -17,9 +17,8 @@ public class SubstituteEndpoint {
     @Autowired private SubstituteController substituteController;
 
     @GetMapping("/substitute")
-    public Object getAllSubstitutes(@RequestParam(required = false, defaultValue = "0") long date,
-                                    @RequestParam(required = false) String hash) {
-        return this.substituteController.getAllSubstitutes(date, hash).getHttpResponse();
+    public Object getAllSubstitutes(@RequestParam(required = false, defaultValue = "0") long date) {
+        return this.substituteController.getAllSubstitutes(date).getHttpResponse();
     }
 
     /**
@@ -29,21 +28,18 @@ public class SubstituteEndpoint {
      * @return adapted substitutes
      */
     @GetMapping("/substitute/className")
-    public Object getSubstitutesByClassName(@RequestBody @Valid GetSubstitutesByClassNameRequestDTO dto,
-                                            @RequestParam(required = false) String hash) {
-        return this.substituteController.getSubstitutesByClassName(dto, hash).getHttpResponse();
+    public Object getSubstitutesByClassName(@RequestBody @Valid GetSubstitutesByClassNameRequestDTO dto) {
+        return this.substituteController.getSubstitutesByClassName(dto).getHttpResponse();
     }
 
     @GetMapping("/substitute/teacher")
-    public Object getSubstitutesByTeacher(@RequestBody @Valid GetSubstitutesByTeacherRequestDTO dto,
-                                          @RequestParam(required = false) String hash) {
-        return this.substituteController.getSubstitutesByTeacher(dto, hash).getHttpResponse();
+    public Object getSubstitutesByTeacher(@RequestBody @Valid GetSubstitutesByTeacherRequestDTO dto) {
+        return this.substituteController.getSubstitutesByTeacher(dto).getHttpResponse();
     }
 
     @GetMapping("/substitute/substituteTeacher")
-    public Object getSubstitutesBySubstituteTeacher(@RequestBody @Valid GetSubstitutesBySubstituteTeacherRequestDTO dto,
-                                                    @RequestParam(required = false) String hash) {
-        return this.substituteController.getSubstitutesBySubstituteTeacher(dto, hash).getHttpResponse();
+    public Object getSubstitutesBySubstituteTeacher(@RequestBody @Valid GetSubstitutesBySubstituteTeacherRequestDTO dto) {
+        return this.substituteController.getSubstitutesBySubstituteTeacher(dto).getHttpResponse();
     }
 
 }

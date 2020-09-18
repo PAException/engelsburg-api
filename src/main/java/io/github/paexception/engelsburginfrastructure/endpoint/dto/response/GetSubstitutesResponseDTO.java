@@ -13,6 +13,5 @@ public class GetSubstitutesResponseDTO {
 
 	@NotNull
 	private List<SubstituteResponseDTO> substitutes;
-	private String hash;
 
 }

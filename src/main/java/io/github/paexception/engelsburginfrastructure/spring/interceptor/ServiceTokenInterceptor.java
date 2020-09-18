@@ -1,5 +1,6 @@
-package io.github.paexception.engelsburginfrastructure.spring;
+package io.github.paexception.engelsburginfrastructure.spring.interceptor;
 
+import io.github.paexception.engelsburginfrastructure.EngelsburgInfrastructureApplication;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
@@ -9,8 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 @AllArgsConstructor
 public class ServiceTokenInterceptor extends HandlerInterceptorAdapter {
 
-	private final String serviceToken;
-
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 		response.setStatus(HttpStatus.UNAUTHORIZED.value());
@@ -18,7 +17,7 @@ public class ServiceTokenInterceptor extends HandlerInterceptorAdapter {
 		String serviceToken = request.getHeader("ServiceToken");
 
 		if (serviceToken == null) return false;
-		if (!this.serviceToken.equals(serviceToken)) return false;
+		if (!EngelsburgInfrastructureApplication.SERVICE_TOKEN.equals(serviceToken)) return false;
 
 		response.setStatus(HttpStatus.OK.value());
 		return true;

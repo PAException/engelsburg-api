@@ -2,6 +2,8 @@ package io.github.paexception.engelsburginfrastructure.spring;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.paexception.engelsburginfrastructure.EngelsburgInfrastructureApplication;
+import io.github.paexception.engelsburginfrastructure.spring.interceptor.HashInterceptor;
+import io.github.paexception.engelsburginfrastructure.spring.interceptor.ServiceTokenInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -35,7 +37,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new ServiceTokenInterceptor(EngelsburgInfrastructureApplication.SERVICE_TOKEN));
+        registry.addInterceptor(new ServiceTokenInterceptor());
     }
 
 }
