@@ -1,12 +1,12 @@
 package io.github.paexception.engelsburginfrastructure.endpoint;
 
-import io.github.paexception.engelsburginfrastructure.controller.TimetableController;
+import io.github.paexception.engelsburginfrastructure.controller.SubstituteMessageController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class TimetableEndpoint {
+public class SubstituteMessageEndpoint {
 
-    @Autowired private TimetableController timetableController;
+	@Autowired private SubstituteMessageController substituteMessageController;
 
 }

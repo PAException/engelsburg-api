@@ -27,6 +27,7 @@ public class SubstituteMessageModel {
     private String absenceTeachers;
     private String affectedClasses;
     private String affectedRooms;
+    private String blockedRooms;
     private String messages;
 
 }
