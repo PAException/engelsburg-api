@@ -40,7 +40,7 @@ public class SubstituteMessageController {
 		this.substituteMessageRepository.deleteByDate(date);
 	}
 
-	public Result<Object> getAllSubstituteMessages(long date) {
+	public Result<GetSubstituteMessagesResponseDTO> getAllSubstituteMessages(long date) {
 		if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date))
 				|| System.currentTimeMillis()<date) && date!=0)
 			return Result.of(Error.INVALID_PARAM, "Date can't be days in the past");
