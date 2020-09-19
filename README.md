@@ -1,5 +1,5 @@
-# Engelsburg infrastructure
-The Infrastructure of the Engelsburg-Gymnasium-Kassel
+# Engelsburg API
+API of the Engelsburg-Gymnasium-Kassel
 
 # License
-All rights reserved.
+All rights reserved by Paul Huerkamp (2020)

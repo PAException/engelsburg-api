@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>io.github.paexception</groupId>
-    <artifactId>engelsburg-infrastructure</artifactId>
+    <artifactId>engelsburg-api</artifactId>
     <version>0.1-SNAPSHOT</version>
-    <name>engelsburg-infrastructure</name>
-    <description>The infrastructure of the Engelsburg-Gymnasium-Kassel</description>
+    <name>EngelsburgAPI</name>
+    <description>API of the Engelsburg-Gymnasium-Kassel</description>
 
     <properties>
         <java.version>11</java.version>
