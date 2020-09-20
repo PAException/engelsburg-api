@@ -7,8 +7,11 @@ host: "localhost"
 tags:
 - name: "substitute"
   description: "Access to substitutes and substituteMessages"
+- name: "info"
+  description: "Access to general information"
 schemes:
 - "http"
+- "https"
 paths:
   /substitute:
     get:
@@ -280,7 +283,48 @@ paths:
             Hash:
               type: "string"
               description: "Hash of response body - send in header of another request to see if information has changend"
-      
+  /info/classes:
+    get:
+      tags:
+        - "info"
+      summary: "Get current classes"
+      operationId: "getClasses"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "ServiceToken"
+          description: "To identify friendly requests"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          required: false
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Classes"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "401":
+          description: "Unauthorized - ServiceToken is wrong"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "304":
+          description: "Not Modified - Information hasn't changend (based on sent hash)"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
 definitions:
   Substitute:
     type: "object"
@@ -364,3 +408,12 @@ definitions:
               type: "string"
               example: "Die ... AG fällt heute aus!"
               description: "[*Nullable*]"
+  Classes:
+    type: "object"
+    properties:
+      classes:
+        type: "array"
+        description: "Can be empty"
+        items:
+          type: "string"
+          example: "5a"

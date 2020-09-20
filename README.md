@@ -29,8 +29,8 @@ Go to [Swagger.io](https://editor.swagger.io/) and import [endpoints.yaml](.docs
 
 ## v1.1
 
-- [ ] InformationEndpoint
-  - [ ] current classes
+- [x] InformationEndpoint
+  - [x] current classes
   - [ ] ~~teachers~~
 
 ## v2

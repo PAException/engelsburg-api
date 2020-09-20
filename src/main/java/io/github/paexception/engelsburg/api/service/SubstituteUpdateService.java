@@ -1,5 +1,6 @@
 package io.github.paexception.engelsburg.api.service;
 
+import io.github.paexception.engelsburg.api.controller.InformationController;
 import io.github.paexception.engelsburg.api.controller.SubstituteMessageController;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateSubstituteMessageRequestDTO;
 import io.github.paexception.engelsburg.api.controller.SubstituteController;
@@ -29,6 +30,7 @@ public class SubstituteUpdateService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SubstituteUpdateService.class.getSimpleName());
     @Autowired private SubstituteController substituteController;
     @Autowired private SubstituteMessageController substituteMessageController;
+    @Autowired private InformationController informationController;
     private Date currentDate;
 
     @Scheduled(fixedRate = 5000000)
@@ -44,6 +46,15 @@ public class SubstituteUpdateService {
                     .forEach(element2 -> weeks.put(
                             Integer.parseInt(element2.attr("value")),
                             Integer.parseInt(element2.text().substring(element2.text().lastIndexOf('.')+1)))));
+
+            this.informationController.setCurrentClasses(
+                    navbar.html().substring(navbar.html().indexOf("var classes = ["), navbar.html().indexOf("];"))
+                        .trim()
+                        .replace("var classes = [", "")
+                        .replace("];", "")
+                        .replaceAll("\"", "")
+                        .split(",")
+            );
 
             for (int no : weeks.keySet()) {
                 Element substitute = Jsoup.connect("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/" + no + "/w/w00000.htm").get().getElementById("vertretung");
