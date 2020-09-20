@@ -31,11 +31,12 @@ Go to [Swagger.io](https://editor.swagger.io/) and import [endpoints.yaml](.docs
 
 - [ ] InformationEndpoint
   - [ ] current classes
-  - [ ] teachers
+  - [ ] ~~teachers~~
 
 ## v2
 
 - [ ] OAuth2 with school email
+  - [ ] teacher information endpoint (they will claim their abbreviation)
 - [ ] Rights
 - [ ] JWT
 - [ ] ReportAbsence/Delay
