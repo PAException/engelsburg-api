@@ -1,0 +1,419 @@
+swagger: "2.0"
+info:
+  description: "Endpoint documentation of **v1** of the engelsburg-api"
+  version: "v1"
+  title: "Engelsburg-API"
+host: "localhost"
+tags:
+- name: "substitute"
+  description: "Access to substitutes and substituteMessages"
+- name: "info"
+  description: "Access to general information"
+schemes:
+- "http"
+- "https"
+paths:
+  /substitute:
+    get:
+      tags:
+      - "substitute"
+      summary: "Get all substitutes"
+      description: "Only returns of current day and substitutes in the future"
+      operationId: "getSubstitutes"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        type: "string"
+        name: "ServiceToken"
+        description: "To identify friendly requests"
+        required: true
+      - in: "header"
+        type: "string"
+        name: "Hash"
+        description: "If you provide a hash you got from your last response the server checks if the information has changed"
+        required: false
+      - in: "query"
+        type: "number"
+        name: "Date"
+        description: "Timestamp (ms)"
+        required: false
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Substitute"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "401":
+          description: "Unauthorized - ServiceToken is wrong"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "304":
+          description: "Not Modified - Information hasn't changend (based on sent hash)"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+  /substitute/className:
+    get:
+      tags:
+      - "substitute"
+      summary: "Filter substitutes by className"
+      description: "Only returns of current day and substitutes in the future"
+      operationId: "getSubstitutesByClassName"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        type: "string"
+        name: "ServiceToken"
+        description: "To identify friendly requests"
+        required: true
+      - in: "header"
+        type: "string"
+        name: "Hash"
+        description: "If you provide a hash you got from your last response the server checks if the information has changed"
+        required: false
+      - in: "body"
+        name: "Body"
+        schema:
+          type: "object"
+          properties:
+            className:
+              type: "string"
+              example: "8c"
+              description: "[*Required*]"
+            date:
+              type: "number"
+              example: 1600509466
+              description: "Timestamp (ms)"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Substitute"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "401":
+          description: "Unauthorized - ServiceToken is wrong"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "304":
+          description: "Not Modified - Information hasn't changend (based on sent hash)"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+  /substitute/teacher:
+    get:
+      tags:
+      - "substitute"
+      summary: "Filter substitutes by teacher"
+      description: "Only returns of current day and substitutes in the future"
+      operationId: "getSubstitutesByTeacher"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        type: "string"
+        name: "ServiceToken"
+        description: "To identify friendly requests"
+        required: true
+      - in: "header"
+        type: "string"
+        name: "Hash"
+        description: "If you provide a hash you got from your last response the server checks if the information has changed"
+        required: false
+      - in: "body"
+        name: "Body"
+        schema:
+          type: "object"
+          properties:
+            teacher:
+              type: "string"
+              example: "KRÄ"
+              description: "[*Required*]"
+            lesson:
+              type: "string"
+              example: "6"
+            className:
+              type: "string"
+              example: "8c"
+            date:
+              type: "number"
+              example: 1600509466
+              description: "Timestamp (ms)"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Substitute"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "401":
+          description: "Unauthorized - ServiceToken is wrong"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "304":
+          description: "Not Modified - Information hasn't changend (based on sent hash)"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+  /substitute/substituteTeacher:
+    get:
+      tags:
+      - "substitute"
+      summary: "Filter substitutes by substituteTeacher"
+      description: "Only returns of current day and substitutes in the future"
+      operationId: "getSubstitutesBySubstituteTeacher"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        type: "string"
+        name: "ServiceToken"
+        description: "To identify friendly requests"
+        required: true
+      - in: "header"
+        type: "string"
+        name: "Hash"
+        description: "If you provide a hash you got from your last response the server checks if the information has changed"
+        required: false
+      - in: "body"
+        name: "Body"
+        schema:
+          type: "object"
+          properties:
+            teacher:
+              type: "string"
+              example: "KRÄ"
+              description: "[*Required*]"
+            date:
+              type: "number"
+              example: 1600509466
+              description: "Timestamp (ms)"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Substitute"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "401":
+          description: "Unauthorized - ServiceToken is wrong"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "304":
+          description: "Not Modified - Information hasn't changend (based on sent hash)"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+  /substitute/message:
+    get:
+      tags:
+      - "substitute"
+      summary: "Get all substituteMessages"
+      description: "Only returns of current day and substitutes in the future"
+      operationId: "getSubstitutesMessages"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        type: "string"
+        name: "ServiceToken"
+        description: "To identify friendly requests"
+        required: true
+      - in: "header"
+        type: "string"
+        name: "Hash"
+        description: "If you provide a hash you got from your last response the server checks if the information has changed"
+        required: false
+      - in: "query"
+        type: "number"
+        name: "Date"
+        description: "Timestamp (ms)"
+        required: false
+      responses:
+        "200":
+          description: "OK - Successful operation"
+          schema:
+            $ref: "#/definitions/SubstituteMessage"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "401":
+          description: "Unauthorized - ServiceToken is wrong"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "304":
+          description: "Not Modified - Information hasn't changend (based on sent hash)"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+  /info/classes:
+    get:
+      tags:
+        - "info"
+      summary: "Get current classes"
+      operationId: "getClasses"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "ServiceToken"
+          description: "To identify friendly requests"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          required: false
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Classes"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "401":
+          description: "Unauthorized - ServiceToken is wrong"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "304":
+          description: "Not Modified - Information hasn't changend (based on sent hash)"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+definitions:
+  Substitute:
+    type: "object"
+    properties:
+      substitutes:
+        type: "array"
+        description: "Can be empty"
+        items:
+          type: "object"
+          properties:
+            date:
+              type: "string"
+              example: "2020-09-19"
+              description: "Date format: yyyy-MM-dd"
+            className:
+              type: "string"
+              example: "8c"
+            lesson:
+              type: "string"
+              example: "6"
+              description: "Can also be '8 - 9'"
+            subject:
+              type: "string"
+              example: "M"
+              description: "[*Nullable*]"
+            substituteTeacher:
+              type: "string"
+              example: "EIC"
+            teacher:
+              type: "string"
+              example: "KRÄ"
+            type:
+              type: "string"
+              example: "Vertretung"
+            substituteOf:
+              type: "string"
+              example: "Mi-2.9. / 6"
+              description: "[*Nullable*]"
+            room:
+              type: "string"
+              example: "H001"
+              description: "[*Nullable*]"
+            text:
+              type: "string"
+              example: "Aufg. den Schüler*innen bekannt"
+              description: "[*Nullable*]"
+  SubstituteMessage:
+    type: "object"
+    properties:
+      substituteMessages:
+        type: "array"
+        description: "Can be empty"
+        items:
+          type: "object"
+          properties:
+            date:
+              type: "string"
+              example: "2020-09-19"
+              description: "Date format: yyyy-MM-dd"
+            absenceTeachers:
+              type: "string"
+              example: "GRB, GAR, STÖC, VOGL"
+              description: "[*Nullable*]"
+            absenceClasses:
+              type: "string"
+              example: "10c"
+              description: "[*Nullable*]"
+            affectedClasses:
+              type: "string"
+              example: "5a, 5c, 8d, 9a, E1, Q3"
+              description: "[*Nullable*]"
+            affectedRooms:
+              type: "string"
+              example: "H204, S304, R202"
+              description: "[*Nullable*]"
+            blockedRooms:
+              type: "string"
+              example: "H001, H207, S403, R204"
+              description: "[*Nullable*]"
+            messages:
+              type: "string"
+              example: "Die ... AG fällt heute aus!"
+              description: "[*Nullable*]"
+  Classes:
+    type: "object"
+    properties:
+      classes:
+        type: "array"
+        description: "Can be empty"
+        items:
+          type: "string"
+          example: "5a"
