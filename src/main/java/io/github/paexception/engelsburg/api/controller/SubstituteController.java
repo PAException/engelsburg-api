@@ -45,7 +45,7 @@ public class SubstituteController {
     public Result<GetSubstitutesResponseDTO> getSubstitutesByTeacher(GetSubstitutesByTeacherRequestDTO dto) {
         if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(dto.getDate()))
                 || System.currentTimeMillis()<dto.getDate()) && dto.getDate()!=0)
-            return Result.of(Error.INVALID_PARAM, "Date can't be days in the past");
+            return Result.of(Error.INVALID_PARAM, "Date can't be in the past");
 
         List<SubstituteModel> substitutes;
         if (Validation.validateNotNullOrEmpty(dto.getLesson())) {
@@ -79,6 +79,7 @@ public class SubstituteController {
             } else substitutes = this.substituteRepository.findAllByDateAndTeacher(
                     new Date(dto.getDate()), dto.getTeacher());
         }
+        if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, "substitutes");
 
         return this.returnSubstitutes(substitutes);
     }
@@ -86,7 +87,7 @@ public class SubstituteController {
     public Result<GetSubstitutesResponseDTO> getSubstitutesBySubstituteTeacher(GetSubstitutesBySubstituteTeacherRequestDTO dto) {
         if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(dto.getDate()))
                 || System.currentTimeMillis()<dto.getDate()) && dto.getDate()!=0)
-            return Result.of(Error.INVALID_PARAM, "Date can't be days in the past");
+            return Result.of(Error.INVALID_PARAM, "Date can't be in the past");
 
         List<SubstituteModel> substitutes;
         if (dto.getDate()==0) {
@@ -94,6 +95,7 @@ public class SubstituteController {
                     new Date(System.currentTimeMillis()), dto.getTeacher().toUpperCase());
         } else substitutes = this.substituteRepository.findAllByDateAndSubstituteTeacher(
                 new Date(dto.getDate()), dto.getTeacher().toUpperCase());
+        if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, "substitutes");
 
         return this.returnSubstitutes(substitutes);
     }
@@ -101,7 +103,7 @@ public class SubstituteController {
     public Result<GetSubstitutesResponseDTO> getSubstitutesByClassName(GetSubstitutesByClassNameRequestDTO dto) {
         if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(dto.getDate()))
                 || System.currentTimeMillis()<dto.getDate()) && dto.getDate()!=0)
-            return Result.of(Error.INVALID_PARAM, "Date can't be days in the past");
+            return Result.of(Error.INVALID_PARAM, "Date can't be in the past");
 
         List<SubstituteModel> substitutes;
         if (dto.getDate()==0) {
@@ -109,6 +111,7 @@ public class SubstituteController {
                     new Date(System.currentTimeMillis()), dto.getClassName().toUpperCase());
         } else substitutes = this.substituteRepository.findAllByDateAndClassName(
                 new Date(dto.getDate()), dto.getClassName());
+        if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, "substitutes");
 
         return this.returnSubstitutes(substitutes);
     }
@@ -116,12 +119,13 @@ public class SubstituteController {
     public Result<GetSubstitutesResponseDTO> getAllSubstitutes(long date) {
         if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date))
                 || System.currentTimeMillis()<date) && date!=0)
-            return Result.of(Error.INVALID_PARAM, "Date can't be days in the past");
+            return Result.of(Error.INVALID_PARAM, "Date can't be in the past");
 
         List<SubstituteModel> substitutes;
         if (date==0)
             substitutes = this.substituteRepository.findAllByDateGreaterThanEqual(new Date(System.currentTimeMillis()));
         else substitutes = this.substituteRepository.findAllByDate(new Date(date));
+        if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, "substitutes");
 
         return this.returnSubstitutes(substitutes);
     }

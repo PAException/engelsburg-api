@@ -43,12 +43,13 @@ public class SubstituteMessageController {
 	public Result<GetSubstituteMessagesResponseDTO> getAllSubstituteMessages(long date) {
 		if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date))
 				|| System.currentTimeMillis()<date) && date!=0)
-			return Result.of(Error.INVALID_PARAM, "Date can't be days in the past");
+			return Result.of(Error.INVALID_PARAM, "Date can't be in the past");
 
 		List<SubstituteMessageModel> substitutes;
 		if (date==0)
 			substitutes = this.substituteMessageRepository.findAllByDateGreaterThanEqual(new Date(System.currentTimeMillis()));
 		else substitutes = this.substituteMessageRepository.findAllByDate(new Date(date));
+		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, "substitutes");
 
 		List<SubstituteMessageResponseDTO> responseDTOs = new ArrayList<>();
 		substitutes.forEach(substituteModel -> responseDTOs.add(substituteModel.toResponseDTO()));

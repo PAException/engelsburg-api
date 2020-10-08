@@ -7,18 +7,20 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import java.io.File;
 
 @EnableScheduling
 @EnableJpaRepositories
 @SpringBootApplication(scanBasePackages = "io.github.paexception.engelsburg.api")
-public class EngelsburgAPIApplication {
+public class EngelsburgAPI {
 
     public static final String SERVICE_TOKEN = System.getenv("SERVICE_TOKEN");
+    public static final File DATA_FOLDER = new File(System.getenv("DATA_FOLDER"));
 
-    @Getter private static final Logger LOGGER = LoggerFactory.getLogger(EngelsburgAPIApplication.class.getSimpleName());
+    @Getter private static final Logger LOGGER = LoggerFactory.getLogger(EngelsburgAPI.class.getSimpleName());
 
     public static void main(String[] args) {
-        SpringApplication.run(EngelsburgAPIApplication.class, args);
+        SpringApplication.run(EngelsburgAPI.class, args);
     }
 
 }

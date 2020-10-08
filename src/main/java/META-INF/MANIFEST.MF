@@ -1,2 +1,2 @@
 Manifest-Version: 1.0
-Main-Class: io.github.paexception.engelsburg.api.EngelsburgAPIApplication
+Main-Class: io.github.paexception.engelsburg.api.EngelsburgAPI

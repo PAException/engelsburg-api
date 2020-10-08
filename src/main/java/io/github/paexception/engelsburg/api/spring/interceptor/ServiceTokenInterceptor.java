@@ -1,6 +1,6 @@
 package io.github.paexception.engelsburg.api.spring.interceptor;
 
-import io.github.paexception.engelsburg.api.EngelsburgAPIApplication;
+import io.github.paexception.engelsburg.api.EngelsburgAPI;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
@@ -17,7 +17,7 @@ public class ServiceTokenInterceptor extends HandlerInterceptorAdapter {
 		String serviceToken = request.getHeader("ServiceToken");
 
 		if (serviceToken == null) return false;
-		if (!EngelsburgAPIApplication.SERVICE_TOKEN.equals(serviceToken)) return false;
+		if (!EngelsburgAPI.SERVICE_TOKEN.equals(serviceToken)) return false;
 
 		response.setStatus(HttpStatus.OK.value());
 		return true;
