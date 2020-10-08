@@ -1,10 +1,11 @@
 package io.github.paexception.engelsburg.api.util;
 
-import io.github.paexception.engelsburg.api.EngelsburgAPIApplication;
+import io.github.paexception.engelsburg.api.EngelsburgAPI;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -20,9 +21,10 @@ public class Result<T> {
     private String extra;
 
     public ResponseEntity<Object> getHttpResponse() {
-        Object obj = this.isErrorPresent() ? this.getError().copyWithExtra(this.getExtra()) : this.getResult();
+        Object response = this.isErrorPresent() ? this.getError().copyWithExtra(this.getExtra()).getBody() : this.getResult();
 
-        return ResponseEntity.ok().header("Hash", hash(obj)).body(obj);
+        return ResponseEntity.status(this.isErrorPresent() ? this.error.getStatus() : HttpStatus.OK.value())
+                .header("Hash", hash(response)).body(response);
     }
 
     public boolean isResultPresent() {
@@ -99,7 +101,7 @@ public class Result<T> {
         try {
             if (digest == null) digest = MessageDigest.getInstance("SHA-1");
         } catch (NoSuchAlgorithmException e) {
-            EngelsburgAPIApplication.getLOGGER().error("Couldn't find defined Algorithm");
+            EngelsburgAPI.getLOGGER().error("Couldn't find defined Algorithm");
         }
 
         return bytesToHex(digest.digest(o.toString().getBytes()));

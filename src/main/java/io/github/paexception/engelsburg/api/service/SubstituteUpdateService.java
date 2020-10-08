@@ -33,7 +33,7 @@ public class SubstituteUpdateService {
     @Autowired private InformationController informationController;
     private Date currentDate;
 
-    @Scheduled(fixedRate = 5000000)
+    @Scheduled(fixedRate = 5*60*1000)
     public void updateSubstitutes() {
         LOGGER.debug("Starting fetching substitutes");
         try {

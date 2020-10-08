@@ -4,15 +4,16 @@ API of the Engelsburg-Gymnasium-Kassel
 # Environment
 This project needs several environment-variables:
 
-| Environment Variable | Description                       |
-|---------------------|-----------------------------------|
-| SERVER_PORT         | The port the server is running on |
-| DATABASE_HOSTNAME   | Hostname of the database          |
-| DATABASE_PORT       | Port of the database              |
-| DATABASE_DATABASE   | Database-name of the database      |
-| DATABASE_USERNAME   | Username to login into database   |
-| DATABASE_PASSWORD   | Password to login into database   |
-| SERVICE_TOKEN       | Service-Token to secure access    |
+| Environment Variable| Description                            |
+|---------------------|----------------------------------------|
+| SERVER_PORT         | The port the server is running on      |
+| DATABASE_HOSTNAME   | Hostname of the database               | 
+| DATABASE_PORT       | Port of the database                   |
+| DATABASE_DATABASE   | Database-name of the database          |
+| DATABASE_USERNAME   | Username to login into database        |
+| DATABASE_PASSWORD   | Password to login into database        |
+| SERVICE_TOKEN       | Service-Token to secure access         |
+| DATA_FOLDER         | Relative or absolute path to datafiles |
 
 # Endpoint Documentation
 
@@ -35,16 +36,8 @@ Go to [Swagger.io](https://editor.swagger.io/) and import [endpoints.yaml](.docs
 
 ## v2
 
-- [ ] OAuth2 with school email
-  - [ ] teacher information endpoint (they will claim their abbreviation)
-- [ ] Rights
-- [ ] JWT
-- [ ] ReportAbsence/Delay
-- [ ] Broadcast
-
-## v3
-
-- [ ] Timetable
+- [x] Articles on homepage endpoint
+- [x] Events endpoint
 
 # License
 Copyright 2020 Paul Huerkamp
