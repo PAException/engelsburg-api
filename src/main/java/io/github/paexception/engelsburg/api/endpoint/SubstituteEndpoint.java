@@ -5,19 +5,22 @@ import io.github.paexception.engelsburg.api.endpoint.dto.request.GetSubstitutesB
 import io.github.paexception.engelsburg.api.endpoint.dto.request.GetSubstitutesBySubstituteTeacherRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.GetSubstitutesByTeacherRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
+@Validated
 @RestController
 public class SubstituteEndpoint {
 
     @Autowired private SubstituteController substituteController;
 
     @GetMapping("/substitute")
-    public Object getAllSubstitutes(@RequestParam(required = false, defaultValue = "0") long date) {
+    public Object getAllSubstitutes(@RequestParam(required = false, defaultValue = "0") @Min(0) long date) {
         return this.substituteController.getAllSubstitutes(date).getHttpResponse();
     }
 
