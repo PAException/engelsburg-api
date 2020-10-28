@@ -13,5 +13,6 @@ public class CreateArticleRequestDTO {
 	private String link;
 	private String title;
 	private String content;
+	private String mediaUrl;
 
 }

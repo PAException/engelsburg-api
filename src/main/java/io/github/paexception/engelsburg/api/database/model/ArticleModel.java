@@ -31,9 +31,10 @@ public class ArticleModel {
 	private String title;
 	@NotBlank @Lob
 	private String content;
+	private String mediaUrl;
 
 	public ArticleResponseDTO toResponseDTO() {
-		return new ArticleResponseDTO(this.date, this.link, this.title, this.content);
+		return new ArticleResponseDTO(this.date, this.link, this.title, this.content, this.mediaUrl);
 	}
 
 }

@@ -2,9 +2,12 @@ package io.github.paexception.engelsburg.api.service;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.github.paexception.engelsburg.api.controller.ArticleController;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateArticleRequestDTO;
+import org.jsoup.Jsoup;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +17,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -48,11 +52,24 @@ public class ArticleUpdateService {
 			JsonArray json = JsonParser.parseString(raw).getAsJsonArray();
 			List<CreateArticleRequestDTO> dtos = new ArrayList<>();
 			for (JsonElement article : json) {
+				String content = article.getAsJsonObject().get("content").getAsJsonObject().get("rendered").getAsString();
+				Elements elements;
+				String mediaUrl = null;
+				int featuredMedia;
+				if ((featuredMedia = article.getAsJsonObject().get("featured_media").getAsInt()) != 0) {
+					JsonObject mediaJson = JsonParser.parseReader(new InputStreamReader(
+							new URL("https://engelsburg.smmp.de/wp-json/wp/v2/media/" + featuredMedia)
+							.openConnection().getInputStream())).getAsJsonObject();
+					mediaUrl = mediaJson.get("source_url").getAsString();
+				} else if ((elements = Jsoup.parse(content).getElementsByClass("wp-block-image")).size() >0) {
+					mediaUrl = elements.get(0).getElementsByTag("img").get(0).attr("src");
+				}
 				CreateArticleRequestDTO dto = new CreateArticleRequestDTO(
 						dateFormat.parse(article.getAsJsonObject().get("date").getAsString()).getTime(),
 						article.getAsJsonObject().get("link").getAsString(),
 						article.getAsJsonObject().get("title").getAsJsonObject().get("rendered").getAsString(),
-						article.getAsJsonObject().get("content").getAsJsonObject().get("rendered").getAsString()
+						content,
+						mediaUrl
 				);
 				dtos.add(dto);
 			}
