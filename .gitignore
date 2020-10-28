@@ -104,6 +104,7 @@ local.properties
 .idea/jarRepositories.xml
 .idea/modules.xml
 .idea/*.iml
+.idea/discord.xml
 .idea/modules
 *.iml
 *.ipr-

@@ -1,6 +1,7 @@
 package io.github.paexception.engelsburg.api.endpoint;
 
 import io.github.paexception.engelsburg.api.controller.InformationController;
+import io.github.paexception.engelsburg.api.spring.interceptor.IgnoreServiceToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

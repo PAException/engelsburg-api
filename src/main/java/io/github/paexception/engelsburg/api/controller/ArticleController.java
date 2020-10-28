@@ -25,7 +25,8 @@ public class ArticleController {
 				dto.getDate(),
 				dto.getLink(),
 				dto.getTitle(),
-				dto.getContent()
+				dto.getContent(),
+				dto.getMediaUrl()
 		));
 	}
 

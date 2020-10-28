@@ -611,6 +611,10 @@ definitions:
             content:
               type: "string"
               example: "<p>Liebe Eltern, liebe Interessierte an der Engelsburg,</p>\n\n\n\n<p>nun beginnt die Zeit, ..."
+            mediaUrl:
+              type: "string"
+              example: "https://d1855q9qdxb6ev.cloudfront.net/files/2020/09/20190320-Postkarte-Schulpreis01-final1.jpg"
+              description: "[*Nullable*]"
   Event:
     type: "object"
     properties:
