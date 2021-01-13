@@ -39,12 +39,12 @@ public class SubstituteUpdateService {
         try {
             Document navbar = Jsoup.connect("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/frames/navbar.htm").get();
 
-            Map<Integer, Integer> weeks = new HashMap<>();
+            Map<String, Integer> weeks = new HashMap<>();
             navbar.getElementsByAttributeValue("name", "week")
                     .stream().filter(element -> element.hasClass("selectbox"))
                     .collect(Collectors.toList()).forEach(element -> element.children()
                     .forEach(element2 -> weeks.put(
-                            Integer.parseInt(element2.attr("value")),
+                            element2.attr("value"),
                             Integer.parseInt(element2.text().substring(element2.text().lastIndexOf('.')+1)))));
 
             this.informationController.setCurrentClasses(
@@ -56,9 +56,9 @@ public class SubstituteUpdateService {
                         .split(",")
             );
 
-            for (int no : weeks.keySet()) {
-                Element substitute = Jsoup.connect("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/" + no + "/w/w00000.htm").get().getElementById("vertretung");
-                this.currentDate = this.parseDate(substitute.child(2).text().substring(0, substitute.child(2).text().lastIndexOf('.')), weeks.get(no));
+            for (String week : weeks.keySet()) {
+                Element substitute = Jsoup.connect("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/" + week + "/w/w00000.htm").get().getElementById("vertretung");
+                this.currentDate = this.parseDate(substitute.child(2).text().substring(0, substitute.child(2).text().lastIndexOf('.')), weeks.get(week));
 
                 for (Element substituteContent : substitute.getAllElements().subList(8, substitute.getAllElements().size())) {
                     if (substituteContent.tagName().equals("table")) {
@@ -95,7 +95,7 @@ public class SubstituteUpdateService {
                         Elements days = substituteContent.getElementsByTag("b");
                         if (days.size()>0) {
                             String dayAndMonth = days.get(0).text().substring(0, days.get(0).text().lastIndexOf('.'));
-                            this.currentDate = this.parseDate(dayAndMonth, weeks.get(no));
+                            this.currentDate = this.parseDate(dayAndMonth, weeks.get(week));
                         }
                     }
                 }

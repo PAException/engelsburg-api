@@ -227,3 +227,4 @@ nbdist/
 # End of https://www.toptal.com/developers/gitignore/api/intellij,eclipse,netbeans,java,maven
 
 .idea/codeStyles
+.idea/
