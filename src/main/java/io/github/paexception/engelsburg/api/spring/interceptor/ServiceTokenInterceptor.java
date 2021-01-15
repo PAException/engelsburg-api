@@ -15,8 +15,8 @@ public class ServiceTokenInterceptor extends HandlerInterceptorAdapter {
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 		HandlerMethod method = (HandlerMethod) handler;
-		if (method.hasMethodAnnotation(IgnoreServiceToken.class) ||
-				method.getMethod().getDeclaringClass().getAnnotation(IgnoreServiceToken.class) != null)
+		if (!method.hasMethodAnnotation(ServiceToken.class) ||
+				method.getMethod().getDeclaringClass().getAnnotation(ServiceToken.class) == null)
 			return true;
 
 		response.setStatus(HttpStatus.UNAUTHORIZED.value());
