@@ -5,45 +5,45 @@ info:
   title: "Engelsburg-API"
 host: "localhost"
 tags:
-- name: "substitute"
-  description: "Access to substitutes and substituteMessages"
-- name: "article"
-  description: "Access to published articles of homepage"
-- name: "event"
-  description: "Access to events"
-- name: "info"
-  description: "Access to general information"
+  - name: "substitute"
+    description: "Access to substitutes and substituteMessages"
+  - name: "article"
+    description: "Access to published articles of homepage"
+  - name: "event"
+    description: "Access to events"
+  - name: "info"
+    description: "Access to general information"
 schemes:
-- "http"
-- "https"
+  - "http"
+  - "https"
 paths:
   /substitute:
     get:
       tags:
-      - "substitute"
+        - "substitute"
       summary: "Get all substitutes"
       description: "Only returns of current day and substitutes in the future"
       operationId: "getSubstitutes"
       consumes:
-      - "application/json"
+        - "application/json"
       produces:
-      - "application/json"
+        - "application/json"
       parameters:
-      - in: "header"
-        type: "string"
-        name: "ServiceToken"
-        description: "To identify friendly requests"
-        required: true
-      - in: "header"
-        type: "string"
-        name: "Hash"
-        description: "If you provide a hash you got from your last response the server checks if the information has changed"
-        required: false
-      - in: "query"
-        type: "number"
-        name: "Date"
-        description: "Timestamp (ms)"
-        required: false
+        - in: "header"
+          type: "string"
+          name: "ServiceToken"
+          description: "To identify friendly requests"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          required: false
+        - in: "query"
+          type: "number"
+          name: "Date"
+          description: "Timestamp (ms)"
+          required: false
       responses:
         "200":
           description: "Successful operation"
@@ -80,38 +80,38 @@ paths:
   /substitute/className:
     get:
       tags:
-      - "substitute"
+        - "substitute"
       summary: "Filter substitutes by className"
       description: "Only returns of current day and substitutes in the future"
       operationId: "getSubstitutesByClassName"
       consumes:
-      - "application/json"
+        - "application/json"
       produces:
-      - "application/json"
+        - "application/json"
       parameters:
-      - in: "header"
-        type: "string"
-        name: "ServiceToken"
-        description: "To identify friendly requests"
-        required: true
-      - in: "header"
-        type: "string"
-        name: "Hash"
-        description: "If you provide a hash you got from your last response the server checks if the information has changed"
-        required: false
-      - in: "body"
-        name: "Body"
-        schema:
-          type: "object"
-          properties:
-            className:
-              type: "string"
-              example: "8c"
-              description: "[*Required*]"
-            date:
-              type: "number"
-              example: 1600509466
-              description: "Timestamp (ms)"
+        - in: "header"
+          type: "string"
+          name: "ServiceToken"
+          description: "To identify friendly requests"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            type: "object"
+            properties:
+              className:
+                type: "string"
+                example: "8c"
+                description: "[*Required*]"
+              date:
+                type: "number"
+                example: 1600509466
+                description: "Timestamp (ms)"
       responses:
         "200":
           description: "Successful operation"
@@ -148,44 +148,44 @@ paths:
   /substitute/teacher:
     get:
       tags:
-      - "substitute"
+        - "substitute"
       summary: "Filter substitutes by teacher"
       description: "Only returns of current day and substitutes in the future"
       operationId: "getSubstitutesByTeacher"
       consumes:
-      - "application/json"
+        - "application/json"
       produces:
-      - "application/json"
+        - "application/json"
       parameters:
-      - in: "header"
-        type: "string"
-        name: "ServiceToken"
-        description: "To identify friendly requests"
-        required: true
-      - in: "header"
-        type: "string"
-        name: "Hash"
-        description: "If you provide a hash you got from your last response the server checks if the information has changed"
-        required: false
-      - in: "body"
-        name: "Body"
-        schema:
-          type: "object"
-          properties:
-            teacher:
-              type: "string"
-              example: "KRÄ"
-              description: "[*Required*]"
-            lesson:
-              type: "string"
-              example: "6"
-            className:
-              type: "string"
-              example: "8c"
-            date:
-              type: "number"
-              example: 1600509466
-              description: "Timestamp (ms)"
+        - in: "header"
+          type: "string"
+          name: "ServiceToken"
+          description: "To identify friendly requests"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            type: "object"
+            properties:
+              teacher:
+                type: "string"
+                example: "KRÄ"
+                description: "[*Required*]"
+              lesson:
+                type: "string"
+                example: "6"
+              className:
+                type: "string"
+                example: "8c"
+              date:
+                type: "number"
+                example: 1600509466
+                description: "Timestamp (ms)"
       responses:
         "200":
           description: "Successful operation"
@@ -222,38 +222,38 @@ paths:
   /substitute/substituteTeacher:
     get:
       tags:
-      - "substitute"
+        - "substitute"
       summary: "Filter substitutes by substituteTeacher"
       description: "Only returns of current day and substitutes in the future"
       operationId: "getSubstitutesBySubstituteTeacher"
       consumes:
-      - "application/json"
+        - "application/json"
       produces:
-      - "application/json"
+        - "application/json"
       parameters:
-      - in: "header"
-        type: "string"
-        name: "ServiceToken"
-        description: "To identify friendly requests"
-        required: true
-      - in: "header"
-        type: "string"
-        name: "Hash"
-        description: "If you provide a hash you got from your last response the server checks if the information has changed"
-        required: false
-      - in: "body"
-        name: "Body"
-        schema:
-          type: "object"
-          properties:
-            teacher:
-              type: "string"
-              example: "KRÄ"
-              description: "[*Required*]"
-            date:
-              type: "number"
-              example: 1600509466
-              description: "Timestamp (ms)"
+        - in: "header"
+          type: "string"
+          name: "ServiceToken"
+          description: "To identify friendly requests"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            type: "object"
+            properties:
+              teacher:
+                type: "string"
+                example: "KRÄ"
+                description: "[*Required*]"
+              date:
+                type: "number"
+                example: 1600509466
+                description: "Timestamp (ms)"
       responses:
         "200":
           description: "Successful operation"
@@ -290,30 +290,30 @@ paths:
   /substitute/message:
     get:
       tags:
-      - "substitute"
+        - "substitute"
       summary: "Get all substituteMessages"
       description: "Only returns of current day and substitutes in the future"
       operationId: "getSubstitutesMessages"
       consumes:
-      - "application/json"
+        - "application/json"
       produces:
-      - "application/json"
+        - "application/json"
       parameters:
-      - in: "header"
-        type: "string"
-        name: "ServiceToken"
-        description: "To identify friendly requests"
-        required: true
-      - in: "header"
-        type: "string"
-        name: "Hash"
-        description: "If you provide a hash you got from your last response the server checks if the information has changed"
-        required: false
-      - in: "query"
-        type: "number"
-        name: "Date"
-        description: "Timestamp (ms)"
-        required: false
+        - in: "header"
+          type: "string"
+          name: "ServiceToken"
+          description: "To identify friendly requests"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          required: false
+        - in: "query"
+          type: "number"
+          name: "Date"
+          description: "Timestamp (ms)"
+          required: false
       responses:
         "200":
           description: "OK - Successful operation"
@@ -350,39 +350,34 @@ paths:
   /article:
     get:
       tags:
-      - "article"
+        - "article"
       summary: "Get published articles of homepage"
       operationId: "getArticles"
       consumes:
-      - "application/json"
+        - "application/json"
       produces:
-      - "application/json"
+        - "application/json"
       parameters:
-      - in: "header"
-        type: "string"
-        name: "ServiceToken"
-        description: "To identify friendly requests"
-        required: true
-      - in: "header"
-        type: "string"
-        name: "Hash"
-        description: "If you provide a hash you got from your last response the server checks if the information has changed"
-        required: false
-      - in: "query"
-        type: "number"
-        name: "date"
-        description: "All articles after timestamp (ms) will be listed (min: 0, default: 0, so all articles will be listed)"
-        required: false
-      - in: "query"
-        type: "number"
-        name: "page"
-        description: "Specify page (min: 1, default: 1)"
-        required: false
-      - in: "query"
-        type: "number"
-        name: "size"
-        description: "Specify articles per page (min: 1, max: 20, default: 10)"
-        required: false
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          required: false
+        - in: "query"
+          type: "number"
+          name: "date"
+          description: "All articles after timestamp (ms) will be listed (min: 0, default: 0, so all articles will be listed)"
+          required: false
+        - in: "query"
+          type: "number"
+          name: "page"
+          description: "Specify page (min: 1, default: 1)"
+          required: false
+        - in: "query"
+          type: "number"
+          name: "size"
+          description: "Specify articles per page (min: 1, max: 20, default: 10)"
+          required: false
       responses:
         "200":
           description: "OK - Successful operation"
@@ -392,8 +387,6 @@ paths:
             Hash:
               type: "string"
               description: "Hash of response body - send in header of another request to see if information has changend"
-        "401":
-          description: "Unauthorized - ServiceToken is wrong"
         "304":
           description: "Not Modified - Information hasn't changend (based on sent hash)"
           headers:
@@ -419,24 +412,19 @@ paths:
   /event:
     get:
       tags:
-      - "event"
+        - "event"
       summary: "Get current events"
       operationId: "getEvents"
       consumes:
-      - "application/json"
+        - "application/json"
       produces:
-      - "application/json"
+        - "application/json"
       parameters:
-      - in: "header"
-        type: "string"
-        name: "ServiceToken"
-        description: "To identify friendly requests"
-        required: true
-      - in: "header"
-        type: "string"
-        name: "Hash"
-        description: "If you provide a hash you got from your last response the server checks if the information has changed"
-        required: false
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          required: false
       responses:
         "200":
           description: "OK - Successful operation"
@@ -446,8 +434,6 @@ paths:
             Hash:
               type: "string"
               description: "Hash of response body - send in header of another request to see if information has changend"
-        "401":
-          description: "Unauthorized - ServiceToken is wrong"
         "304":
           description: "Not Modified - Information hasn't changend (based on sent hash)"
           headers:
@@ -465,24 +451,19 @@ paths:
   /info/classes:
     get:
       tags:
-      - "info"
+        - "info"
       summary: "Get current classes"
       operationId: "getClasses"
       consumes:
-      - "application/json"
+        - "application/json"
       produces:
-      - "application/json"
+        - "application/json"
       parameters:
-      - in: "header"
-        type: "string"
-        name: "ServiceToken"
-        description: "To identify friendly requests"
-        required: true
-      - in: "header"
-        type: "string"
-        name: "Hash"
-        description: "If you provide a hash you got from your last response the server checks if the information has changed"
-        required: false
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          required: false
       responses:
         "200":
           description: "Successful operation"
@@ -492,8 +473,145 @@ paths:
             Hash:
               type: "string"
               description: "Hash of response body - send in header of another request to see if information has changend"
-        "401":
-          description: "Unauthorized - ServiceToken is wrong"
+        "304":
+          description: "Not Modified - Information hasn't changend (based on sent hash)"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "404":
+          description: "Not Found - The resources you requested wasn't found"
+          schema:
+            $ref: "#/definitions/Error404"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+  /info/teacher:
+    get:
+      tags:
+        - "info"
+      summary: "Get all teachers"
+      operationId: "getTeachers"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          required: false
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            type: "object"
+            properties:
+              teachers:
+                type: "array"
+                items:
+                  $ref: "#/definitions/Teacher"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "304":
+          description: "Not Modified - Information hasn't changend (based on sent hash)"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "404":
+          description: "Not Found - The resources you requested wasn't found"
+          schema:
+            $ref: "#/definitions/Error404"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+  /info/teacher/{Abbreviation}:
+    get:
+      tags:
+        - "info"
+      summary: "Get all teachers"
+      operationId: "getTeacher"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "Abbreviation"
+          type: "string"
+          description: "Abbreviation of teacher to identify"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          required: false
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Teacher"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "304":
+          description: "Not Modified - Information hasn't changend (based on sent hash)"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+        "404":
+          description: "Not Found - The resources you requested wasn't found"
+          schema:
+            $ref: "#/definitions/Error404"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
+  /info/job/{Job}:
+    get:
+      tags:
+        - "info"
+      summary: "Resolve jobs of teacher"
+      operationId: "getJob"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "Job"
+          type: "number"
+          description: "Job given by teacher info resolve names of jobs"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          required: false
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            type: "object"
+            properties:
+              jobs:
+                type: "array"
+                items:
+                  type: "string"
+                  example: "Deutsch"
+                  description: "Full names of jobs"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body - send in header of another request to see if information has changend"
         "304":
           description: "Not Modified - Information hasn't changend (based on sent hash)"
           headers:
@@ -638,6 +756,33 @@ definitions:
         items:
           type: "string"
           example: "5a"
+  Teacher:
+    type: "object"
+    properties:
+      abbreviation:
+        type: "string"
+        example: "AHE"
+        description: "Abbreviation of the teacher in reference to substitutes"
+      firstname:
+        type: "string"
+        example: "Christine"
+        description: "Firstname of the teacher"
+      surname:
+        type: "string"
+        example: "von der Ahé"
+        description: "Surname of the teacher"
+      gender:
+        type: "string"
+        example: "female"
+        description: "female or male"
+      mentionedPhD:
+        type: "boolean"
+        example: false
+        description: "True if a PhD is mentioned"
+      job:
+        type: "number"
+        example: 2560
+        description: "Number which represents jobs. For more info view /info/job/{job}"
   Error404:
     type: "object"
     properties:
