@@ -1,5 +1,5 @@
 # Engelsburg-API
-API of the Engelsburg-Gymnasium-Kassel
+Unofficial API of the Engelsburg-Gymnasium-Kassel.
 
 # Environment
 This project needs several environment-variables:
@@ -13,31 +13,13 @@ This project needs several environment-variables:
 | DATABASE_USERNAME   | Username to login into database        |
 | DATABASE_PASSWORD   | Password to login into database        |
 | SERVICE_TOKEN       | Service-Token to secure access         |
-| DATA_FOLDER         | Relative or absolute path to datafiles |
 
 # Endpoint Documentation
 
-Go to [Swagger.io](https://editor.swagger.io/) and import [endpoints.yaml](.docs/endpoints.yaml)
-
-# Roadmap
-
-## v1
-
-- [x] Substitutes
-- [x] SubstituteMessages
-- [x] Hashes to see if information was updated
-- [x] ServiceToken for selective access
-
-## v1.1
-
-- [x] InformationEndpoint
-  - [x] current classes
-  - [ ] ~~teachers~~
-
-## v2
-
-- [x] Articles on homepage endpoint
-- [x] Events endpoint
+We use Swagger to document our endpoints. 
+You can visit [Swagger.io](https://editor.swagger.io/) and import [endpoints.yaml](.docs/endpoints.yaml) on any branch, 
+but you can also click [here](https://editor.swagger.io/?url=https://raw.githubusercontent.com/engelsburg/engelsburg-api/master/.docs/endpoints.yaml)
+to view the endpoint documentation of the current version.
 
 # License
-Copyright 2020 Paul Huerkamp
+Copyright 2020-2021 Paul Huerkamp
