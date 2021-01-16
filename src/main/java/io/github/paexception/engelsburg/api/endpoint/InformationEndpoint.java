@@ -16,11 +16,17 @@ public class InformationEndpoint {
 		return this.informationController.getCurrentClasses().getHttpResponse();
 	}
 
+	/**
+	 * @see InformationController#getAllTeachers()
+	 */
 	@GetMapping("/info/teacher")
 	public Object getTeachers() {
 		return this.informationController.getAllTeachers().getHttpResponse();
 	}
 
+	/**
+	 * @see InformationController#getTeacher(String)
+	 */
 	@GetMapping("/info/teacher/{abbreviation}")
 	public Object getTeacher(@PathVariable("abbreviation") String abbreviation) {
 		return this.informationController.getTeacher(abbreviation).getHttpResponse();

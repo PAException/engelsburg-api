@@ -57,14 +57,23 @@ public class InformationController {
 		return Result.of(new GetClassesResponseDTO(currentClasses));
 	}
 
-
+	/**
+	 * Get all registered teachers
+	 * @return DTO with all registered teachers
+	 */
 	public Result<GetTeachersResponseDTO> getAllTeachers() {
 		List<TeacherResponseDTO> teacherDTOs = new ArrayList<>();
 		this.teacherRepository.findAll().forEach(teacher -> teacherDTOs.add(teacher.toResponseDTO()));
+
 		if (teacherDTOs.isEmpty()) return Result.of(Error.NOT_FOUND, "info_teacher");
 		else return Result.of(new GetTeachersResponseDTO(teacherDTOs));
 	}
 
+	/**
+	 * Get a teacher by its abbreviation
+	 * @param abbreviation to identify teacher
+	 * @return DTO with information about the teacher
+	 */
 	public Result<TeacherResponseDTO> getTeacher(String abbreviation) {
 		Optional<TeacherModel> optionalTeacher = this.teacherRepository.findByAbbreviation(abbreviation);
 
