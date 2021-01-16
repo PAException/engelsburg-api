@@ -1,11 +1,9 @@
 package io.github.paexception.engelsburg.api.controller;
 
 import io.github.paexception.engelsburg.api.EngelsburgAPI;
-import io.github.paexception.engelsburg.api.database.model.Job;
 import io.github.paexception.engelsburg.api.database.model.TeacherModel;
 import io.github.paexception.engelsburg.api.database.repository.TeacherRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetClassesResponseDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.response.JobsResponseDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.TeacherResponseDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetTeachersResponseDTO;
 import io.github.paexception.engelsburg.api.util.Error;
@@ -73,15 +71,6 @@ public class InformationController {
 
 		return optionalTeacher.map(teacherModel -> Result.of(teacherModel.toResponseDTO()))
 				.orElseGet(() -> Result.of(Error.NOT_FOUND, "info_teacher"));
-	}
-
-	public Result<JobsResponseDTO> resolveJobs(long job) {
-		List<String> names = new ArrayList<>();
-		Job.getJobs(job).forEach(currJob -> names.add(currJob.toString()));
-		if (names.isEmpty()) return Result.of(Error.NOT_FOUND, "info_job");
-		else Collections.sort(names);
-
-		return Result.of(new JobsResponseDTO(names));
 	}
 
 	/**

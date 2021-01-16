@@ -575,57 +575,6 @@ paths:
             Hash:
               type: "string"
               description: "Hash of response body - send in header of another request to see if information has changend"
-  /info/job/{Job}:
-    get:
-      tags:
-        - "info"
-      summary: "Resolve jobs of teacher"
-      operationId: "getJob"
-      consumes:
-        - "application/json"
-      produces:
-        - "application/json"
-      parameters:
-        - in: "path"
-          name: "Job"
-          type: "number"
-          description: "Job given by teacher info resolve names of jobs"
-          required: true
-        - in: "header"
-          type: "string"
-          name: "Hash"
-          description: "If you provide a hash you got from your last response the server checks if the information has changed"
-          required: false
-      responses:
-        "200":
-          description: "Successful operation"
-          schema:
-            type: "object"
-            properties:
-              jobs:
-                type: "array"
-                items:
-                  type: "string"
-                  example: "Deutsch"
-                  description: "Full names of jobs"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "304":
-          description: "Not Modified - Information hasn't changend (based on sent hash)"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "404":
-          description: "Not Found - The resources you requested wasn't found"
-          schema:
-            $ref: "#/definitions/Error404"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
 definitions:
   Substitute:
     type: "object"
@@ -779,10 +728,11 @@ definitions:
         type: "boolean"
         example: false
         description: "True if a PhD is mentioned"
-      job:
-        type: "number"
-        example: 2560
-        description: "Number which represents jobs. For more info view /info/job/{job}"
+      jobs:
+        type: "array"
+        items:
+          type: "string"
+          example: "Biologie"
   Error404:
     type: "object"
     properties:

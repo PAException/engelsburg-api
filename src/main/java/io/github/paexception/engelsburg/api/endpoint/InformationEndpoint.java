@@ -26,9 +26,4 @@ public class InformationEndpoint {
 		return this.informationController.getTeacher(abbreviation).getHttpResponse();
 	}
 
-	@GetMapping("/info/job/{job}")
-	public Object resolveJobs(@PathVariable("job") long job) {
-		return this.informationController.resolveJobs(job).getHttpResponse();
-	}
-
 }

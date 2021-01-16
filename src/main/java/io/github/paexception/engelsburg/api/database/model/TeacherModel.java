@@ -10,6 +10,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -33,13 +35,16 @@ public class TeacherModel {
 	private long job;
 
 	public TeacherResponseDTO toResponseDTO() {
+		List<String> jobs = new ArrayList<>();
+		Job.getJobs(this.job).forEach(currJob -> jobs.add(currJob.toString()));
+
 		return new TeacherResponseDTO(
 				this.abbreviation,
 				this.firstname,
 				this.surname,
 				this.gender,
 				this.mentionedPhD,
-				this.job
+				jobs
 		);
 	}
 
