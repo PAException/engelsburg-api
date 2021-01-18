@@ -5,6 +5,10 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+/**
+ * Error class to return errors on RestControllers in a solid http response,
+ * be it a not found element or an internal server error
+ */
 @Getter
 public class Error extends ResponseEntity<Object> {
 

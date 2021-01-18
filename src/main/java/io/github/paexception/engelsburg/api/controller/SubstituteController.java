@@ -19,11 +19,18 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controller for substitutes
+ */
 @Component
 public class SubstituteController {
 
     @Autowired private SubstituteRepository substituteRepository;
 
+    /**
+     * Create a substitute
+     * @param dto with information
+     */
     public void createSubstitute(CreateSubstituteRequestDTO dto) {
         SubstituteModel substitute = new SubstituteModel(
                 -1,
@@ -42,6 +49,11 @@ public class SubstituteController {
        this.substituteRepository.save(substitute);
     }
 
+    /**
+     * Get all substitutes by Teacher
+     * @param dto with information
+     * @return all found substitutes
+     */
     public Result<GetSubstitutesResponseDTO> getSubstitutesByTeacher(GetSubstitutesByTeacherRequestDTO dto) {
         if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(dto.getDate()))
                 || System.currentTimeMillis()<dto.getDate()) && dto.getDate()!=0)
@@ -84,6 +96,11 @@ public class SubstituteController {
         return this.returnSubstitutes(substitutes);
     }
 
+    /**
+     * Get all substitutes by the SubstituteTeacher
+     * @param dto with information
+     * @return all found substitutes
+     */
     public Result<GetSubstitutesResponseDTO> getSubstitutesBySubstituteTeacher(GetSubstitutesBySubstituteTeacherRequestDTO dto) {
         if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(dto.getDate()))
                 || System.currentTimeMillis()<dto.getDate()) && dto.getDate()!=0)
@@ -100,6 +117,11 @@ public class SubstituteController {
         return this.returnSubstitutes(substitutes);
     }
 
+    /**
+     * Get all substitutes by a class name
+     * @param dto with information
+     * @return all found substitutes
+     */
     public Result<GetSubstitutesResponseDTO> getSubstitutesByClassName(GetSubstitutesByClassNameRequestDTO dto) {
         if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(dto.getDate()))
                 || System.currentTimeMillis()<dto.getDate()) && dto.getDate()!=0)
@@ -116,6 +138,11 @@ public class SubstituteController {
         return this.returnSubstitutes(substitutes);
     }
 
+    /**
+     * Get all substitutes since date
+     * @param date can't be in the past
+     * @return all found substitutes
+     */
     public Result<GetSubstitutesResponseDTO> getAllSubstitutes(long date) {
         if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date))
                 || System.currentTimeMillis()<date) && date!=0)
@@ -130,11 +157,19 @@ public class SubstituteController {
         return this.returnSubstitutes(substitutes);
     }
 
+    /**
+     * Delete all substitutes of date
+     */
     @Transactional
     public void clearSubstitutes(Date date) {
         this.substituteRepository.deleteAllByDate(date);
     }
 
+    /**
+     * Function to convert a list of {@link SubstituteModel} into a list of {@link GetSubstitutesResponseDTO}
+     * @param substitutes list to convert
+     * @return converted list of {@link GetSubstitutesResponseDTO}
+     */
     private Result<GetSubstitutesResponseDTO> returnSubstitutes(List<SubstituteModel> substitutes) {
         List<SubstituteResponseDTO> responseDTOs = new ArrayList<>();
         substitutes.forEach(substituteModel -> responseDTOs.add(substituteModel.toResponseDTO()));

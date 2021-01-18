@@ -16,6 +16,10 @@ public class EngelsburgAPI {
     @Getter private static final String serviceToken = System.getProperty("service.token");
     @Getter private static final Logger LOGGER = LoggerFactory.getLogger(EngelsburgAPI.class.getSimpleName());
 
+    /**
+     * Start SpringApplication
+     * @param args given by command line
+     */
     public static void main(String[] args) {
         SpringApplication.run(EngelsburgAPI.class, args);
     }

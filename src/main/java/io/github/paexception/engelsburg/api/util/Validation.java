@@ -3,6 +3,9 @@ package io.github.paexception.engelsburg.api.util;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * Util class for validation functions
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Validation {
 

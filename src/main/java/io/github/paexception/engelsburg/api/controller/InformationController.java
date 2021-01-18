@@ -41,16 +41,26 @@ import static io.github.paexception.engelsburg.api.database.model.Job.SPORT;
 import static io.github.paexception.engelsburg.api.database.model.Job.TASTENSCHREIBEN;
 import static io.github.paexception.engelsburg.api.database.model.Job.getJobId;
 
+/**
+ * Controller for all other information
+ */
 @Component
 public class InformationController {
 
 	@Autowired private TeacherRepository teacherRepository;
 	private static String[] currentClasses;
 
+	/**
+	 * Set current classes
+	 * @param classes The current classes
+	 */
 	public void setCurrentClasses(String[] classes) {
 		currentClasses = classes;
 	}
 
+	/**
+	 * @return all current classes
+	 */
 	public Result<GetClassesResponseDTO> getCurrentClasses() {
 		if (currentClasses.length==0) return Result.of(Error.NOT_FOUND, "info_classes");
 

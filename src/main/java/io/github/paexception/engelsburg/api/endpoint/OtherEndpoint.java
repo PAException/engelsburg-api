@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Controller for other endpoints like "*" for fallback
+ * RestController for other mappings like "*" for fallbacks
  */
 @RestController
 public class OtherEndpoint {

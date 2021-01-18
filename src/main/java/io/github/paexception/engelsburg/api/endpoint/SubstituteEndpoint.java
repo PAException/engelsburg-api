@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
+/**
+ * RestController for substitute actions
+ */
 @ServiceToken
 @Validated
 @RestController
@@ -22,9 +25,9 @@ public class SubstituteEndpoint {
     @Autowired private SubstituteController substituteController;
 
     /**
-     * Get substitutes of a specific date
-     * @param date to get substitutes
-     * @return all substitutes of the specific date
+     * Get all substitutes since specific date
+     * @param date can't be in the past
+     * @return found substitutes
      */
     @GetMapping("/substitute")
     public Object getAllSubstitutes(@RequestParam(required = false, defaultValue = "0") @Min(0) long date) {
@@ -35,18 +38,28 @@ public class SubstituteEndpoint {
      * <b>Just returns all substitutes of the day and future</b>
      *
      * @param dto information and filters to get substitutes
-     * @return adapted substitutes
+     * @return found substitutes
      */
     @GetMapping("/substitute/className")
     public Object getSubstitutesByClassName(@RequestBody @Valid GetSubstitutesByClassNameRequestDTO dto) {
         return this.substituteController.getSubstitutesByClassName(dto).getHttpResponse();
     }
 
+    /**
+     * Get all substitutes based on the teacher
+     * @param dto filter for substitutes
+     * @return found substitutes
+     */
     @GetMapping("/substitute/teacher")
     public Object getSubstitutesByTeacher(@RequestBody @Valid GetSubstitutesByTeacherRequestDTO dto) {
         return this.substituteController.getSubstitutesByTeacher(dto).getHttpResponse();
     }
 
+    /**
+     * Get all substitutes based on the substitute teacher
+     * @param dto filter for substitutes
+     * @return found substitutes
+     */
     @GetMapping("/substitute/substituteTeacher")
     public Object getSubstitutesBySubstituteTeacher(@RequestBody @Valid GetSubstitutesBySubstituteTeacherRequestDTO dto) {
         return this.substituteController.getSubstitutesBySubstituteTeacher(dto).getHttpResponse();

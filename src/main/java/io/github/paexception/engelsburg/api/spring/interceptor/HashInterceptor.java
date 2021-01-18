@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 import java.util.List;
 
+/**
+ * Interceptor to compare send hash and hash of response to check if content has changed
+ */
 @ControllerAdvice
 @NoArgsConstructor
 public class HashInterceptor implements ResponseBodyAdvice<Object> {

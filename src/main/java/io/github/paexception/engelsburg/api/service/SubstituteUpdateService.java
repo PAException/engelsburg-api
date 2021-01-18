@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.sql.Date;
 import java.text.ParseException;
@@ -24,7 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Component
+/**
+ * Service to update substitutes
+ */
+@Service
 public class SubstituteUpdateService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SubstituteUpdateService.class.getSimpleName());
@@ -33,21 +36,24 @@ public class SubstituteUpdateService {
     @Autowired private InformationController informationController;
     private Date currentDate;
 
+    /**
+     * Scheduled function to update substitutes every 5 minutes
+     */
     @Scheduled(fixedRate = 5*60*1000)
     public void updateSubstitutes() {
         LOGGER.debug("Starting fetching substitutes");
         try {
             Document navbar = Jsoup.connect("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/frames/navbar.htm").get();
 
-            Map<String, Integer> weeks = new HashMap<>();
-            navbar.getElementsByAttributeValue("name", "week")
+            Map<String, Integer> weeks = new HashMap<>();//Week year
+            navbar.getElementsByAttributeValue("name", "week")//Get weeks necessary to get substitutes
                     .stream().filter(element -> element.hasClass("selectbox"))
                     .collect(Collectors.toList()).forEach(element -> element.children()
                     .forEach(element2 -> weeks.put(
                             element2.attr("value"),
                             Integer.parseInt(element2.text().substring(element2.text().lastIndexOf('.')+1)))));
 
-            this.informationController.setCurrentClasses(
+            this.informationController.setCurrentClasses(//Update current classes
                     navbar.html().substring(navbar.html().indexOf("var classes = ["), navbar.html().indexOf("];"))
                         .trim()
                         .replace("var classes = [", "")
@@ -56,7 +62,7 @@ public class SubstituteUpdateService {
                         .split(",")
             );
 
-            for (String week : weeks.keySet()) {
+            for (String week : weeks.keySet()) {//Iterate weeks
                 Element substitute = Jsoup.connect("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/" + week + "/w/w00000.htm").get().getElementById("vertretung");
                 this.currentDate = this.parseDate(substitute.child(2).text().substring(0, substitute.child(2).text().lastIndexOf('.')), weeks.get(week));
 
@@ -106,6 +112,11 @@ public class SubstituteUpdateService {
         }
     }
 
+    /**
+     * Function to create a substitute dto out of an html row
+     * @param row with substitute information
+     * @return substitute dto
+     */
     private CreateSubstituteRequestDTO createSubstituteDTO(Element row) {
         CreateSubstituteRequestDTO dto = new CreateSubstituteRequestDTO();
         dto.setDate(this.currentDate);
@@ -122,6 +133,12 @@ public class SubstituteUpdateService {
         return dto;
     }
 
+    /**
+     * Private function to call if a row has no information except the text in the end which is used, to extend the writable
+     * text of substitutes
+     * @param row which is empty except the text in the end
+     * @param substitutes List of dtos to get the last one and append the text in the given row
+     */
     private void appendTextOnLastSubstitute(Element row, List<CreateSubstituteRequestDTO> substitutes) {
         int indexOfLastSubstitute = substitutes.size()-1;
         String textToAppend = row.children().get(row.children().size()-1).text();
@@ -130,6 +147,13 @@ public class SubstituteUpdateService {
         substitutes.set(indexOfLastSubstitute, dto.appendText(textToAppend));
     }
 
+    /**
+     * Private function to parse a String with day and month and a year into a {@link Date}
+     * @param dayAndMonth to parse
+     * @param year to parse
+     * @return parsed Date
+     * @throws ParseException if something goes wrong while parsing the date
+     */
     private Date parseDate(String dayAndMonth, int year) throws ParseException {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
