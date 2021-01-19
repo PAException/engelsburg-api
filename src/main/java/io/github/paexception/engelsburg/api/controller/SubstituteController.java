@@ -29,6 +29,8 @@ public class SubstituteController {
 
     /**
      * Create a substitute
+     * Only {@link io.github.paexception.engelsburg.api.service.SubstituteUpdateService} is supposed to call
+     * this function!
      * @param dto with information
      */
     public void createSubstitute(CreateSubstituteRequestDTO dto) {
@@ -159,6 +161,8 @@ public class SubstituteController {
 
     /**
      * Delete all substitutes of date
+     * Only {@link io.github.paexception.engelsburg.api.service.SubstituteUpdateService} is supposed to call
+     * this function!
      */
     @Transactional
     public void clearSubstitutes(Date date) {

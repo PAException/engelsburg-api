@@ -61,7 +61,8 @@ public class ArticleController {
 
 	/**
 	 * Delete all articles
-	 * @see io.github.paexception.engelsburg.api.service.ArticleUpdateService is only supposed to call this function
+	 * Only {@link io.github.paexception.engelsburg.api.service.ArticleUpdateService} is supposed to call
+	 * this function!
 	 */
 	@Transactional
 	public void clearAllArticles() {

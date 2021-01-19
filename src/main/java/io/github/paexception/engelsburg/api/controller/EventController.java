@@ -43,7 +43,8 @@ public class EventController {
 
 	/**
 	 * Delete all events
-	 * @see io.github.paexception.engelsburg.api.service.EventUpdateService is only supposed to call this function
+	 * Only {@link io.github.paexception.engelsburg.api.service.EventUpdateService} is supposed to call
+	 * this function!
 	 */
 	@Transactional
 	public void clearAllEvents() {

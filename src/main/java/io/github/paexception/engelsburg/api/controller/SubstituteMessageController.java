@@ -25,6 +25,8 @@ public class SubstituteMessageController {
 
 	/**
 	 * Create a substitute message
+	 * Only {@link io.github.paexception.engelsburg.api.service.SubstituteUpdateService} is supposed to call
+	 * this function!
 	 * @param dto with information
 	 */
 	public void createSubstituteMessage(CreateSubstituteMessageRequestDTO dto) {
@@ -44,6 +46,8 @@ public class SubstituteMessageController {
 
 	/**
 	 * Clear substitute messages of specific day
+	 * Only {@link io.github.paexception.engelsburg.api.service.SubstituteUpdateService} is supposed to call
+	 * this function!
 	 * @param date day to clear substitute messages
 	 */
 	@Transactional

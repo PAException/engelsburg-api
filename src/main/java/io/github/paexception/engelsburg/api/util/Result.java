@@ -10,6 +10,11 @@ import org.springframework.http.ResponseEntity;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Class to return on endpoints
+ * It can handle any type as well as errors and format them properly as a http response
+ * @param <T>
+ */
 @Getter
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
