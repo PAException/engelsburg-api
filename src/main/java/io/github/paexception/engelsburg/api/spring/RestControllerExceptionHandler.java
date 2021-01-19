@@ -8,6 +8,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import io.github.paexception.engelsburg.api.util.Error;
 
+/**
+ * Handles thrown exceptions in RestControllers and represent them in a solid http response
+ * Also a way to catch exceptions which are supposed to be thrown or can be ignored
+ */
 @RestControllerAdvice
 public class RestControllerExceptionHandler extends ResponseEntityExceptionHandler {
 

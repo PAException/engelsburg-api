@@ -13,15 +13,26 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controller for events
+ */
 @Component
 public class EventController {
 
 	@Autowired private EventRepository eventRepository;
 
+	/**
+	 * Create a new event
+	 * @param dto which has article information
+	 */
 	public void createEvent(CreateEventRequestDTO dto) {
 		this.eventRepository.save(new EventModel(-1, dto.getDate(), dto.getTitle()));
 	}
 
+	/**
+	 * Get all events
+	 * @return found events in DTO
+	 */
 	public Result<GetEventsResponseDTO> getAllEvents() {
 		List<EventResponseDTO> responseDTOs = new ArrayList<>();
 		this.eventRepository.findAll().forEach(event -> responseDTOs.add(event.toResponseDTO()));
@@ -30,6 +41,11 @@ public class EventController {
 		return Result.of(new GetEventsResponseDTO(responseDTOs));
 	}
 
+	/**
+	 * Delete all events
+	 * Only {@link io.github.paexception.engelsburg.api.service.EventUpdateService} is supposed to call
+	 * this function!
+	 */
 	@Transactional
 	public void clearAllEvents() {
 		this.eventRepository.deleteAll();

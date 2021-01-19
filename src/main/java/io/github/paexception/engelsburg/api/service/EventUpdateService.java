@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.sql.Date;
 import java.text.ParseException;
@@ -17,12 +18,18 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+/**
+ * Service to update articles
+ */
+@Service
 public class EventUpdateService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(EventUpdateService.class.getSimpleName());
 	@Autowired private EventController eventController;
 
+	/**
+	 * Scheduled function to update events every hour
+	 */
 	@Scheduled(fixedRate = 60*60*1000)
 	public void updateEvents() {
 		LOGGER.debug("Starting fetching substitutes");
@@ -30,8 +37,8 @@ public class EventUpdateService {
 			Document doc = Jsoup.connect("https://engelsburg.smmp.de/organisation/termine/").get();
 
 			List<CreateEventRequestDTO> dtos = new ArrayList<>();
-			Element list = doc.select("#genesis-content > article > div.entry-content > ul.navlist").first();
-			list.getElementsByTag("li").forEach(element -> {
+			Element list = doc.select("#genesis-content > article > div.entry-content > ul.navlist").first();//Select event container
+			list.getElementsByTag("li").forEach(element -> {//iterate through events
 				dtos.add(new CreateEventRequestDTO(this.parseDate(element.text()), element.getElementsByTag("a").first().text()));
 			});
 
@@ -43,6 +50,11 @@ public class EventUpdateService {
 		}
 	}
 
+	/**
+	 * Private void to parse dates on the engelsburg website properly
+	 * @param toParse String to parse
+	 * @return parsed Date
+	 */
 	private Date parseDate(String toParse) {
 		try {
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");

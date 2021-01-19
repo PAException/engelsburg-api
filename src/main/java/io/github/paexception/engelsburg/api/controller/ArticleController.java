@@ -14,11 +14,18 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controller for articles
+ */
 @Component
 public class ArticleController {
 
 	@Autowired private ArticleRepository articleRepository;
 
+	/**
+	 * Create a new Article
+	 * @param dto which has article information
+	 */
 	public void createArticle(CreateArticleRequestDTO dto) {
 		this.articleRepository.save(new ArticleModel(
 				-1,
@@ -30,6 +37,13 @@ public class ArticleController {
 		));
 	}
 
+	/**
+	 * Get articles after date with pagination
+	 * @param date since when articles should be listed
+	 * @param page of articles
+	 * @param size of page
+	 * @return found articles
+	 */
 	public Result<GetArticlesResponseDTO> getArticlesAfter(long date, int page, int size) {
 		//TODO: replace with hibernate validator in endpoint
 		if (date < 0) return Result.of(Error.INVALID_PARAM, "date must be 0 or greater");
@@ -45,6 +59,11 @@ public class ArticleController {
 		return Result.of(new GetArticlesResponseDTO(responseDTOs));
 	}
 
+	/**
+	 * Delete all articles
+	 * Only {@link io.github.paexception.engelsburg.api.service.ArticleUpdateService} is supposed to call
+	 * this function!
+	 */
 	@Transactional
 	public void clearAllArticles() {
 		this.articleRepository.deleteAll();

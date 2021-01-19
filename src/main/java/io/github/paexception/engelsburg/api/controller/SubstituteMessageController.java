@@ -15,11 +15,20 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controller for substitute messages
+ */
 @Component
 public class SubstituteMessageController {
 
 	@Autowired private SubstituteMessageRepository substituteMessageRepository;
 
+	/**
+	 * Create a substitute message
+	 * Only {@link io.github.paexception.engelsburg.api.service.SubstituteUpdateService} is supposed to call
+	 * this function!
+	 * @param dto with information
+	 */
 	public void createSubstituteMessage(CreateSubstituteMessageRequestDTO dto) {
 		SubstituteMessageModel substituteMessage = new SubstituteMessageModel(
 				-1,
@@ -35,11 +44,22 @@ public class SubstituteMessageController {
 		this.substituteMessageRepository.save(substituteMessage);
 	}
 
+	/**
+	 * Clear substitute messages of specific day
+	 * Only {@link io.github.paexception.engelsburg.api.service.SubstituteUpdateService} is supposed to call
+	 * this function!
+	 * @param date day to clear substitute messages
+	 */
 	@Transactional
 	public void clearSubstituteMessages(Date date) {
 		this.substituteMessageRepository.deleteByDate(date);
 	}
 
+	/**
+	 * Return all substitute messages since
+	 * @param date can't be in the past
+	 * @return all found substitute messages
+	 */
 	public Result<GetSubstituteMessagesResponseDTO> getAllSubstituteMessages(long date) {
 		if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date))
 				|| System.currentTimeMillis()<date) && date!=0)

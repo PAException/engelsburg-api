@@ -9,6 +9,8 @@ import io.github.paexception.engelsburg.api.endpoint.dto.response.GetTeachersRes
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
@@ -41,16 +43,28 @@ import static io.github.paexception.engelsburg.api.database.model.Job.SPORT;
 import static io.github.paexception.engelsburg.api.database.model.Job.TASTENSCHREIBEN;
 import static io.github.paexception.engelsburg.api.database.model.Job.getJobId;
 
+/**
+ * Controller for all other information
+ */
 @Component
 public class InformationController {
 
 	@Autowired private TeacherRepository teacherRepository;
 	private static String[] currentClasses;
 
+	/**
+	 * Set current classes
+	 * Only {@link io.github.paexception.engelsburg.api.service.SubstituteUpdateService} is supposed to call
+	 * this function!
+	 * @param classes The current classes
+	 */
 	public void setCurrentClasses(String[] classes) {
 		currentClasses = classes;
 	}
 
+	/**
+	 * @return all current classes
+	 */
 	public Result<GetClassesResponseDTO> getCurrentClasses() {
 		if (currentClasses.length==0) return Result.of(Error.NOT_FOUND, "info_classes");
 
@@ -85,7 +99,7 @@ public class InformationController {
 	 * Add teachers manually on startup
 	 * <a>https:engelsburg.smmp.de/unser-gymnasium/lehrer/</a>
 	 */
-	@PostConstruct
+	@EventListener(ApplicationStartedEvent.class)
 	public void setTeacher() {
 		this.teacherRepository.deleteAll();
 		List<TeacherModel> teachers = new ArrayList<>();

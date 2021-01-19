@@ -6,11 +6,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * RestController for article actions
+ */
 @RestController
 public class ArticleEndpoint {
 
 	@Autowired private ArticleController articleController;
 
+	/**
+	 * Return article by specific params
+	 * @see ArticleController#getArticlesAfter(long, int, int)
+	 */
 	@GetMapping("/article")
 	private Object getArticles(@RequestParam(required = false, defaultValue = "0") long date,
 							   @RequestParam(required = false, defaultValue = "1") int page,

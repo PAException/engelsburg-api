@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import javax.validation.constraints.Min;
 
+/**
+ * RestController for substitute messages actions
+ */
 @ServiceToken
 @Validated
 @RestController
@@ -16,6 +19,11 @@ public class SubstituteMessageEndpoint {
 
 	@Autowired private SubstituteMessageController substituteMessageController;
 
+	/**
+	 * Get all substitute messages since date
+	 * @param date can't be in the past
+	 * @return all found substitute messages
+	 */
 	@GetMapping("/substitute/message")
 	public Object getAllSubstituteMessages(@RequestParam(required = false, defaultValue = "0") @Min(0) long date) {
 		return this.substituteMessageController.getAllSubstituteMessages(date).getHttpResponse();

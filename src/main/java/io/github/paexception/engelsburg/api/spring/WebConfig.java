@@ -15,6 +15,9 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
+/**
+ * Class to configure Interceptors, Mappings, etc.
+ */
 @Configuration
 @EnableWebMvc
 public class WebConfig implements WebMvcConfigurer {

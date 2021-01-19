@@ -10,6 +10,11 @@ import org.springframework.http.ResponseEntity;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Class to return on endpoints
+ * It can handle any type as well as errors and format them properly as a http response
+ * @param <T>
+ */
 @Getter
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -20,6 +25,10 @@ public class Result<T> {
     private Error error;
     private String extra;
 
+    /**
+     * Convert Result into a HttpResponse
+     * @return ResponseEntity for spring
+     */
     public ResponseEntity<Object> getHttpResponse() {
         Object response = this.isErrorPresent() ? this.getError().copyWithExtra(this.getExtra()).getBody() : this.getResult();
 
@@ -97,6 +106,11 @@ public class Result<T> {
         return instance;
     }
 
+    /**
+     * Hash function for header on response
+     * @param o The object o to hash
+     * @return hash of o
+     */
     public static String hash(Object o) {
         try {
             if (digest == null) digest = MessageDigest.getInstance("SHA-1");
@@ -107,6 +121,11 @@ public class Result<T> {
         return bytesToHex(digest.digest(o.toString().getBytes()));
     }
 
+    /**
+     * Function to convert a bytearray into a hex string
+     * @param hash bytearray to convert to hex string
+     * @return hex string
+     */
     private static String bytesToHex(byte[] hash) {
         StringBuilder hexString = new StringBuilder();
         for (byte b : hash) {

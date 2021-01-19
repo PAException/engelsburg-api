@@ -7,6 +7,10 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Interceptor to check if a function or a class needs a ServiceToken check.
+ * If that is applicable check if the ServiceToken is correct
+ */
 @AllArgsConstructor
 public class ServiceTokenInterceptor extends HandlerInterceptorAdapter {
 

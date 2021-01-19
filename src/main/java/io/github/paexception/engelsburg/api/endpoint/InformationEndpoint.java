@@ -6,11 +6,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * RestController for information actions
+ */
 @RestController
 public class InformationEndpoint {
 
 	@Autowired private InformationController informationController;
 
+	/**
+	 * @return all current classes
+	 */
 	@GetMapping("/info/classes")
 	public Object getCurrentClasses() {
 		return this.informationController.getCurrentClasses().getHttpResponse();
