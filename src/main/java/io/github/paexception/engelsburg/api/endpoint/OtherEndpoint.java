@@ -6,6 +6,9 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * Controller for other endpoints like "*" for fallback
+ */
 @RestController
 public class OtherEndpoint {
 

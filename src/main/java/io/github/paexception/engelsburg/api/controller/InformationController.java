@@ -150,7 +150,7 @@ public class InformationController {
 		teachers.add(new TeacherModel(-1, "MOE", "Mirko", "Moeller", "male", false, getJobId(ENGLISCH, MUSIK)));
 		teachers.add(new TeacherModel(-1, "MOM", "Melanie", "Momberg", "female", false, getJobId(LATEIN, SPORT)));
 		teachers.add(new TeacherModel(-1, "MÜM", "Maike", "Müller", "female", false, getJobId(MATHE, MUSIK)));
-		teachers.add(new TeacherModel(-1, "MLL?", "Winfried", "Müller", "male", false, getJobId(FRANZOESISCH, GESCHICHTE)));
+		teachers.add(new TeacherModel(-1, "MLL", "Winfried", "Müller", "male", false, getJobId(FRANZOESISCH, GESCHICHTE)));
 		teachers.add(new TeacherModel(-1, "MUS", "Cheryl", "Musmann", "female", false, getJobId(ENGLISCH, POWI)));
 		//teachers.add(new TeacherModel(-1, "NIS?", "Annette", "Nießner", "female", false, getJobId(BIOLOGIE, CHEMIE)));
 		teachers.add(new TeacherModel(-1, "NIP?", "Judith", "Nipper", "female", false, getJobId(KATH_RELIGION, KUNST, MATHE)));
