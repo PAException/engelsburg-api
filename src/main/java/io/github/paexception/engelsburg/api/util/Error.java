@@ -24,6 +24,7 @@ public class Error extends ResponseEntity<Object> {
 	public static final Error EXPIRED = new Error(HttpStatus.BAD_REQUEST, I18n.EXPIRED);
 	public static final Error FAILED = new Error(HttpStatus.BAD_REQUEST, I18n.FAILED);
 	public static final Error INVALID = new Error(HttpStatus.BAD_REQUEST, I18n.INVALID);
+	public static final Error NOT_VERIFIED = new Error(HttpStatus.BAD_REQUEST, I18n.NOT_VERIFIED);
 
 	private final int status;
 	private final String messageKey;

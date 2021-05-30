@@ -49,6 +49,7 @@ public class AuthenticationController implements UserDataHandler {
 		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		UserModel user = optionalUser.get();
+		//if (!user.isVerified()) return Result.of(Error.NOT_VERIFIED, NAME_KEY); //TODO
 		if (!user.getPassword().equals(this.hashPassword(dto.getPassword(), user.getSalt())))
 			return Result.of(Error.FORBIDDEN, NAME_KEY);
 
@@ -56,6 +57,9 @@ public class AuthenticationController implements UserDataHandler {
 	}
 
 	public Result<?> signUp(SignUpRequestDTO dto) {
+		if (!dto.getSchoolToken().equals(System.getenv("SCHOOL_TOKEN")))
+			return Result.of(Error.FORBIDDEN, NAME_KEY);
+
 		Optional<UserModel> optionalUser = this.userRepository.findByEmail(dto.getEmail());
 		if (optionalUser.isPresent()) return Result.of(Error.ALREADY_EXISTS, NAME_KEY);
 		byte[] rawSalt = new byte[16];

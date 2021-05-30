@@ -11,13 +11,12 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 public class SignUpRequestDTO {
 
+	@NotBlank
+	private String schoolToken;
 	@Email
 	@NotBlank
 	private String email;
 	@NotBlank
 	private String password;
-	private boolean teacher;
-	private String className;
-	private String teacherAbbreviation;
 
 }

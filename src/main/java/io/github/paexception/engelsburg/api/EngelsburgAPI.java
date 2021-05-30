@@ -18,7 +18,7 @@ public class EngelsburgAPI {
 	@Getter
 	private static final JwtUtil jwtUtil = new JwtUtil("engelsburg-api", Collections.emptyList(), System.getenv("JWT_SECRET"));
 	@Getter
-	private static final String serviceToken = System.getenv("service.token");
+	private static final String serviceToken = System.getenv("SERVICE_TOKEN");
 	@Getter
 	private static final Logger LOGGER = LoggerFactory.getLogger(EngelsburgAPI.class.getSimpleName());
 

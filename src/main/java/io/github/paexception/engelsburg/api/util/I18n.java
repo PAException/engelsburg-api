@@ -18,5 +18,6 @@ public class I18n {
 	public static final String EXPIRED = "EXPIRED";
 	public static final String FAILED = "FAILED";
 	public static final String INVALID = "INVALID";
+	public static final String NOT_VERIFIED = "NOT_VERIFIED";
 
 }
