@@ -12,7 +12,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class InformationEndpoint {
 
-	@Autowired private InformationController informationController;
+	@Autowired
+	private InformationController informationController;
+
+	/**
+	 * @see InformationController#getTeacher(String)
+	 */
+	@GetMapping("/info/teacher/{abbreviation}")
+	public Object getTeacher(@PathVariable("abbreviation") String abbreviation) {
+		return this.informationController.getTeacher(abbreviation).getHttpResponse();
+	}
 
 	/**
 	 * @return all current classes
@@ -28,14 +37,6 @@ public class InformationEndpoint {
 	@GetMapping("/info/teacher")
 	public Object getTeachers() {
 		return this.informationController.getAllTeachers().getHttpResponse();
-	}
-
-	/**
-	 * @see InformationController#getTeacher(String)
-	 */
-	@GetMapping("/info/teacher/{abbreviation}")
-	public Object getTeacher(@PathVariable("abbreviation") String abbreviation) {
-		return this.informationController.getTeacher(abbreviation).getHttpResponse();
 	}
 
 }

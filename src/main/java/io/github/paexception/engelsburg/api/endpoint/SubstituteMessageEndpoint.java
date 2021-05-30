@@ -1,7 +1,6 @@
 package io.github.paexception.engelsburg.api.endpoint;
 
 import io.github.paexception.engelsburg.api.controller.SubstituteMessageController;
-import io.github.paexception.engelsburg.api.spring.interceptor.ServiceToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,15 +11,16 @@ import javax.validation.constraints.Min;
 /**
  * RestController for substitute messages actions
  */
-@ServiceToken
 @Validated
 @RestController
 public class SubstituteMessageEndpoint {
 
-	@Autowired private SubstituteMessageController substituteMessageController;
+	@Autowired
+	private SubstituteMessageController substituteMessageController;
 
 	/**
 	 * Get all substitute messages since date
+	 *
 	 * @param date can't be in the past
 	 * @return all found substitute messages
 	 */

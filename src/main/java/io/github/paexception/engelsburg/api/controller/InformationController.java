@@ -4,15 +4,14 @@ import io.github.paexception.engelsburg.api.EngelsburgAPI;
 import io.github.paexception.engelsburg.api.database.model.TeacherModel;
 import io.github.paexception.engelsburg.api.database.repository.TeacherRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetClassesResponseDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.response.TeacherResponseDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetTeachersResponseDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.response.TeacherResponseDTO;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,18 +29,15 @@ import static io.github.paexception.engelsburg.api.database.model.Job.KUNST;
 import static io.github.paexception.engelsburg.api.database.model.Job.LATEIN;
 import static io.github.paexception.engelsburg.api.database.model.Job.MATHE;
 import static io.github.paexception.engelsburg.api.database.model.Job.MUSIK;
-import static io.github.paexception.engelsburg.api.database.model.Job.OFFICE;
 import static io.github.paexception.engelsburg.api.database.model.Job.PHILOSOPHIE;
 import static io.github.paexception.engelsburg.api.database.model.Job.PHYSIK;
 import static io.github.paexception.engelsburg.api.database.model.Job.POWI;
-import static io.github.paexception.engelsburg.api.database.model.Job.RELIGIONSPAEDAGOGISCHES_PRAKTIKUM_ALS_GEMEINDEASSISTENTIN;
 import static io.github.paexception.engelsburg.api.database.model.Job.RUSSISCH;
-import static io.github.paexception.engelsburg.api.database.model.Job.SCHULSOZIALARBEIT;
 import static io.github.paexception.engelsburg.api.database.model.Job.SOFTWARESCHULUNG;
 import static io.github.paexception.engelsburg.api.database.model.Job.SPANISCH;
 import static io.github.paexception.engelsburg.api.database.model.Job.SPORT;
-import static io.github.paexception.engelsburg.api.database.model.Job.TASTENSCHREIBEN;
 import static io.github.paexception.engelsburg.api.database.model.Job.getJobId;
+import static io.github.paexception.engelsburg.api.util.Constants.Information.NAME_KEY;
 
 /**
  * Controller for all other information
@@ -49,42 +45,13 @@ import static io.github.paexception.engelsburg.api.database.model.Job.getJobId;
 @Component
 public class InformationController {
 
-	@Autowired private TeacherRepository teacherRepository;
 	private static String[] currentClasses;
-
-	/**
-	 * Set current classes
-	 * Only {@link io.github.paexception.engelsburg.api.service.SubstituteUpdateService} is supposed to call
-	 * this function!
-	 * @param classes The current classes
-	 */
-	public void setCurrentClasses(String[] classes) {
-		currentClasses = classes;
-	}
-
-	/**
-	 * @return all current classes
-	 */
-	public Result<GetClassesResponseDTO> getCurrentClasses() {
-		if (currentClasses.length==0) return Result.of(Error.NOT_FOUND, "info_classes");
-
-		return Result.of(new GetClassesResponseDTO(currentClasses));
-	}
-
-	/**
-	 * Get all registered teachers
-	 * @return DTO with all registered teachers
-	 */
-	public Result<GetTeachersResponseDTO> getAllTeachers() {
-		List<TeacherResponseDTO> teacherDTOs = new ArrayList<>();
-		this.teacherRepository.findAll().forEach(teacher -> teacherDTOs.add(teacher.toResponseDTO()));
-
-		if (teacherDTOs.isEmpty()) return Result.of(Error.NOT_FOUND, "info_teacher");
-		else return Result.of(new GetTeachersResponseDTO(teacherDTOs));
-	}
+	@Autowired
+	private TeacherRepository teacherRepository;
 
 	/**
 	 * Get a teacher by its abbreviation
+	 *
 	 * @param abbreviation to identify teacher
 	 * @return DTO with information about the teacher
 	 */
@@ -92,7 +59,7 @@ public class InformationController {
 		Optional<TeacherModel> optionalTeacher = this.teacherRepository.findByAbbreviation(abbreviation);
 
 		return optionalTeacher.map(teacherModel -> Result.of(teacherModel.toResponseDTO()))
-				.orElseGet(() -> Result.of(Error.NOT_FOUND, "info_teacher"));
+				.orElseGet(() -> Result.of(Error.NOT_FOUND, NAME_KEY));
 	}
 
 	/**
@@ -219,6 +186,39 @@ public class InformationController {
 
 		this.teacherRepository.saveAll(teachers);
 		EngelsburgAPI.getLOGGER().info("Added " + teachers.size() + " teachers");
+	}
+
+	/**
+	 * @return all current classes
+	 */
+	public Result<GetClassesResponseDTO> getCurrentClasses() {
+		if (currentClasses.length == 0) return Result.of(Error.NOT_FOUND, NAME_KEY);
+
+		return Result.of(new GetClassesResponseDTO(currentClasses));
+	}
+
+	/**
+	 * Set current classes
+	 * Only {@link io.github.paexception.engelsburg.api.service.SubstituteUpdateService} is supposed to call
+	 * this function!
+	 *
+	 * @param classes The current classes
+	 */
+	public void setCurrentClasses(String[] classes) {
+		currentClasses = classes;
+	}
+
+	/**
+	 * Get all registered teachers
+	 *
+	 * @return DTO with all registered teachers
+	 */
+	public Result<GetTeachersResponseDTO> getAllTeachers() {
+		List<TeacherResponseDTO> teacherDTOs = new ArrayList<>();
+		this.teacherRepository.findAll().forEach(teacher -> teacherDTOs.add(teacher.toResponseDTO()));
+
+		if (teacherDTOs.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
+		else return Result.of(new GetTeachersResponseDTO(teacherDTOs));
 	}
 
 }

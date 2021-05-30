@@ -32,18 +32,20 @@ public class ArticleUpdateService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ArticleUpdateService.class.getSimpleName());
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-	@Autowired private ArticleController articleController;
+	@Autowired
+	private ArticleController articleController;
 
 	/**
 	 * Call {@link #updateArticles(String)} every 15 minutes and return all articles published in that passed 15 minutes
 	 */
-	@Scheduled(fixedRate = 15*60*1000)
+	@Scheduled(fixedRate = 15 * 60 * 1000)
 	public void fetchNewArticles() {
-		this.updateArticles(dateFormat.format(System.currentTimeMillis()-15*60*1000));
+		this.updateArticles(dateFormat.format(System.currentTimeMillis() - 15 * 60 * 1000));
 	}
 
 	/**
 	 * Fetch all articles past a specific date/time
+	 *
 	 * @param date to fetch articles past that date
 	 */
 	private void updateArticles(String date) {
@@ -55,7 +57,7 @@ public class ArticleUpdateService {
 							.openConnection().getInputStream()
 			);//Fetch all articles after date from the wordpress api of the engelsburg
 			String raw = new String(input.readAllBytes());
-			if (raw.length()==2) {//Input equal to "{}" which represents an empty result
+			if (raw.length() == 2) {//Input equal to "{}" which represents an empty result
 				LOGGER.debug("No new articles found");
 				return;
 			}
@@ -70,9 +72,9 @@ public class ArticleUpdateService {
 				if ((featuredMedia = article.getAsJsonObject().get("featured_media").getAsInt()) != 0) {//Featured media listed?
 					JsonObject mediaJson = JsonParser.parseReader(new InputStreamReader(
 							new URL("https://engelsburg.smmp.de/wp-json/wp/v2/media/" + featuredMedia)
-							.openConnection().getInputStream())).getAsJsonObject();//Then get img url via wordpress api
+									.openConnection().getInputStream())).getAsJsonObject();//Then get img url via wordpress api
 					mediaUrl = mediaJson.get("source_url").getAsString();
-				} else if ((elements = Jsoup.parse(content).getElementsByClass("wp-block-image")).size() >0) {//If not search for first image in article
+				} else if ((elements = Jsoup.parse(content).getElementsByClass("wp-block-image")).size() > 0) {//If not search for first image in article
 					mediaUrl = elements.get(0).getElementsByTag("img").get(0).attr("src");
 				}
 				CreateArticleRequestDTO dto = new CreateArticleRequestDTO(//Form ArticleDTO from information crawled
@@ -87,7 +89,7 @@ public class ArticleUpdateService {
 			dtos.forEach(dto -> this.articleController.createArticle(dto));
 
 			LOGGER.info("Fetched articles");
-			if (json.size() == 100) updateArticles(json.get(99).getAsJsonObject().get("date").getAsString());
+			if (json.size() == 100) this.updateArticles(json.get(99).getAsJsonObject().get("date").getAsString());
 		} catch (IOException | ParseException e) {
 			LOGGER.error("Couldn't load articles from homepage", e);
 		}

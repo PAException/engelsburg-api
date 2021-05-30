@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.sql.Date;
@@ -25,12 +24,13 @@ import java.util.List;
 public class EventUpdateService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(EventUpdateService.class.getSimpleName());
-	@Autowired private EventController eventController;
+	@Autowired
+	private EventController eventController;
 
 	/**
 	 * Scheduled function to update events every hour
 	 */
-	@Scheduled(fixedRate = 60*60*1000)
+	@Scheduled(fixedRate = 60 * 60 * 1000)
 	public void updateEvents() {
 		LOGGER.debug("Starting fetching substitutes");
 		try {
@@ -52,6 +52,7 @@ public class EventUpdateService {
 
 	/**
 	 * Private void to parse dates on the engelsburg website properly
+	 *
 	 * @param toParse String to parse
 	 * @return parsed Date
 	 */
@@ -59,7 +60,7 @@ public class EventUpdateService {
 		try {
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
-			return new Date(simpleDateFormat.parse(toParse.substring(1, toParse.length()-3)).getTime());
+			return new Date(simpleDateFormat.parse(toParse.substring(1, toParse.length() - 3)).getTime());
 		} catch (ParseException ignored) {
 			return new Date(System.currentTimeMillis());
 		}

@@ -29,7 +29,8 @@ public class ArticleModel {
 	private String link;
 	@NotBlank
 	private String title;
-	@NotBlank @Lob
+	@NotBlank
+	@Lob
 	private String content;
 	private String mediaUrl;
 

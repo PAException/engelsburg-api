@@ -1,12 +1,12 @@
 package io.github.paexception.engelsburg.api.spring;
 
+import io.github.paexception.engelsburg.api.util.Error;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import io.github.paexception.engelsburg.api.util.Error;
 
 /**
  * Handles thrown exceptions in RestControllers and represent them in a solid http response

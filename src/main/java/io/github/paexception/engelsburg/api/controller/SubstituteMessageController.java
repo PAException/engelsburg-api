@@ -1,10 +1,10 @@
 package io.github.paexception.engelsburg.api.controller;
 
+import io.github.paexception.engelsburg.api.database.model.SubstituteMessageModel;
 import io.github.paexception.engelsburg.api.database.repository.SubstituteMessageRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateSubstituteMessageRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetSubstituteMessagesResponseDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.SubstituteMessageResponseDTO;
-import io.github.paexception.engelsburg.api.database.model.SubstituteMessageModel;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.apache.commons.lang3.time.DateUtils;
@@ -14,6 +14,7 @@ import javax.transaction.Transactional;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import static io.github.paexception.engelsburg.api.util.Constants.SubstituteMessage.NAME_KEY;
 
 /**
  * Controller for substitute messages
@@ -21,12 +22,14 @@ import java.util.List;
 @Component
 public class SubstituteMessageController {
 
-	@Autowired private SubstituteMessageRepository substituteMessageRepository;
+	@Autowired
+	private SubstituteMessageRepository substituteMessageRepository;
 
 	/**
 	 * Create a substitute message
 	 * Only {@link io.github.paexception.engelsburg.api.service.SubstituteUpdateService} is supposed to call
 	 * this function!
+	 *
 	 * @param dto with information
 	 */
 	public void createSubstituteMessage(CreateSubstituteMessageRequestDTO dto) {
@@ -48,6 +51,7 @@ public class SubstituteMessageController {
 	 * Clear substitute messages of specific day
 	 * Only {@link io.github.paexception.engelsburg.api.service.SubstituteUpdateService} is supposed to call
 	 * this function!
+	 *
 	 * @param date day to clear substitute messages
 	 */
 	@Transactional
@@ -57,19 +61,20 @@ public class SubstituteMessageController {
 
 	/**
 	 * Return all substitute messages since
+	 *
 	 * @param date can't be in the past
 	 * @return all found substitute messages
 	 */
 	public Result<GetSubstituteMessagesResponseDTO> getAllSubstituteMessages(long date) {
 		if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date))
-				|| System.currentTimeMillis()<date) && date!=0)
+				|| System.currentTimeMillis() < date) && date != 0)
 			return Result.of(Error.INVALID_PARAM, "Date can't be in the past");
 
 		List<SubstituteMessageModel> substitutes;
-		if (date==0)
+		if (date == 0)
 			substitutes = this.substituteMessageRepository.findAllByDateGreaterThanEqual(new Date(System.currentTimeMillis()));
 		else substitutes = this.substituteMessageRepository.findAllByDate(new Date(date));
-		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, "substitutes");
+		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		List<SubstituteMessageResponseDTO> responseDTOs = new ArrayList<>();
 		substitutes.forEach(substituteModel -> responseDTOs.add(substituteModel.toResponseDTO()));
