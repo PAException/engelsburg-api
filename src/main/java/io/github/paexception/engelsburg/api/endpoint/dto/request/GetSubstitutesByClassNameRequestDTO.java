@@ -14,6 +14,6 @@ public class GetSubstitutesByClassNameRequestDTO {
 	@NotBlank
 	@Length(min = 2, max = 3)
 	private String className;
-	private long date;
+	private long date = -1;
 
 }

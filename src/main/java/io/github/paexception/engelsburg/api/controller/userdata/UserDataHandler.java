@@ -1,6 +1,5 @@
 package io.github.paexception.engelsburg.api.controller.userdata;
 
-import io.github.paexception.engelsburg.api.util.Result;
 import javax.annotation.PostConstruct;
 import java.util.UUID;
 
@@ -22,7 +21,11 @@ public interface UserDataHandler {
 	 * @param userId the userId after what the data is collected
 	 * @return a String of collected data in json format
 	 */
-	Result<?> getUserData(UUID userId);
+	Object[] getUserData(UUID userId);
+
+	default Object[] mapData(Object... data) {
+		return data;
+	}
 
 	/**
 	 * Registers the class implementing <i>UserHandler</i> in <i>UserController</i>.

@@ -13,4 +13,6 @@ public interface ScopeRepository extends JpaRepository<ScopeModel, Integer> {
 
 	void deleteAllByUserId(UUID userId);
 
+	boolean existsByUserIdAndScope(UUID userId, String scope);
+
 }

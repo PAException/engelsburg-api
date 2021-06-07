@@ -3,9 +3,10 @@ package io.github.paexception.engelsburg.api.controller;
 import io.github.paexception.engelsburg.api.EngelsburgAPI;
 import io.github.paexception.engelsburg.api.database.model.TeacherModel;
 import io.github.paexception.engelsburg.api.database.repository.TeacherRepository;
+import io.github.paexception.engelsburg.api.endpoint.dto.TeacherDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetClassesResponseDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetTeachersResponseDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.response.TeacherResponseDTO;
+import io.github.paexception.engelsburg.api.service.scheduled.SubstituteUpdateService;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +56,7 @@ public class InformationController {
 	 * @param abbreviation to identify teacher
 	 * @return DTO with information about the teacher
 	 */
-	public Result<TeacherResponseDTO> getTeacher(String abbreviation) {
+	public Result<TeacherDTO> getTeacher(String abbreviation) {
 		Optional<TeacherModel> optionalTeacher = this.teacherRepository.findByAbbreviation(abbreviation);
 
 		return optionalTeacher.map(teacherModel -> Result.of(teacherModel.toResponseDTO()))
@@ -122,7 +123,7 @@ public class InformationController {
 		teachers.add(new TeacherModel(-1, "LAN", "Michael", "Langer", "male", false, getJobId(PHYSIK, MATHE, INFORMATIK)));
 		teachers.add(new TeacherModel(-1, "LEC", "Alexander", "Lecke", "male", true, getJobId(MATHE, PHYSIK)));
 		teachers.add(new TeacherModel(-1, "LEI", "Otmar", "Leibold", "male", false, getJobId(KATH_RELIGION, PHILOSOPHIE)));
-		//teachers.add(new TeacherModel(-1, "???", "Helene", "Leippi", "female", false, getJobId(SOFTWARESCHULUNG)));
+		teachers.add(new TeacherModel(-1, "LPP", "Helene", "Leippi", "female", false, getJobId(SOFTWARESCHULUNG)));
 		teachers.add(new TeacherModel(-1, "LIN", "Katharina", "Lind", "female", false, getJobId(DEUTSCH, EV_RELIGION)));
 		teachers.add(new TeacherModel(-1, "LOH", "Marie-Claire", "Lohéac-Wieders", "female", false, getJobId(FRANZOESISCH, DEUTSCH)));
 		teachers.add(new TeacherModel(-1, "LHF", "Johanna", "Lohof", "female", false, getJobId(MATHE, DEUTSCH)));
@@ -134,7 +135,7 @@ public class InformationController {
 		teachers.add(new TeacherModel(-1, "MLL", "Winfried", "Müller", "male", false, getJobId(FRANZOESISCH, GESCHICHTE)));
 		teachers.add(new TeacherModel(-1, "MUS", "Cheryl", "Musmann", "female", false, getJobId(ENGLISCH, POWI)));
 		//teachers.add(new TeacherModel(-1, "NIS?", "Annette", "Nießner", "female", false, getJobId(BIOLOGIE, CHEMIE)));
-		teachers.add(new TeacherModel(-1, "NIP?", "Judith", "Nipper", "female", false, getJobId(KATH_RELIGION, KUNST, MATHE)));
+		teachers.add(new TeacherModel(-1, "NIP", "Judith", "Nipper", "female", false, getJobId(KATH_RELIGION, KUNST, MATHE)));
 		teachers.add(new TeacherModel(-1, "NOW", "Daniel", "Nowotny", "male", false, getJobId(SPORT, POWI)));
 		teachers.add(new TeacherModel(-1, "OHM", "Birgit", "Ohmes-Hapke", "female", false, getJobId(DEUTSCH, POWI)));
 		teachers.add(new TeacherModel(-1, "PÄH", "Dietlinde", "Pähler", "female", false, getJobId(ENGLISCH, SPANISCH)));
@@ -189,7 +190,9 @@ public class InformationController {
 	}
 
 	/**
-	 * @return all current classes
+	 * Get all current classes
+	 *
+	 * @return current classes
 	 */
 	public Result<GetClassesResponseDTO> getCurrentClasses() {
 		if (currentClasses.length == 0) return Result.of(Error.NOT_FOUND, NAME_KEY);
@@ -199,7 +202,7 @@ public class InformationController {
 
 	/**
 	 * Set current classes
-	 * Only {@link io.github.paexception.engelsburg.api.service.SubstituteUpdateService} is supposed to call
+	 * Only {@link SubstituteUpdateService} is supposed to call
 	 * this function!
 	 *
 	 * @param classes The current classes
@@ -214,7 +217,7 @@ public class InformationController {
 	 * @return DTO with all registered teachers
 	 */
 	public Result<GetTeachersResponseDTO> getAllTeachers() {
-		List<TeacherResponseDTO> teacherDTOs = new ArrayList<>();
+		List<TeacherDTO> teacherDTOs = new ArrayList<>();
 		this.teacherRepository.findAll().forEach(teacher -> teacherDTOs.add(teacher.toResponseDTO()));
 
 		if (teacherDTOs.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);

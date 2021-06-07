@@ -1,6 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
-import io.github.paexception.engelsburg.api.endpoint.dto.response.ArticleResponseDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,8 +34,8 @@ public class ArticleModel {
 	private String content;
 	private String mediaUrl;
 
-	public ArticleResponseDTO toResponseDTO() {
-		return new ArticleResponseDTO(this.date, this.link, this.title, this.content, this.mediaUrl);
+	public ArticleDTO toResponseDTO() {
+		return new ArticleDTO(this.date, this.link, this.title, this.content, this.mediaUrl);
 	}
 
 }

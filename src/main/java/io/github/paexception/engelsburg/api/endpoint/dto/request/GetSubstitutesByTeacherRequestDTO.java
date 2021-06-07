@@ -12,8 +12,8 @@ public class GetSubstitutesByTeacherRequestDTO {
 
 	@NotBlank
 	private String teacher;
-	private String lesson;
+	private int lesson = -1;
 	private String className;
-	private long date;
+	private long date = -1;
 
 }

@@ -1,6 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
-import io.github.paexception.engelsburg.api.endpoint.dto.response.TaskResponseDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.TaskDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -41,8 +41,8 @@ public class TaskModel {
 	@Lob
 	private String content;
 
-	public TaskResponseDTO toResponseDTO() {
-		return new TaskResponseDTO(
+	public TaskDTO toResponseDTO() {
+		return new TaskDTO(
 				this.userId,
 				this.title,
 				this.created,

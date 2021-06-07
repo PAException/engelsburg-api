@@ -5,6 +5,7 @@ import io.github.paexception.engelsburg.api.database.repository.SubstituteMessag
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateSubstituteMessageRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetSubstituteMessagesResponseDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.SubstituteMessageResponseDTO;
+import io.github.paexception.engelsburg.api.service.scheduled.SubstituteUpdateService;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.apache.commons.lang3.time.DateUtils;
@@ -27,7 +28,7 @@ public class SubstituteMessageController {
 
 	/**
 	 * Create a substitute message
-	 * Only {@link io.github.paexception.engelsburg.api.service.SubstituteUpdateService} is supposed to call
+	 * Only {@link SubstituteUpdateService} is supposed to call
 	 * this function!
 	 *
 	 * @param dto with information
@@ -49,7 +50,7 @@ public class SubstituteMessageController {
 
 	/**
 	 * Clear substitute messages of specific day
-	 * Only {@link io.github.paexception.engelsburg.api.service.SubstituteUpdateService} is supposed to call
+	 * Only {@link SubstituteUpdateService} is supposed to call
 	 * this function!
 	 *
 	 * @param date day to clear substitute messages

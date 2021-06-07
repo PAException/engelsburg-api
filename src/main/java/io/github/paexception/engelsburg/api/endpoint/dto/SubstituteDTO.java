@@ -12,7 +12,7 @@ public class SubstituteDTO {
 
 	private Date date;
 	private String className;
-	private String lesson;
+	private int lesson;
 	private String subject;
 	private String substituteTeacher;
 	private String teacher;

@@ -1,6 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
-import io.github.paexception.engelsburg.api.endpoint.dto.response.GradeResponseDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.GradeDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -38,8 +38,8 @@ public class GradeModel {
 	private int value;
 	private String subject;
 
-	public GradeResponseDTO toResponseDTO() {
-		return new GradeResponseDTO(
+	public GradeDTO toResponseDTO() {
+		return new GradeDTO(
 				this.userId,
 				this.name,
 				this.share,

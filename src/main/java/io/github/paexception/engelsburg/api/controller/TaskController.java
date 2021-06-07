@@ -2,7 +2,6 @@ package io.github.paexception.engelsburg.api.controller;
 
 import io.github.paexception.engelsburg.api.controller.userdata.UserDataHandler;
 import io.github.paexception.engelsburg.api.database.repository.TaskRepository;
-import io.github.paexception.engelsburg.api.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.util.UUID;
@@ -22,8 +21,8 @@ public class TaskController implements UserDataHandler {
 	}
 
 	@Override
-	public Result<?> getUserData(UUID userId) {
-		return Result.of(this.taskRepository.findAllByUserId(userId));
+	public Object[] getUserData(UUID userId) {
+		return this.mapData(this.taskRepository.findAllByUserId(userId));
 	}
 
 }

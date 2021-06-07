@@ -1,6 +1,7 @@
 package io.github.paexception.engelsburg.api.endpoint;
 
 import io.github.paexception.engelsburg.api.controller.SubstituteMessageController;
+import io.github.paexception.engelsburg.api.spring.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ public class SubstituteMessageEndpoint {
 	 * @param date can't be in the past
 	 * @return all found substitute messages
 	 */
+	@AuthScope("substitute.message.read.current")
 	@GetMapping("/substitute/message")
 	public Object getAllSubstituteMessages(@RequestParam(required = false, defaultValue = "0") @Min(0) long date) {
 		return this.substituteMessageController.getAllSubstituteMessages(date).getHttpResponse();

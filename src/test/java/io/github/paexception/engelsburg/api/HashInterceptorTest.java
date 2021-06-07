@@ -27,9 +27,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = {InformationEndpoint.class, InformationController.class, HashInterceptor.class})
 public class HashInterceptorTest {
 
-	@Autowired private MockMvc mockMvc;
+	@Autowired
+	private MockMvc mockMvc;
 
-	@MockBean private InformationController informationController;
+	@MockBean
+	private InformationController informationController;
 
 	@Test
 	public void testHashInterceptor() throws Exception {

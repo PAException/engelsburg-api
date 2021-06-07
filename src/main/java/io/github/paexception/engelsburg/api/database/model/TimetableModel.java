@@ -1,6 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
-import io.github.paexception.engelsburg.api.endpoint.dto.response.TimetableResponseDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.TimetableDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,6 +29,8 @@ public class TimetableModel {
 	@NotNull
 	@Column(length = 16)
 	private UUID userId;
+	@Min(0)
+	private int day;
 	@Min(1)
 	private int lesson;
 	private String teacher;
@@ -37,9 +39,9 @@ public class TimetableModel {
 	@NotBlank
 	private String subject;
 
-	public TimetableResponseDTO toResponseDTO() {
-		return new TimetableResponseDTO(
-				this.userId,
+	public TimetableDTO toResponseDTO() {
+		return new TimetableDTO(
+				this.day,
 				this.lesson,
 				this.teacher,
 				this.className,

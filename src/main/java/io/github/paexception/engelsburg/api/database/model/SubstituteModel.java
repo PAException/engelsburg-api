@@ -28,8 +28,7 @@ public class SubstituteModel {
 	private Date date;
 	@NotBlank
 	private String className;
-	@NotBlank
-	private String lesson;
+	private int lesson;
 	private String subject;
 	@NotBlank
 	private String substituteTeacher;

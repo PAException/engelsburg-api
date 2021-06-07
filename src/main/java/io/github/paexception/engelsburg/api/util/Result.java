@@ -1,5 +1,6 @@
 package io.github.paexception.engelsburg.api.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.paexception.engelsburg.api.EngelsburgAPI;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -7,8 +8,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class to return on endpoints
@@ -21,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Result<T> {
 
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 	private static MessageDigest digest;
 	private T result;
 	private Error error;
@@ -96,6 +102,22 @@ public class Result<T> {
 		}
 
 		return hexString.toString();
+	}
+
+	/**
+	 * Convert Result in a HttpServletResponse for preHandles
+	 *
+	 * @param response HttpServletResponse given by preHandle method
+	 * @throws IOException if there's an error writing the response
+	 */
+	public void respond(HttpServletResponse response) throws IOException {
+		ResponseEntity<Object> responseEntity = this.getHttpResponse();
+		response.setHeader("Content-Type", "application/json");
+		response.setStatus(responseEntity.getStatusCodeValue());
+		for (Map.Entry<String, List<String>> header : responseEntity.getHeaders().entrySet())
+			for (String valor : header.getValue()) response.addHeader(header.getKey(), valor);
+		response.getWriter().write(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(responseEntity.getBody()));
+		response.getWriter().flush();
 	}
 
 	/**

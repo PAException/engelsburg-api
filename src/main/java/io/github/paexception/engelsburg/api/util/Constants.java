@@ -54,4 +54,11 @@ public class Constants {
 
 	}
 
+	@NoArgsConstructor(access = AccessLevel.PRIVATE)
+	public static class Timetable {
+
+		public static final String NAME_KEY = "timetable";
+
+	}
+
 }

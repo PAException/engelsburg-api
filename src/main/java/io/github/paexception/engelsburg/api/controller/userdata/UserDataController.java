@@ -13,12 +13,23 @@ import java.util.UUID;
 public class UserDataController {
 
 	private static final List<UserDataHandler> USER_HANDLERS = new ArrayList<>();
-	private static final String[] PREFIXES_AND_SUFFIXES = new String[]{"Controller", "Endpoint", "DTO", "Model", "Response", "Request"};
+	private static final String[] PREFIXES_AND_SUFFIXES = new String[]{"Controller", "Endpoint", "DTO", "Model", "Response", "Request", "Service"};
 
+	/**
+	 * All user handlers have to be registered with this method
+	 *
+	 * @param userHandler instance of the user handler
+	 */
 	public static void registerUserHandler(UserDataHandler userHandler) {
 		USER_HANDLERS.add(userHandler);
 	}
 
+	/**
+	 * Return all data of a user
+	 *
+	 * @param jwt with userId
+	 * @return all user data
+	 */
 	public Result<GetUserDataResponseDTO> getUserData(DecodedJWT jwt) {
 		UUID userId = UUID.fromString(jwt.getSubject());
 		List<GetUserDataResponseDTOModel> responseDTOs = new ArrayList<>();
@@ -28,12 +39,24 @@ public class UserDataController {
 		return Result.of(new GetUserDataResponseDTO(userId, responseDTOs));
 	}
 
+	/**
+	 * Delete all data of or referring to user
+	 *
+	 * @param jwt with userId
+	 * @return empty result
+	 */
 	public Result<?> deleteUserData(DecodedJWT jwt) {
 		USER_HANDLERS.forEach(userHandler -> userHandler.deleteUserData(UUID.fromString(jwt.getSubject())));
 
 		return Result.empty();
 	}
 
+	/**
+	 * Parse nameKey of a userHandler by the className
+	 *
+	 * @param userHandler to parse
+	 * @return parsed nameKey
+	 */
 	private String getNameKey(UserDataHandler userHandler) {
 		String nameKey = userHandler.getClass().getSimpleName();
 		for (String prefixOrSuffix : PREFIXES_AND_SUFFIXES) nameKey = nameKey.replaceAll(prefixOrSuffix, "");

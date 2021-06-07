@@ -3,8 +3,7 @@ package io.github.paexception.engelsburg.api.spring;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.paexception.engelsburg.api.EngelsburgAPI;
-import io.github.paexception.engelsburg.api.authorization.interceptor.ScopeInterceptor;
-import io.github.paexception.engelsburg.api.authorization.interceptor.ServiceTokenInterceptor;
+import io.github.paexception.engelsburg.api.spring.interceptor.ScopeInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.MethodParameter;
@@ -67,7 +66,6 @@ public class WebConfig implements WebMvcConfigurer, HandlerMethodArgumentResolve
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		List<HandlerInterceptorAdapter> handlerInterceptors = List.of(
-				new ServiceTokenInterceptor(EngelsburgAPI.getServiceToken()),
 				new ScopeInterceptor(EngelsburgAPI.getJwtUtil())
 		);
 

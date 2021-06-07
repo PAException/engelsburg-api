@@ -2,9 +2,9 @@ package io.github.paexception.engelsburg.api.controller;
 
 import io.github.paexception.engelsburg.api.database.model.EventModel;
 import io.github.paexception.engelsburg.api.database.repository.EventRepository;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateEventRequestDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.response.EventResponseDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.EventDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetEventsResponseDTO;
+import io.github.paexception.engelsburg.api.service.scheduled.EventUpdateService;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +28,13 @@ public class EventController {
 	 *
 	 * @param dto which has article information
 	 */
-	public void createEvent(CreateEventRequestDTO dto) {
+	public void createEvent(EventDTO dto) {
 		this.eventRepository.save(new EventModel(-1, dto.getDate(), dto.getTitle()));
 	}
 
 	/**
 	 * Delete all events
-	 * Only {@link io.github.paexception.engelsburg.api.service.EventUpdateService} is supposed to call
+	 * Only {@link EventUpdateService} is supposed to call
 	 * this function!
 	 */
 	@Transactional
@@ -48,7 +48,7 @@ public class EventController {
 	 * @return found events in DTO
 	 */
 	public Result<GetEventsResponseDTO> getAllEvents() {
-		List<EventResponseDTO> responseDTOs = new ArrayList<>();
+		List<EventDTO> responseDTOs = new ArrayList<>();
 		this.eventRepository.findAll().forEach(event -> responseDTOs.add(event.toResponseDTO()));
 		if (responseDTOs.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 

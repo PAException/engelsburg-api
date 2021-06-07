@@ -1,6 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
-import io.github.paexception.engelsburg.api.endpoint.dto.response.TeacherResponseDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.TeacherDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,11 +34,11 @@ public class TeacherModel {
 	private boolean mentionedPhD;
 	private long job;
 
-	public TeacherResponseDTO toResponseDTO() {
+	public TeacherDTO toResponseDTO() {
 		List<String> jobs = new ArrayList<>();
 		Job.getJobs(this.job).forEach(currJob -> jobs.add(currJob.toString()));
 
-		return new TeacherResponseDTO(
+		return new TeacherDTO(
 				this.abbreviation,
 				this.firstname,
 				this.surname,

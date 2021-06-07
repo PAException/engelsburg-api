@@ -1,6 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
-import io.github.paexception.engelsburg.api.endpoint.dto.response.UserResponseDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -39,8 +39,8 @@ public class UserModel {
 	private String salt;
 	private boolean verified;
 
-	public UserResponseDTO toResponseDTO() {
-		return new UserResponseDTO(
+	public UserDTO toResponseDTO() {
+		return new UserDTO(
 				this.userId,
 				this.email,
 				this.password,

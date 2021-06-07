@@ -1,5 +1,6 @@
 package io.github.paexception.engelsburg.api.endpoint.dto.response;
 
+import io.github.paexception.engelsburg.api.endpoint.dto.EventDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,6 @@ import java.util.List;
 public class GetEventsResponseDTO {
 
 	@NotNull
-	private List<EventResponseDTO> events;
+	private List<EventDTO> events;
 
 }
