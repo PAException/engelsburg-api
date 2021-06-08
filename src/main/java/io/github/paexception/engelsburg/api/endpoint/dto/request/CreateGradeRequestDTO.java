@@ -1,4 +1,4 @@
-package io.github.paexception.engelsburg.api.endpoint.dto;
+package io.github.paexception.engelsburg.api.endpoint.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GradeDTO {
+public class CreateGradeRequestDTO {
 
-	private int gradeId;
 	private String name;
 	private double share;
 	private int value;

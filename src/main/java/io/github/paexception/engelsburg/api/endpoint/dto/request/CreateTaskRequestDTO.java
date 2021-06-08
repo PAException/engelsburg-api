@@ -1,4 +1,4 @@
-package io.github.paexception.engelsburg.api.endpoint.dto;
+package io.github.paexception.engelsburg.api.endpoint.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,14 +7,12 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TaskDTO {
+public class CreateTaskRequestDTO {
 
-	private int taskId;
 	private String title;
-	private long created;
-	private long due;
+	private long created = -1;
+	private long due = -1;
 	private String subject;
 	private String content;
-	private boolean done;
 
 }

@@ -1,6 +1,7 @@
 package io.github.paexception.engelsburg.api.spring;
 
 import io.github.paexception.engelsburg.api.util.Error;
+import io.github.paexception.engelsburg.api.util.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +22,7 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
 	public ResponseEntity<Object> exception(Exception exception) {
 		LOGGER.error("Caught unhandled error reaching the end of the endpoint pipeline", exception);
 
-		Error error = Error.INTERNAL_SERVER_ERROR;
-		String extra = "An internal server error occurred!";
-		error = error.copyWithExtra(extra);
-
-		return ResponseEntity.status(error.getStatus()).body(error.getBody());
+		return Result.of(Error.INTERNAL_SERVER_ERROR, "An internal server error occurred!").getHttpResponse();
 	}
 
 }

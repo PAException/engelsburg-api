@@ -6,13 +6,6 @@ import lombok.NoArgsConstructor;
 public class Constants {
 
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class Authentication {
-
-		public static final String NAME_KEY = "authentication";
-
-	}
-
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class Article {
 
 		public static final String NAME_KEY = "article";
@@ -20,9 +13,9 @@ public class Constants {
 	}
 
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class Information {
+	public static class Authentication {
 
-		public static final String NAME_KEY = "info_classes";
+		public static final String NAME_KEY = "authentication";
 
 	}
 
@@ -30,6 +23,27 @@ public class Constants {
 	public static class Event {
 
 		public static final String NAME_KEY = "event";
+
+	}
+
+	@NoArgsConstructor(access = AccessLevel.PRIVATE)
+	public static class Grade {
+
+		public static final String NAME_KEY = "grade";
+
+	}
+
+	@NoArgsConstructor(access = AccessLevel.PRIVATE)
+	public static class Information {
+
+		public static final String NAME_KEY = "information";
+
+	}
+
+	@NoArgsConstructor(access = AccessLevel.PRIVATE)
+	public static class Notification {
+
+		public static final String NAME_KEY = "notification";
 
 	}
 
@@ -48,9 +62,9 @@ public class Constants {
 	}
 
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class Notification {
+	public static class Task {
 
-		public static final String NAME_KEY = "notification";
+		public static final String NAME_KEY = "task";
 
 	}
 

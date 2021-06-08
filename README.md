@@ -11,12 +11,6 @@ The Engelsburg-API can be divided into three sections.
 The first section ist completely public. It includes unprotected resources of
 the [Engelsburg-Website](https://engelsburg.smmp.de) like events and articles.
 
-### Semi-Private
-
-The second section is semi-private. It can be only accessed using a specific ServiceToken which is issued by the
-operator of the Engelsburg-API. This section includes sensitive resources like substitutes and information about
-teachers.
-
 ### Private
 
 The last section is private. That means it can only be accessed with a created account on the Engelsburg-API and
@@ -29,10 +23,6 @@ Every section has a different authorization flow.
 #### Public
 
 *There is no authorization flow for this section.*
-
-#### Semi-Private
-
-The request has to contain the ServiceToken in the `X-ServiceToken` header field.
 
 #### Private
 
@@ -56,10 +46,9 @@ the key `token`.
 
 Resource requests
 
-Just like the Semi-Private section the request has to contain the ServiceToken in the `X-ServiceToken` header field. In
-addition to send a request to a resource of the Private-API-Section you have to include the `token` from the login
-request in the `Authorization` header field of the request. The API will check if you have the permission to access that
-resource. The token will expire after 30 minutes. To obtain a new token send another login request.
+To send a request to a resource of the Private-API-Section you have to include the `token` from the login request in
+the `Authorization` header field of the request. The API will check if you have the permission to access that resource.
+The token will expire after 30 minutes. To obtain a new token send another login request.
 
 ---
 

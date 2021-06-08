@@ -6,14 +6,17 @@ import io.github.paexception.engelsburg.api.database.model.TimetableModel;
 import io.github.paexception.engelsburg.api.database.repository.TimetableRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.TimetableDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.DeleteTimetableEntryRequestDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.request.GetTimetableEntriesRequestDTO;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import static io.github.paexception.engelsburg.api.util.Constants.Timetable.NAME_KEY;
 
 /**
@@ -36,7 +39,7 @@ public class TimetableController implements UserDataHandler {
 	}
 
 	/**
-	 * Set a new timetable entry
+	 * Set a new or existing timetable entry
 	 *
 	 * @param dto with entry information
 	 * @param jwt to identify user and check permissions
@@ -50,7 +53,7 @@ public class TimetableController implements UserDataHandler {
 		if (optionalTimetable.isEmpty()) this.timetableRepository.save(new TimetableModel(
 				-1,
 				userId,
-				dto.getDay(),
+				dto.getDay() + 2,//In Calendar MON starts at 2
 				dto.getLesson(),
 				dto.getTeacher(),
 				dto.getClassName(),
@@ -70,14 +73,53 @@ public class TimetableController implements UserDataHandler {
 	}
 
 	/**
+	 * Get timetable entries
+	 * <p>
+	 * All, by day or lesson or by day and lesson
+	 *
+	 * @param dto with day or/and lesson information
+	 * @param jwt with userId
+	 * @return list of timetable entries
+	 */
+	public Result<List<TimetableDTO>> getTimetableEntries(GetTimetableEntriesRequestDTO dto, DecodedJWT jwt) {
+		UUID userId = UUID.fromString(jwt.getSubject());
+		List<TimetableDTO> dtos;
+		if (dto.getDay() >= 0 && dto.getLesson() >= 0) {
+			dtos = this.timetableRepository.findAllByUserIdAndDayAndLesson(userId, dto.getDay() + 2, dto.getLesson())
+					.map(TimetableModel::toResponseDTO).collect(Collectors.toList());
+		} else if (dto.getDay() >= 0) {
+			dtos = this.timetableRepository.findAllByUserIdAndDay(userId, dto.getDay() + 2)
+					.map(TimetableModel::toResponseDTO).collect(Collectors.toList());
+		} else if (dto.getLesson() >= 0) {
+			dtos = this.timetableRepository.findAllByUserIdAndLesson(userId, dto.getLesson())
+					.map(TimetableModel::toResponseDTO).collect(Collectors.toList());
+		} else {
+			dtos = this.timetableRepository.findAllByUserId(userId).stream()
+					.map(TimetableModel::toResponseDTO).collect(Collectors.toList());
+		}
+
+		if (dtos.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
+		else return Result.of(dtos);
+	}
+
+	/**
 	 * Delete a new timetable entry
 	 *
 	 * @param dto with day and lesson of entry
 	 * @param jwt to identify user and check permissions
 	 * @return empty result or error
 	 */
+	@Transactional
 	public Result<?> deleteTimetableEntry(DeleteTimetableEntryRequestDTO dto, DecodedJWT jwt) {
-		return null;//TODO
+		UUID userId = UUID.fromString(jwt.getSubject());
+		Optional<TimetableModel> optionalTimetable = this.timetableRepository
+				.findByUserIdAndDayAndLesson(userId, dto.getDay() + 2, dto.getLesson());
+
+		if (optionalTimetable.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
+		else {
+			this.timetableRepository.delete(optionalTimetable.get());
+			return Result.empty();
+		}
 	}
 
 	/**

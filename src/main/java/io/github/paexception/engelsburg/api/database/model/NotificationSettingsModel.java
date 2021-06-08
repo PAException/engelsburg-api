@@ -1,5 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
+import io.github.paexception.engelsburg.api.endpoint.dto.NotificationSettingsDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,5 +33,19 @@ public class NotificationSettingsModel {
 	private boolean byTeacher;
 	private String teacherAbbreviation;
 	private boolean byTimetable;
+
+	private boolean articleNotifications;
+
+	public NotificationSettingsDTO toResponseDTO() {
+		return new NotificationSettingsDTO(
+				this.enabled,
+				this.byClass,
+				this.className,
+				this.byTeacher,
+				this.teacherAbbreviation,
+				this.byTimetable,
+				this.articleNotifications
+		);
+	}
 
 }

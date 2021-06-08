@@ -40,16 +40,24 @@ public class TaskModel {
 	private String subject;
 	@Lob
 	private String content;
+	private boolean done;
 
 	public TaskDTO toResponseDTO() {
 		return new TaskDTO(
-				this.userId,
+				this.taskId,
 				this.title,
 				this.created,
 				this.due,
 				this.subject,
-				this.content
+				this.content,
+				this.done
 		);
+	}
+
+	public TaskModel markAsDone(boolean done) {
+		this.done = done;
+
+		return this;
 	}
 
 }

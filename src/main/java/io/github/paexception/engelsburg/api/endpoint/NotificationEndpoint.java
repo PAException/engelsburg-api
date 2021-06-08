@@ -7,11 +7,15 @@ import io.github.paexception.engelsburg.api.endpoint.dto.request.ChangeNotificat
 import io.github.paexception.engelsburg.api.spring.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
+/**
+ * RestController for notification actions
+ */
 @RestController
 public class NotificationEndpoint {
 
@@ -19,7 +23,7 @@ public class NotificationEndpoint {
 	private NotificationController notificationController;
 
 	/**
-	 * Change user notification
+	 * Change user notification settings
 	 *
 	 * @see NotificationController#changeNotificationSettings(ChangeNotificationSettingsRequestDTO, DecodedJWT)
 	 */
@@ -27,6 +31,17 @@ public class NotificationEndpoint {
 	@PostMapping("/user/notification")
 	public Object changeNotificationSettings(@RequestBody @Valid ChangeNotificationSettingsRequestDTO dto, DecodedJWT jwt) {
 		return this.notificationController.changeNotificationSettings(dto, jwt).getHttpResponse();
+	}
+
+	/**
+	 * Get notification settings
+	 *
+	 * @see NotificationController#getNotificationSettings(DecodedJWT)
+	 */
+	@AuthScope("notification.settings.read.self")
+	@GetMapping("/user/notification")
+	public Object getNotificationSettings(DecodedJWT jwt) {
+		return this.notificationController.getNotificationSettings(jwt).getHttpResponse();
 	}
 
 	/**

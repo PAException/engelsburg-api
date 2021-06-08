@@ -13,18 +13,16 @@ import org.springframework.http.ResponseEntity;
 public class Error extends ResponseEntity<Object> {
 
 	public static final Error FORBIDDEN = new Error(HttpStatus.FORBIDDEN, I18n.FORBIDDEN);
-	public static final Error INVALID_PARAM = new Error(HttpStatus.BAD_REQUEST, I18n.INVALID_PARAM);
-	public static final Error MISSING_PARAM = new Error(HttpStatus.BAD_REQUEST, I18n.MISSING_PARAM);
 	public static final Error NOT_FOUND = new Error(HttpStatus.NOT_FOUND, I18n.NOT_FOUND);
 	public static final Error INTERNAL_SERVER_ERROR = new Error(HttpStatus.INTERNAL_SERVER_ERROR, I18n.INTERNAL_SERVER_ERROR);
 	public static final Error UNAUTHORIZED = new Error(HttpStatus.UNAUTHORIZED, I18n.UNAUTHORIZED);
 	public static final Error ALREADY_EXISTS = new Error(HttpStatus.CONFLICT, I18n.ALREADY_EXISTS);
-	public static final Error WRONG_TYPE = new Error(HttpStatus.CONFLICT, I18n.WRONG_TYPE);
 	public static final Error NOT_MODIFIED = new Error(HttpStatus.NOT_MODIFIED, I18n.NOT_MODIFIED);
+	public static final Error INVALID_PARAM = new Error(HttpStatus.BAD_REQUEST, I18n.INVALID_PARAM);
+	public static final Error MISSING_PARAM = new Error(HttpStatus.BAD_REQUEST, I18n.MISSING_PARAM);
 	public static final Error EXPIRED = new Error(HttpStatus.BAD_REQUEST, I18n.EXPIRED);
 	public static final Error FAILED = new Error(HttpStatus.BAD_REQUEST, I18n.FAILED);
 	public static final Error INVALID = new Error(HttpStatus.BAD_REQUEST, I18n.INVALID);
-	public static final Error NOT_VERIFIED = new Error(HttpStatus.BAD_REQUEST, I18n.NOT_VERIFIED);
 
 	private final int status;
 	private final String messageKey;

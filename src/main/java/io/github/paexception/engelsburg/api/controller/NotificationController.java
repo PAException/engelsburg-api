@@ -7,6 +7,7 @@ import io.github.paexception.engelsburg.api.database.model.NotificationSettingsM
 import io.github.paexception.engelsburg.api.database.repository.NotificationDeviceRepository;
 import io.github.paexception.engelsburg.api.database.repository.NotificationSettingsRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.NotificationDeviceDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.NotificationSettingsDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.ChangeNotificationSettingsRequestDTO;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
@@ -20,6 +21,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import static io.github.paexception.engelsburg.api.util.Constants.Notification.NAME_KEY;
 
+/**
+ * Controller for notifications
+ */
 @Component
 public class NotificationController implements UserDataHandler {
 
@@ -58,6 +62,18 @@ public class NotificationController implements UserDataHandler {
 		this.notificationSettingsRepository.save(notificationSettings);
 
 		return Result.empty();
+	}
+
+	/**
+	 * Get notification settings of user
+	 *
+	 * @param jwt with userId
+	 * @return notification settings
+	 */
+	public Result<NotificationSettingsDTO> getNotificationSettings(DecodedJWT jwt) {
+		return this.notificationSettingsRepository.findByUserId(UUID.fromString(jwt.getSubject()))
+				.map(notificationSettings -> Result.of(notificationSettings.toResponseDTO()))
+				.orElseGet(() -> Result.of(Error.NOT_FOUND, NAME_KEY));
 	}
 
 	/**

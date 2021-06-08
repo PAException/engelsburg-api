@@ -35,7 +35,10 @@ public class ScopeInterceptor extends HandlerInterceptorAdapter {
 		}
 
 		String jwt = request.getHeader("Authorization");
-		if (jwt == null || jwt.isBlank()) return false;
+		if (jwt == null || jwt.isBlank()) {
+			Result.of(Error.UNAUTHORIZED, "token").respond(response);
+			return false;
+		}
 
 		Pair<DecodedJWT, JwtUtil.VerificationResult> result = this.jwtUtil.verify(jwt);
 		switch (result.getRight()) {

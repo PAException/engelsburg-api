@@ -35,15 +35,29 @@ public class AuthenticationController implements UserDataHandler {
 
 	private static final Random RANDOM = new SecureRandom();
 	private static final List<String> DEFAULT_SCOPES = List.of(
-			"user.data.read.self",
-			"user.data.delete.self",
+			"grade.write.self",
+			"grade.read.self",
+			"grade.delete.self",
+
+			"info.teacher.read.all",
+			"info.classes.read.all",
+
 			"notification.settings.write.self",
+			"notification.settings.read.self",
+
 			"substitute.message.read.current",
 			"substitute.read.current",
-			"timetable.delete.self",
+
+			"task.delete.self",
+			"task.write.self",
+			"task.read.self",
+
 			"timetable.write.self",
-			"info.teacher.read.all",
-			"info.classes.read.all"
+			"timetable.read.self",
+			"timetable.delete.self",
+
+			"user.data.read.self",
+			"user.data.delete.self"
 	);
 	private static MessageDigest md;
 	@Autowired

@@ -3,6 +3,7 @@ package io.github.paexception.engelsburg.api.service.notification;
 import io.github.paexception.engelsburg.api.controller.NotificationController;
 import io.github.paexception.engelsburg.api.controller.TimetableController;
 import io.github.paexception.engelsburg.api.database.model.TimetableModel;
+import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.NotificationDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
 import io.github.paexception.engelsburg.api.util.Pair;
@@ -69,6 +70,10 @@ public class NotificationService {
 				null,
 				null
 		)));
+	}
+
+	public void sendArticleNotifications(ArticleDTO dto) {
+		//TODO
 	}
 
 }

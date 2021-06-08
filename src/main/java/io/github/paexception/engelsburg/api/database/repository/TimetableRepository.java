@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Repository
 public interface TimetableRepository extends JpaRepository<TimetableModel, Integer> {
@@ -22,5 +23,11 @@ public interface TimetableRepository extends JpaRepository<TimetableModel, Integ
 	List<TimetableModel> findAllByDayAndLessonAndClassName(int day, int lesson, String className);
 
 	List<TimetableModel> findAllByDayAndLessonAndTeacher(int day, int lesson, String teacher);
+
+	Stream<TimetableModel> findAllByUserIdAndDayAndLesson(UUID userId, int day, int lesson);
+
+	Stream<TimetableModel> findAllByUserIdAndDay(UUID userId, int day);
+
+	Stream<TimetableModel> findAllByUserIdAndLesson(UUID userId, int lesson);
 
 }

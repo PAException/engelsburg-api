@@ -40,7 +40,7 @@ public class GradeModel {
 
 	public GradeDTO toResponseDTO() {
 		return new GradeDTO(
-				this.userId,
+				this.gradeId,
 				this.name,
 				this.share,
 				this.value,
