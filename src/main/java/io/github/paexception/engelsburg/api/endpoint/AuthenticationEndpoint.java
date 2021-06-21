@@ -1,10 +1,14 @@
 package io.github.paexception.engelsburg.api.endpoint;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.controller.AuthenticationController;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.LoginRequestDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.request.ResetPasswordRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.SignUpRequestDTO;
+import io.github.paexception.engelsburg.api.spring.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,13 +47,34 @@ public class AuthenticationEndpoint {
 	}
 
 	/**
+	 * Request to reset a password
+	 *
+	 * @see AuthenticationController#requestResetPassword(String)
+	 */
+	@PostMapping("/auth/request_reset_password")
+	public Object requestResetPassword(@RequestParam @NotBlank String email) {
+		return this.authenticationController.requestResetPassword(email).getHttpResponse();
+	}
+
+	/**
 	 * Reset a password
 	 *
-	 * @see AuthenticationController#resetPassword(String)
+	 * @see AuthenticationController#resetPassword(ResetPasswordRequestDTO)
 	 */
 	@PostMapping("/auth/reset_password")
-	public Object resetPassword(@RequestParam @NotBlank String email) {
-		return this.authenticationController.resetPassword(email).getHttpResponse();
+	public Object resetPassword(@RequestBody @Valid ResetPasswordRequestDTO dto) {
+		return this.authenticationController.resetPassword(dto).getHttpResponse();
+	}
+
+	/**
+	 * Verify a user
+	 *
+	 * @see AuthenticationController#verify(DecodedJWT, String)
+	 */
+	@AuthScope
+	@PostMapping("/auth/verify/{token}")
+	public Object verify(DecodedJWT jwt, @PathVariable @NotBlank String token) {
+		return this.authenticationController.verify(jwt, token).getHttpResponse();
 	}
 
 }

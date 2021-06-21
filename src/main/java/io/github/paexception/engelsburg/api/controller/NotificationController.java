@@ -127,7 +127,7 @@ public class NotificationController implements UserDataHandler {
 	 * @return a Set of device tokens
 	 */
 	@Transactional
-	public Set<String> getNotificationTokensByClassName(Set<String> classNames) {
+	public Set<String> getSubstituteNotificationTokensByClassName(Set<String> classNames) {
 		return classNames.stream().flatMap(className -> this.notificationSettingsRepository
 				.findAllByEnabledAndByClassAndClassName(true, true, className)//Get all users with enabled notifications and filter byClass
 				.map(NotificationSettingsModel::getUserId))
@@ -143,7 +143,7 @@ public class NotificationController implements UserDataHandler {
 	 * @return a Set of device tokens
 	 */
 	@Transactional
-	public Set<String> getNotificationTokensByTeacher(Set<String> teachers) {
+	public Set<String> getSubstituteNotificationTokensByTeacher(Set<String> teachers) {
 		return teachers.stream().flatMap(teacher -> this.notificationSettingsRepository
 				.findAllByEnabledAndByTeacherAndTeacherAbbreviation(true, true, teacher)//Get all users with enabled notifications and filter byTeacher
 				.map(NotificationSettingsModel::getUserId))
@@ -162,6 +162,21 @@ public class NotificationController implements UserDataHandler {
 	public Set<String> getTokensOfUsers(Stream<UUID> userIds) {
 		return userIds.flatMap(userId -> this.notificationDeviceRepository.findAllByUserId(userId).stream()
 				.map(NotificationDeviceModel::getToken)).collect(Collectors.toSet());
+	}
+
+	/**
+	 * Fetch all device tokens of users who enabled article notifications
+	 *
+	 * @return a Set of device tokens
+	 */
+	@Transactional
+	public Set<String> getArticleNotificationTokens() {
+		return this.notificationSettingsRepository
+				.findAllByEnabledAndArticleNotifications(true, true)//Get all users with enabled article notifications
+				.map(NotificationSettingsModel::getUserId)
+
+				.flatMap(userId -> this.notificationDeviceRepository.findAllByUserId(userId).stream()//Get all device tokens of those users
+						.map(NotificationDeviceModel::getToken)).collect(Collectors.toSet());
 	}
 
 }

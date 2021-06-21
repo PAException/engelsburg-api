@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.github.paexception.engelsburg.api.controller.ArticleController;
 import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
+import io.github.paexception.engelsburg.api.service.notification.NotificationService;
 import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
@@ -34,13 +35,17 @@ public class ArticleUpdateService {
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	@Autowired
 	private ArticleController articleController;
+	@Autowired
+	private NotificationService notificationService;
 
 	/**
 	 * Call {@link #updateArticles(String)} every 15 minutes and return all articles published in that passed 15 minutes
 	 */
 	@Scheduled(fixedRate = 15 * 60 * 1000)
 	public void fetchNewArticles() {
-		this.updateArticles(dateFormat.format(System.currentTimeMillis() - 15 * 60 * 1000));
+		this.updateArticles(dateFormat.format(System.currentTimeMillis() - 15 * 60 * 1000)).stream()
+				.peek(dto -> this.notificationService.sendArticleNotifications(dto))
+				.forEach(dto -> this.articleController.createArticle(dto));
 	}
 
 	/**
@@ -48,7 +53,8 @@ public class ArticleUpdateService {
 	 *
 	 * @param date to fetch articles past that date
 	 */
-	private void updateArticles(String date) {
+	private List<ArticleDTO> updateArticles(String date) {
+		List<ArticleDTO> dtos = new ArrayList<>();
 		try {
 			LOGGER.debug("Starting fetching articles");
 
@@ -59,11 +65,10 @@ public class ArticleUpdateService {
 			String raw = new String(input.readAllBytes());
 			if (raw.length() == 2) {//Input equal to "{}" which represents an empty result
 				LOGGER.debug("No new articles found");
-				return;
+				return dtos;
 			}
 
 			JsonArray json = JsonParser.parseString(raw).getAsJsonArray();//Parse in article array
-			List<ArticleDTO> dtos = new ArrayList<>();
 			for (JsonElement article : json) {//Cycle through all articles
 				String content = article.getAsJsonObject().get("content").getAsJsonObject().get("rendered").getAsString();//Get content
 				Elements elements;
@@ -86,13 +91,14 @@ public class ArticleUpdateService {
 				);
 				dtos.add(dto);
 			}
-			dtos.forEach(dto -> this.articleController.createArticle(dto));
 
 			LOGGER.info("Fetched articles");
-			if (json.size() == 100) this.updateArticles(json.get(99).getAsJsonObject().get("date").getAsString());
+			if (json.size() == 100) this.updateArticles(json.get(99).getAsJsonObject().get("date").getAsString())
+					.forEach(dto -> this.articleController.createArticle(dto));
 		} catch (IOException | ParseException e) {
 			LOGGER.error("Couldn't load articles from homepage", e);
 		}
+		return dtos;
 	}
 
 	/**
@@ -101,7 +107,7 @@ public class ArticleUpdateService {
 	@EventListener(ApplicationStartedEvent.class)
 	public void loadPastArticles() {
 		this.articleController.clearAllArticles();
-		this.updateArticles("2020-01-01T00:00:00");
+		this.updateArticles("2020-01-01T00:00:00").forEach(dto -> this.articleController.createArticle(dto));
 	}
 
 }

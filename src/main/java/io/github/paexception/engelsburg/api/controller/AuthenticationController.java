@@ -1,17 +1,21 @@
 package io.github.paexception.engelsburg.api.controller;
 
 import com.auth0.jwt.JWTCreator;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.EngelsburgAPI;
 import io.github.paexception.engelsburg.api.controller.internal.ScopeController;
+import io.github.paexception.engelsburg.api.controller.internal.TokenController;
 import io.github.paexception.engelsburg.api.controller.userdata.UserDataHandler;
 import io.github.paexception.engelsburg.api.database.model.UserModel;
 import io.github.paexception.engelsburg.api.database.repository.UserRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.LoginRequestDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.request.ResetPasswordRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.SignUpRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.LoginResponseDTO;
 import io.github.paexception.engelsburg.api.service.email.EmailService;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
@@ -66,6 +70,8 @@ public class AuthenticationController implements UserDataHandler {
 	private ScopeController scopeController;
 	@Autowired
 	private EmailService emailService;
+	@Autowired
+	private TokenController tokenController;
 
 	/**
 	 * Login with credentials
@@ -78,7 +84,7 @@ public class AuthenticationController implements UserDataHandler {
 		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		UserModel user = optionalUser.get();
-		//if (!user.isVerified()) return Result.of(Error.NOT_VERIFIED, NAME_KEY); //TODO
+		if (!user.isVerified()) return Result.of(Error.NOT_VERIFIED, NAME_KEY);
 		if (!user.getPassword().equals(this.hashPassword(dto.getPassword(), user.getSalt())))
 			return Result.of(Error.FORBIDDEN, NAME_KEY);
 
@@ -105,25 +111,66 @@ public class AuthenticationController implements UserDataHandler {
 		UUID userId = UUID.randomUUID();
 		this.userRepository.save(new UserModel(-1, userId, dto.getEmail(), hashedPassword, salt, false));
 		DEFAULT_SCOPES.forEach(scope -> this.scopeController.addScope(userId, scope));//Add default scopes
-		this.emailService.verify(dto.getEmail());
-
-		return Result.empty();
+		if (this.emailService.verify(
+				dto.getEmail(),
+				this.tokenController.createRandomToken(userId, "verify")
+		)) return Result.empty();
+		else return Result.of(Error.FAILED, NAME_KEY);
 	}
 
 	/**
-	 * Reset password of existing account
-	 * An email will be send to reset the password
+	 * Request to reset a password of existing account.
+	 * An email will be send with a token to reset the password
 	 *
 	 * @param email of account to reset
 	 * @return empty response
 	 */
-	public Result<?> resetPassword(String email) {
+	public Result<?> requestResetPassword(String email) {
 		Optional<UserModel> optionalUser = this.userRepository.findByEmail(email);
 		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
-		this.emailService.resetPassword(email);
+		if (this.emailService.resetPassword(
+				email,
+				this.tokenController.createRandomTemporaryToken(optionalUser.get().getUserId(), "reset_password", System.currentTimeMillis() + 1000 * 60 * 30)
+		)) return Result.empty();
+		else return Result.of(Error.FAILED, NAME_KEY);
+	}
 
-		return Result.empty();
+	/**
+	 * Set the new password with password reset token
+	 *
+	 * @param dto with email, new password and password reset token
+	 * @return empty result or error
+	 */
+	public Result<?> resetPassword(ResetPasswordRequestDTO dto) {
+		Optional<UserModel> optionalUser = this.userRepository.findByEmail(dto.getEmail());
+		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
+
+		UserModel user = optionalUser.get();
+		if (this.tokenController.checkToken(user.getUserId(), "reset_password", dto.getToken())) {
+			user.setPassword(this.hashPassword(dto.getPassword(), user.getSalt()));
+			this.userRepository.save(user);
+			this.tokenController.deleteToken(user.getUserId(), "reset_password", dto.getToken());
+			return Result.empty();
+		} else return Result.of(Error.FAILED, NAME_KEY);
+	}
+
+	/**
+	 * Verifies a user
+	 *
+	 * @param jwt   with userId
+	 * @param token to verify
+	 * @return empty response or error
+	 */
+	public Result<?> verify(DecodedJWT jwt, String token) {
+		UUID userId = UUID.fromString(jwt.getSubject());
+		UserModel user = this.userRepository.findByUserId(userId);
+		if (this.tokenController.checkToken(userId, "verify", token)) {
+			user.setVerified(true);
+			this.userRepository.save(user);
+			this.tokenController.deleteToken(userId, "verify", token);
+			return Result.empty();
+		} else return Result.of(Error.FAILED, NAME_KEY);
 	}
 
 	/**
@@ -163,7 +210,7 @@ public class AuthenticationController implements UserDataHandler {
 		} catch (NoSuchAlgorithmException ignored) {//Won't ever happen
 		}
 
-		return null;
+		return RandomStringUtils.randomAlphanumeric(6);
 	}
 
 	@Override

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 import java.sql.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import static io.github.paexception.engelsburg.api.util.Constants.Substitute.NAME_KEY;
 
@@ -44,20 +45,37 @@ public class SubstituteController {
 	public void updateSubstitutes(List<SubstituteDTO> fetchedDTOs, Date date) {
 		this.substituteRepository.findAllByDate(date).stream().map(SubstituteModel::toResponseDTO)
 				.forEach(dto -> fetchedDTOs.removeIf(fetchedDTO -> fetchedDTO.equals(dto)));//Filter new or changed substitutes
-		this.notificationService.sendSubstituteNotifications(fetchedDTOs);//Send notifications
-
-		fetchedDTOs.forEach(dto -> {
+		fetchedDTOs.removeIf(dto -> {
 			if (Character.isDigit(dto.getClassName().charAt(0))) {//5a-10e
-				this.substituteRepository.deleteAllByDateAndLessonAndClassNameIsLike(
+				Optional<SubstituteModel> optionalSubstitute = this.substituteRepository.findByDateAndLessonAndClassNameIsLike(
 						date, dto.getLesson(), SubstituteRepository.likeClassName(dto.getClassName()));
+				if (optionalSubstitute.isPresent()) {
+					this.substituteRepository.save(this.createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
+					return true;
+				}
 			} else {//E1-Q4
-				if (dto.getTeacher().isBlank()) this.substituteRepository.deleteAllByDateAndLessonAndSubject(
-						date, dto.getLesson(), dto.getSubject());
-				else
-					this.substituteRepository.deleteAllByDateAndLessonAndTeacher(date, dto.getLesson(), dto.getTeacher());
+				if (dto.getTeacher().isBlank()) {
+					Optional<SubstituteModel> optionalSubstitute = this.substituteRepository.findByDateAndLessonAndSubject(
+							date, dto.getLesson(), dto.getSubject());
+					if (optionalSubstitute.isPresent()) {
+						this.substituteRepository.save(this.createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
+						return true;
+					}
+				} else {
+					Optional<SubstituteModel> optionalSubstitute = this.substituteRepository.findByDateAndLessonAndTeacher(
+							date, dto.getLesson(), dto.getTeacher());
+					if (optionalSubstitute.isPresent()) {
+						this.substituteRepository.save(this.createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
+						return true;
+					}
+				}
 			}
-			this.substituteRepository.save(this.createSubstitute(dto));
-		});//Save new
+
+			this.substituteRepository.save(this.createSubstitute(-1, dto));
+			return false;
+		});
+
+		if (!fetchedDTOs.isEmpty()) this.notificationService.sendSubstituteNotifications(fetchedDTOs);
 	}
 
 	/**
@@ -150,9 +168,9 @@ public class SubstituteController {
 	 *
 	 * @param dto with information
 	 */
-	private SubstituteModel createSubstitute(SubstituteDTO dto) {
+	private SubstituteModel createSubstitute(int substituteId, SubstituteDTO dto) {
 		return new SubstituteModel(
-				-1,
+				substituteId,
 				dto.getDate(),
 				dto.getClassName(),
 				dto.getLesson(),

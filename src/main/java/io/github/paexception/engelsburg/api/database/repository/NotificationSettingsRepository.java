@@ -18,4 +18,6 @@ public interface NotificationSettingsRepository extends JpaRepository<Notificati
 
 	Stream<NotificationSettingsModel> findAllByEnabledAndByTeacherAndTeacherAbbreviation(boolean enabled, boolean byTeacher, String teacherAbbreviation);
 
+	Stream<NotificationSettingsModel> findAllByEnabledAndArticleNotifications(boolean enabled, boolean articleNotifications);
+
 }

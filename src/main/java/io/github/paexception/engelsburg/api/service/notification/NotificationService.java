@@ -8,10 +8,7 @@ import io.github.paexception.engelsburg.api.endpoint.dto.NotificationDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
 import io.github.paexception.engelsburg.api.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import java.sql.Date;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
@@ -39,8 +36,8 @@ public class NotificationService {
 			teachers.add(dto.getSubstituteTeacher());
 		});
 
-		tokens.addAll(this.notificationController.getNotificationTokensByClassName(classNames));
-		tokens.addAll(this.notificationController.getNotificationTokensByTeacher(teachers));
+		tokens.addAll(this.notificationController.getSubstituteNotificationTokensByClassName(classNames));
+		tokens.addAll(this.notificationController.getSubstituteNotificationTokensByTeacher(teachers));
 		this.firebaseCloudMessaging.sendNotifications(tokens.toArray(String[]::new));
 
 		this.firebaseCloudMessaging.sendAdvancedNotifications(dtos.stream().map(dto -> {
@@ -56,24 +53,9 @@ public class NotificationService {
 		));
 	}
 
-	@EventListener(ApplicationStartedEvent.class)
-	public void test() {
-		this.sendSubstituteNotifications(List.of(new SubstituteDTO(
-				new Date(System.currentTimeMillis()),
-				"8c",
-				1,
-				null,
-				null,
-				null,
-				null,
-				null,
-				null,
-				null
-		)));
-	}
-
 	public void sendArticleNotifications(ArticleDTO dto) {
-		//TODO
+		this.firebaseCloudMessaging.sendArticleNotifications(this.notificationController
+				.getArticleNotificationTokens().toArray(String[]::new), dto);
 	}
 
 }

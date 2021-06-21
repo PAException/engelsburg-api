@@ -5,12 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.sql.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SubstituteRepository extends JpaRepository<SubstituteModel, Integer> {
 
 	static String likeClassName(String className) {
-		return className.charAt(0) + "%" + className.charAt(1) + "%";
+		if (className.length() == 2) return className.charAt(0) + "%" + className.charAt(1) + "%";
+		else return className.substring(0, 2) + "%" + className.charAt(2) + "%";
 	}
 
 	List<SubstituteModel> findAllByDate(Date date);
@@ -43,10 +45,10 @@ public interface SubstituteRepository extends JpaRepository<SubstituteModel, Int
 
 	List<SubstituteModel> findAllByDateGreaterThanEqualAndSubstituteTeacher(Date date, String substituteTeacher);
 
-	void deleteAllByDateAndLessonAndTeacher(Date date, int lesson, String teacher);
+	Optional<SubstituteModel> findByDateAndLessonAndTeacher(Date date, int lesson, String teacher);
 
-	void deleteAllByDateAndLessonAndClassNameIsLike(Date date, int lesson, String className);
+	Optional<SubstituteModel> findByDateAndLessonAndClassNameIsLike(Date date, int lesson, String className);
 
-	void deleteAllByDateAndLessonAndSubject(Date date, int lesson, String subject);
+	Optional<SubstituteModel> findByDateAndLessonAndSubject(Date date, int lesson, String subject);
 
 }
