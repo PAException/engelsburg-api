@@ -39,18 +39,22 @@ public class AuthenticationController implements UserDataHandler {
 
 	private static final Random RANDOM = new SecureRandom();
 	private static final List<String> DEFAULT_SCOPES = List.of(
-			"grade.write.self",
-			"grade.read.self",
-			"grade.delete.self",
+			"substitute.message.read.current",
+			"substitute.read.current",
 
 			"info.teacher.read.all",
 			"info.classes.read.all",
 
+			"user.data.read.self",
+			"user.data.delete.self"
+	);
+	private static final List<String> VERIFIED_SCOPES = List.of(
+			"grade.write.self",
+			"grade.read.self",
+			"grade.delete.self",
+
 			"notification.settings.write.self",
 			"notification.settings.read.self",
-
-			"substitute.message.read.current",
-			"substitute.read.current",
 
 			"task.delete.self",
 			"task.write.self",
@@ -58,10 +62,7 @@ public class AuthenticationController implements UserDataHandler {
 
 			"timetable.write.self",
 			"timetable.read.self",
-			"timetable.delete.self",
-
-			"user.data.read.self",
-			"user.data.delete.self"
+			"timetable.delete.self"
 	);
 	private static MessageDigest md;
 	@Autowired
@@ -169,6 +170,7 @@ public class AuthenticationController implements UserDataHandler {
 			user.setVerified(true);
 			this.userRepository.save(user);
 			this.tokenController.deleteToken(userId, "verify", token);
+			VERIFIED_SCOPES.forEach(scope -> this.scopeController.addScope(userId, scope));
 			return Result.empty();
 		} else return Result.of(Error.FAILED, NAME_KEY);
 	}

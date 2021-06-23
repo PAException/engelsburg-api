@@ -38,16 +38,6 @@ public class ScopeController implements UserDataHandler {
 		this.scopeRepository.save(new ScopeModel(-1, userId, scope));
 	}
 
-	@Override
-	public void deleteUserData(UUID userId) {
-		this.scopeRepository.deleteAllByUserId(userId);
-	}
-
-	@Override
-	public Object[] getUserData(UUID userId) {
-		return this.mapData(this.scopeRepository.findAllByUserId(userId));
-	}
-
 	/**
 	 * Update scopes of a user
 	 *
@@ -59,6 +49,16 @@ public class ScopeController implements UserDataHandler {
 			if (!this.scopeRepository.existsByUserIdAndScope(user.getUserId(), scope))
 				this.scopeRepository.save(new ScopeModel(-1, user.getUserId(), scope));
 		});
+	}
+
+	@Override
+	public void deleteUserData(UUID userId) {
+		this.scopeRepository.deleteAllByUserId(userId);
+	}
+
+	@Override
+	public Object[] getUserData(UUID userId) {
+		return this.mapData(this.scopeRepository.findAllByUserId(userId));
 	}
 
 }
