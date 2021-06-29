@@ -1,28 +1,658 @@
 swagger: "2.0"
 info:
-  description: "Endpoint documentation of **v2** of the engelsburg-api"
-  version: "v2"
+  description: "Endpoint documentation of **v3** of the engelsburg-api"
+  version: "v3"
   title: "Engelsburg-API"
 host: "localhost"
 tags:
-  - name: "substitute"
-    description: "Access to substitutes and substituteMessages"
+  - name: "auth"
+    description: "Authentication endpoint"
   - name: "article"
-    description: "Access to published articles of homepage"
+    description: "Access to published articles of homepage **(PUBLIC)**"
   - name: "event"
-    description: "Access to events"
+    description: "Access to events **(PUBLIC)**"
+  - name: "grade"
+    description: "Access to grades"
   - name: "info"
     description: "Access to general information"
+  - name: "notification"
+    description: "Access to notification settings and devices"
+  - name: "substitute"
+    description: "Access to substitutes and substituteMessages"
+  - name: "task"
+    description: "Access to tasks"
+  - name: "timetable"
+    description: "Access to timetable"
+  - name: "user"
+    description: "Access to user data actions"
 schemes:
   - "http"
   - "https"
 paths:
+  /auth/signup:
+    post:
+      tags:
+        - "auth"
+      summary: "Sign up"
+      operationId: "singUp"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "Body"
+          schema:
+            $ref: "#/definitions/Grade"
+      responses:
+        "200":
+          description: "OK - Successful operation"
+  /auth/login:
+    get:
+      tags:
+        - "auth"
+      summary: "Login and retrieve JWT token"
+      operationId: "login"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "Body"
+          schema:
+            type: "object"
+            properties:
+              email:
+                type: "string"
+                example: "hello@gmail.com"
+                description: "[*Required*]"
+              password:
+                type: "string"
+                example: "password123"
+                description: "[*Required*]"
+      responses:
+        "200":
+          description: "OK - Successful operation"
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                description: "Json-Web-Token for authentication"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /auth/request_reset_password:
+    post:
+      tags:
+        - "auth"
+      summary: "Request to reset password"
+      operationId: "requestResetPassword"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          type: "string"
+          name: "email"
+          description: "Email to send to reset the password"
+          required: true
+      responses:
+        "200":
+          description: "OK - Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /auth/reset_password:
+    patch:
+      tags:
+        - "auth"
+      summary: "Reset password"
+      operationId: "resetPassword"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "Body"
+          schema:
+            type: "object"
+            properties:
+              email:
+                type: "string"
+                example: "hello@gmail.com"
+                description: "[*Required*]"
+              password:
+                type: "string"
+                example: "password123"
+                description: "[*Required*]"
+              token:
+                type: "string"
+                example: "8zp9nwe7v4"
+                description: "[*Required*]"
+      responses:
+        "200":
+          description: "OK - Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /auth/verify/{token}:
+    patch:
+      tags:
+        - "auth"
+      summary: "Verify account"
+      operationId: "verifyAccount"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: *none*"
+          required: true
+        - in: "path"
+          name: "token"
+          type: "string"
+          description: "Token send in email"
+          required: true
+      responses:
+        "200":
+          description: "OK - Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /article:
+    get:
+      tags:
+        - "article"
+      summary: "Get published articles of homepage"
+      operationId: "getArticles"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "query"
+          type: "number"
+          name: "date"
+          description: "All articles after timestamp (ms) will be listed (min: 0, default: 0, so all articles will be listed)"
+          required: false
+        - in: "query"
+          type: "number"
+          name: "page"
+          description: "Specify page (min: 1, default: 1)"
+          required: false
+        - in: "query"
+          type: "number"
+          name: "size"
+          description: "Specify articles per page (min: 1, max: 20, default: 10)"
+          required: false
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Article"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /event:
+    get:
+      tags:
+        - "event"
+      summary: "Get current events"
+      operationId: "getEvents"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+      responses:
+        "200":
+          description: "OK - Successful operation"
+          schema:
+            $ref: "#/definitions/Event"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /grade:
+    post:
+      tags:
+        - "grade"
+      summary: "Create a grade"
+      description: "Create and returns grade"
+      operationId: "createGrade"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **grade.write.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+                example: "Klausur"
+                description: "Name of grade"
+              share:
+                type: "number"
+                example: 0.5
+                description: "Float of total share of subject"
+              value:
+                type: "number"
+                example: 5
+                description: "Actual grade"
+              subject:
+                type: "string"
+                example: "mathematics"
+                description: "Subject of grade"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Grade"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+    patch:
+      tags:
+        - "grade"
+      summary: "Update a grade"
+      description: "Update and returns grade"
+      operationId: "updateGrade"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **grade.write.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            $ref: "#/definitions/Grade"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Grade"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+    get:
+      tags:
+        - "grade"
+      summary: "Get grades"
+      description: "Get grades of subject"
+      operationId: "getGrades"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **grade.read.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            type: object
+            properties:
+              subject:
+                type: string
+                example: "mathematics"
+                description: "Subject to get grades to"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Grade"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /grade/{gradeId}:
+    delete:
+      tags:
+        - "grade"
+      summary: "Delete grade"
+      description: "Delete grade by gradeId"
+      operationId: "deleteGrade"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **grade.delete.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "path"
+          type: number
+          name: "gradeId"
+          description: "GradeId to delete grade for"
+          required: true
+      responses:
+        "200":
+          description: "Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /info/classes:
+    get:
+      tags:
+        - "info"
+      summary: "Get current classes"
+      operationId: "getClasses"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **info.classes.read.all**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Classes"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /info/teacher:
+    get:
+      tags:
+        - "info"
+      summary: "Get all teachers"
+      operationId: "getTeachers"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **info.teacher.read.all**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            type: "object"
+            properties:
+              teachers:
+                type: "array"
+                items:
+                  $ref: "#/definitions/Teacher"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /info/teacher/{Abbreviation}:
+    get:
+      tags:
+        - "info"
+      summary: "Get information about specific teacher"
+      operationId: "getTeacher"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **info.teacher.read.all**"
+          required: true
+        - in: "path"
+          name: "Abbreviation"
+          type: "string"
+          description: "Abbreviation of teacher"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Teacher"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /user/notification:
+    patch:
+      tags:
+        - "notification"
+      summary: "Update notification settings"
+      description: "Update notification settings of user"
+      operationId: "updateNotificationSetting"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **notification.settings.write.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            type: "object"
+            properties:
+              enabled:
+                type: "boolean"
+                example: true
+              byTimetable:
+                type: "boolean"
+                example: true
+      responses:
+        "200":
+          description: "Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+    get:
+      tags:
+        - "notification"
+      summary: "Get notification settings"
+      description: "Get notification settings of user"
+      operationId: "getNotificationSettings"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **notification.settings.write.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            type: "object"
+            properties:
+              enabled:
+                type: "boolean"
+                example: true
+              byTimetable:
+                type: "boolean"
+                example: true
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /user/notification/device:
+    post:
+      tags:
+        - "notification"
+      summary: "Add notification device"
+      description: "Add notification device of user"
+      operationId: "addNotificationDevice"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **notification.settings.write.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            type: object
+            properties:
+              token:
+                type: "string"
+                example: "jgsyfskzjxsgnfhjshgnfxmsaukhnmfxkcsaglfjizxann"
+                description: "Token of firebase cloud messaging"
+      responses:
+        "200":
+          description: "Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+    delete:
+      tags:
+        - "notification"
+      summary: "Remove notification device"
+      description: "Remove a notification device of user"
+      operationId: "deleteNotificationDevice"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **notification.settings.write.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            type: object
+            properties:
+              token:
+                type: "string"
+                example: "jgsyfskzjxsgnfhjshgnfxmsaukhnmfxkcsaglfjizxann"
+                description: "Token of firebase cloud messaging"
+      responses:
+        "200":
+          description: "Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
   /substitute:
     get:
       tags:
         - "substitute"
       summary: "Get all substitutes"
-      description: "Only returns of current day and substitutes in the future"
+      description: "Returns current and future substitutes by default"
       operationId: "getSubstitutes"
       consumes:
         - "application/json"
@@ -31,13 +661,13 @@ paths:
       parameters:
         - in: "header"
           type: "string"
-          name: "ServiceToken"
-          description: "To identify friendly requests"
+          name: "Json-Web-Token"
+          description: "Required scopes: **substitute.read.current**, (*substitute.read.all* to read past substitutes)"
           required: true
         - in: "header"
           type: "string"
           name: "Hash"
-          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          description: "Hash of last request to check if response changed"
           required: false
         - in: "query"
           type: "number"
@@ -48,41 +678,17 @@ paths:
         "200":
           description: "Successful operation"
           schema:
-            $ref: "#/definitions/Substitute"
+            $ref: "#/definitions/Substitutes"
           headers:
             Hash:
               type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "401":
-          description: "Unauthorized - ServiceToken is wrong"
-        "304":
-          description: "Not Modified - Information hasn't changend (based on sent hash)"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "404":
-          description: "Not Found - The resources you requested wasn't found"
-          schema:
-            $ref: "#/definitions/Error404"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "400":
-          description: "Inavlid param - one of your given params was invalid"
-          schema:
-            $ref: "#/definitions/ErrorInvalidParam"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
+              description: "Hash of response body"
   /substitute/className:
     get:
       tags:
         - "substitute"
-      summary: "Filter substitutes by className"
-      description: "Only returns of current day and substitutes in the future"
+      summary: "Get substitutes by className"
+      description: "Returns current and future substitutes by default"
       operationId: "getSubstitutesByClassName"
       consumes:
         - "application/json"
@@ -91,13 +697,13 @@ paths:
       parameters:
         - in: "header"
           type: "string"
-          name: "ServiceToken"
-          description: "To identify friendly requests"
+          name: "Json-Web-Token"
+          description: "Required scopes: **substitute.read.current**, (*substitute.read.all* to read past substitutes)"
           required: true
         - in: "header"
           type: "string"
           name: "Hash"
-          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          description: "Hash of last request to check if response changed"
           required: false
         - in: "body"
           name: "Body"
@@ -116,41 +722,17 @@ paths:
         "200":
           description: "Successful operation"
           schema:
-            $ref: "#/definitions/Substitute"
+            $ref: "#/definitions/Substitutes"
           headers:
             Hash:
               type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "401":
-          description: "Unauthorized - ServiceToken is wrong"
-        "304":
-          description: "Not Modified - Information hasn't changend (based on sent hash)"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "404":
-          description: "Not Found - The resources you requested wasn't found"
-          schema:
-            $ref: "#/definitions/Error404"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "400":
-          description: "Inavlid param - one of your given params was invalid"
-          schema:
-            $ref: "#/definitions/ErrorInvalidParam"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
+              description: "Hash of response body"
   /substitute/teacher:
     get:
       tags:
         - "substitute"
-      summary: "Filter substitutes by teacher"
-      description: "Only returns of current day and substitutes in the future"
+      summary: "Get substitutes by teacher"
+      description: "Returns current and future substitutes by default"
       operationId: "getSubstitutesByTeacher"
       consumes:
         - "application/json"
@@ -159,13 +741,13 @@ paths:
       parameters:
         - in: "header"
           type: "string"
-          name: "ServiceToken"
-          description: "To identify friendly requests"
+          name: "Json-Web-Token"
+          description: "Required scopes: **substitute.read.current**, (*substitute.read.all* to read past substitutes)"
           required: true
         - in: "header"
           type: "string"
           name: "Hash"
-          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          description: "Hash of last request to check if response changed"
           required: false
         - in: "body"
           name: "Body"
@@ -190,41 +772,17 @@ paths:
         "200":
           description: "Successful operation"
           schema:
-            $ref: "#/definitions/Substitute"
+            $ref: "#/definitions/Substitutes"
           headers:
             Hash:
               type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "401":
-          description: "Unauthorized - ServiceToken is wrong"
-        "304":
-          description: "Not Modified - Information hasn't changend (based on sent hash)"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "404":
-          description: "Not Found - The resources you requested wasn't found"
-          schema:
-            $ref: "#/definitions/Error404"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "400":
-          description: "Inavlid param - one of your given params was invalid"
-          schema:
-            $ref: "#/definitions/ErrorInvalidParam"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
+              description: "Hash of response body"
   /substitute/substituteTeacher:
     get:
       tags:
         - "substitute"
       summary: "Filter substitutes by substituteTeacher"
-      description: "Only returns of current day and substitutes in the future"
+      description: "Returns current and future substitutes by default"
       operationId: "getSubstitutesBySubstituteTeacher"
       consumes:
         - "application/json"
@@ -233,13 +791,13 @@ paths:
       parameters:
         - in: "header"
           type: "string"
-          name: "ServiceToken"
-          description: "To identify friendly requests"
+          name: "Json-Web-Token"
+          description: "Required scopes: **substitute.read.current**, (*substitute.read.all* to read past substitutes)"
           required: true
         - in: "header"
           type: "string"
           name: "Hash"
-          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          description: "Hash of last request to check if response changed"
           required: false
         - in: "body"
           name: "Body"
@@ -258,41 +816,17 @@ paths:
         "200":
           description: "Successful operation"
           schema:
-            $ref: "#/definitions/Substitute"
+            $ref: "#/definitions/Substitutes"
           headers:
             Hash:
               type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "401":
-          description: "Unauthorized - ServiceToken is wrong"
-        "304":
-          description: "Not Modified - Information hasn't changend (based on sent hash)"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "404":
-          description: "Not Found - The resources you requested wasn't found"
-          schema:
-            $ref: "#/definitions/Error404"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "400":
-          description: "Inavlid param - one of your given params was invalid"
-          schema:
-            $ref: "#/definitions/ErrorInvalidParam"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
+              description: "Hash of response body"
   /substitute/message:
     get:
       tags:
         - "substitute"
       summary: "Get all substituteMessages"
-      description: "Only returns of current day and substitutes in the future"
+      description: "Returns current and future substitute messages by default"
       operationId: "getSubstitutesMessages"
       consumes:
         - "application/json"
@@ -301,13 +835,13 @@ paths:
       parameters:
         - in: "header"
           type: "string"
-          name: "ServiceToken"
-          description: "To identify friendly requests"
+          name: "Json-Web-Token"
+          description: "Required scopes: **substitute.message.read.current**, (*substitute.message.read.all* to read past substitutes)"
           required: true
         - in: "header"
           type: "string"
           name: "Hash"
-          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          description: "Hash of last request to check if response changed"
           required: false
         - in: "query"
           type: "number"
@@ -322,37 +856,14 @@ paths:
           headers:
             Hash:
               type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "401":
-          description: "Unauthorized - ServiceToken is wrong"
-        "304":
-          description: "Not Modified - Information hasn't changend (based on sent hash)"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "404":
-          description: "Not Found - The resources you requested wasn't found"
-          schema:
-            $ref: "#/definitions/Error404"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "400":
-          description: "Inavlid param - one of your given params was invalid"
-          schema:
-            $ref: "#/definitions/ErrorInvalidParam"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-  /article:
-    get:
+              description: "Hash of response body"
+  /task:
+    post:
       tags:
-        - "article"
-      summary: "Get published articles of homepage"
-      operationId: "getArticles"
+        - "task"
+      summary: "Create a task"
+      description: "Create and returns task"
+      operationId: "createTask"
       consumes:
         - "application/json"
       produces:
@@ -360,223 +871,520 @@ paths:
       parameters:
         - in: "header"
           type: "string"
-          name: "Hash"
-          description: "If you provide a hash you got from your last response the server checks if the information has changed"
-          required: false
-        - in: "query"
-          type: "number"
-          name: "date"
-          description: "All articles after timestamp (ms) will be listed (min: 0, default: 0, so all articles will be listed)"
-          required: false
-        - in: "query"
-          type: "number"
-          name: "page"
-          description: "Specify page (min: 1, default: 1)"
-          required: false
-        - in: "query"
-          type: "number"
-          name: "size"
-          description: "Specify articles per page (min: 1, max: 20, default: 10)"
-          required: false
-      responses:
-        "200":
-          description: "OK - Successful operation"
-          schema:
-            $ref: "#/definitions/Article"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "304":
-          description: "Not Modified - Information hasn't changend (based on sent hash)"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "404":
-          description: "Not Found - The resources you requested wasn't found"
-          schema:
-            $ref: "#/definitions/Error404"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "400":
-          description: "Inavlid param - one of your given params was invalid"
-          schema:
-            $ref: "#/definitions/ErrorInvalidParam"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-  /event:
-    get:
-      tags:
-        - "event"
-      summary: "Get current events"
-      operationId: "getEvents"
-      consumes:
-        - "application/json"
-      produces:
-        - "application/json"
-      parameters:
-        - in: "header"
-          type: "string"
-          name: "Hash"
-          description: "If you provide a hash you got from your last response the server checks if the information has changed"
-          required: false
-      responses:
-        "200":
-          description: "OK - Successful operation"
-          schema:
-            $ref: "#/definitions/Event"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "304":
-          description: "Not Modified - Information hasn't changend (based on sent hash)"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "404":
-          description: "Not Found - The resources you requested wasn't found"
-          schema:
-            $ref: "#/definitions/Error404"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-  /info/classes:
-    get:
-      tags:
-        - "info"
-      summary: "Get current classes"
-      operationId: "getClasses"
-      consumes:
-        - "application/json"
-      produces:
-        - "application/json"
-      parameters:
-        - in: "header"
-          type: "string"
-          name: "Hash"
-          description: "If you provide a hash you got from your last response the server checks if the information has changed"
-          required: false
-      responses:
-        "200":
-          description: "Successful operation"
-          schema:
-            $ref: "#/definitions/Classes"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "304":
-          description: "Not Modified - Information hasn't changend (based on sent hash)"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "404":
-          description: "Not Found - The resources you requested wasn't found"
-          schema:
-            $ref: "#/definitions/Error404"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-  /info/teacher:
-    get:
-      tags:
-        - "info"
-      summary: "Get all teachers"
-      operationId: "getTeachers"
-      consumes:
-        - "application/json"
-      produces:
-        - "application/json"
-      parameters:
-        - in: "header"
-          type: "string"
-          name: "Hash"
-          description: "If you provide a hash you got from your last response the server checks if the information has changed"
-          required: false
-      responses:
-        "200":
-          description: "Successful operation"
-          schema:
-            type: "object"
-            properties:
-              teachers:
-                type: "array"
-                items:
-                  $ref: "#/definitions/Teacher"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "304":
-          description: "Not Modified - Information hasn't changend (based on sent hash)"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "404":
-          description: "Not Found - The resources you requested wasn't found"
-          schema:
-            $ref: "#/definitions/Error404"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-  /info/teacher/{Abbreviation}:
-    get:
-      tags:
-        - "info"
-      summary: "Get all teachers"
-      operationId: "getTeacher"
-      consumes:
-        - "application/json"
-      produces:
-        - "application/json"
-      parameters:
-        - in: "path"
-          name: "Abbreviation"
-          type: "string"
-          description: "Abbreviation of teacher to identify"
+          name: "Json-Web-Token"
+          description: "Required scopes: **task.write.self**"
           required: true
         - in: "header"
           type: "string"
           name: "Hash"
-          description: "If you provide a hash you got from your last response the server checks if the information has changed"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            type: "object"
+            properties:
+              title:
+                type: "string"
+                example: "Mathebuch"
+                description: "Title of task"
+              created:
+                type: "number"
+                example: 1624990706194
+                description: "Time of creation in millis"
+              due:
+                type: "number"
+                example: 1624990932194
+                description: "Due date in millis"
+              subject:
+                type: "string"
+                example: "mathematics"
+                description: "Subject of task"
+              content:
+                type: "string"
+                example: "S225 Nr.6"
+                description: "Content of task"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Task"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+    patch:
+      tags:
+        - "task"
+      summary: "Update a task"
+      description: "Update and returns task"
+      operationId: "updateTask"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **task.write.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            type: "object"
+            properties:
+              taskId:
+                type: "number"
+                example: "1"
+                description: "Id of task to update and delete"
+              title:
+                type: "string"
+                example: "Mathebuch"
+                description: "Title of task"
+              due:
+                type: "number"
+                example: 1624990932194
+                description: "Due date in millis"
+              subject:
+                type: "string"
+                example: "mathematics"
+                description: "Subject of task"
+              content:
+                type: "string"
+                example: "S225 Nr.6"
+                description: "Content of task"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Task"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+    get:
+      tags:
+        - "task"
+      summary: "Get tasks"
+      description: "Get tasks after"
+      operationId: "getTasks"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **task.read.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            type: object
+            properties:
+              onlyUndone:
+                type: boolean
+                example: true
+                description: "Only get tasks which aren't mark as done"
+              date:
+                type: number
+                example: 1624991306588
+                description: "Get tasks to present from this date in millis"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            type: object
+            properties:
+              tasks:
+                type: array
+                items:
+                  $ref: "#/definitions/Grade"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /task/{taskId}:
+    delete:
+      tags:
+        - "task"
+      summary: "Delete task"
+      description: "Delete task by taskId"
+      operationId: "deleteTask"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **task.delete.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "path"
+          type: number
+          name: "taskId"
+          description: "TaskId to delete grade for"
+          required: true
+      responses:
+        "200":
+          description: "Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /task/done:
+    patch:
+      tags:
+        - "task"
+      summary: "Mark task as done"
+      description: "Mark a task as done"
+      operationId: "updateTaskDone"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **task.write.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            type: "object"
+            properties:
+              taskId:
+                type: "number"
+                example: "1"
+                description: "Id of task to update and delete"
+              done:
+                type: "boolean"
+                example: true
+                description: "True if task done"
+      responses:
+        "200":
+          description: "Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /timetable:
+    post:
+      tags:
+        - "timetable"
+      summary: "Set timetable entry"
+      description: "Set a new or existing timetable entry"
+      operationId: "setTimetable"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **timetable.write.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            $ref: "#/definitions/Timetable"
+      responses:
+        "200":
+          description: "Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+    get:
+      tags:
+        - "timetable"
+      summary: "Get timetable entries"
+      description: "Get timetable entries of lesson or/and day"
+      operationId: "getTimetable"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **timetable.read.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            type: object
+            properties:
+              day:
+                type: number
+                example: 2
+              lesson:
+                type: number
+                example: 6
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            type: object
+            properties:
+              entries:
+                type: array
+                items:
+                  $ref: "#/definitions/Timetable"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+    delete:
+      tags:
+        - "timetable"
+      summary: "Delete timetable entry"
+      description: "Delete timetable entry by lesson and day"
+      operationId: "deleteTimetable"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **timetable.delete.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "body"
+          name: "Body"
+          schema:
+            type: object
+            properties:
+              day:
+                type: number
+                example: 2
+              lesson:
+                type: number
+                example: 6
+      responses:
+        "200":
+          description: "Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /user/data:
+    get:
+      tags:
+        - "user"
+      summary: "Get userdata"
+      description: "Get whole saved information about the user"
+      operationId: "getUserData"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **user.data.read.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
           required: false
       responses:
         "200":
           description: "Successful operation"
           schema:
-            $ref: "#/definitions/Teacher"
+            type: object
+            properties:
+              userId:
+                type: string
+                example: "2bc2cee8-4c4c-415e-9af0-e4add53d4023"
+                description: "UserId of user"
+              data:
+                type: array
+                items:
+                  properties:
+                    nameKey:
+                      type: string
+                      example: "Task"
+                      description: "NameKey of section"
+                    queriedData:
+                      type: object
+                      description: "Object with user information of this section"
           headers:
             Hash:
               type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "304":
-          description: "Not Modified - Information hasn't changend (based on sent hash)"
+              description: "Hash of response body"
+    delete:
+      tags:
+        - "user"
+      summary: "Delete userdata"
+      description: "Delete whole user and saved information"
+      operationId: "deleteUserData"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **user.data.delete.self**"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+      responses:
+        "200":
+          description: "Successful operation"
           headers:
             Hash:
               type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
-        "404":
-          description: "Not Found - The resources you requested wasn't found"
-          schema:
-            $ref: "#/definitions/Error404"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body - send in header of another request to see if information has changend"
+              description: "Hash of response body"
 definitions:
-  Substitute:
+  Article:
+    type: "object"
+    properties:
+      articles:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            date:
+              type: "number"
+              example: 1602194843562
+            link:
+              type: "string"
+              example: "https://engelsburg.smmp.de/2020/10/02/informationsveranstaltungen-zur-aufnahme-2021/"
+            title:
+              type: "string"
+              example: "Informationsveranstaltungen zur Aufnahme 2021"
+            content:
+              type: "string"
+              example: "<p>Liebe Eltern, liebe Interessierte an der Engelsburg,</p>\n\n\n\n<p>nun beginnt die Zeit, ..."
+            mediaUrl:
+              type: "string"
+              example: "https://d1855q9qdxb6ev.cloudfront.net/files/2020/09/20190320-Postkarte-Schulpreis01-final1.jpg"
+              description: "[*Nullable*]"
+  Event:
+    type: "object"
+    properties:
+      events:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            date:
+              type: "string"
+              example: "2021-07-06"
+            title:
+              type: "string"
+              example: "Zeugnisausgabe"
+  Grade:
+    type: "object"
+    properties:
+      gradeId:
+        type: "number"
+        example: "1"
+        description: "Id of grade to update and delete"
+      name:
+        type: "string"
+        example: "Klausur"
+        description: "Name of the grade"
+      share:
+        type: "number"
+        example: 0.5
+        description: "Float of total share of subject"
+      value:
+        type: "number"
+        example: 5
+        description: "Actual grade"
+      subject:
+        type: "string"
+        example: "mathematics"
+        description: "Subject of grade"
+  Classes:
+    type: "object"
+    properties:
+      classes:
+        type: "array"
+        description: "Can be empty"
+        items:
+          type: "string"
+          example: "5a"
+  Teacher:
+    type: "object"
+    properties:
+      abbreviation:
+        type: "string"
+        example: "AHE"
+        description: "Abbreviation of the teacher in reference to substitutes"
+      firstname:
+        type: "string"
+        example: "Christine"
+        description: "Firstname of the teacher"
+      surname:
+        type: "string"
+        example: "von der Ahé"
+        description: "Surname of the teacher"
+      gender:
+        type: "string"
+        example: "female"
+        description: "female or male"
+      mentionedPhD:
+        type: "boolean"
+        example: false
+        description: "True if a PhD is mentioned"
+      jobs:
+        type: "array"
+        items:
+          type: "string"
+          example: "Biologie"
+  Substitutes:
     type: "object"
     properties:
       substitutes:
@@ -658,83 +1466,74 @@ definitions:
               type: "string"
               example: "Die ... AG fällt heute aus!"
               description: "[*Nullable*]"
-  Article:
+  Task:
     type: "object"
     properties:
-      articles:
-        type: "array"
-        items:
-          type: "object"
-          properties:
-            date:
-              type: "number"
-              example: 1602194843562
-            link:
-              type: "string"
-              example: "https://engelsburg.smmp.de/2020/10/02/informationsveranstaltungen-zur-aufnahme-2021/"
-            title:
-              type: "string"
-              example: "Informationsveranstaltungen zur Aufnahme 2021"
-            content:
-              type: "string"
-              example: "<p>Liebe Eltern, liebe Interessierte an der Engelsburg,</p>\n\n\n\n<p>nun beginnt die Zeit, ..."
-            mediaUrl:
-              type: "string"
-              example: "https://d1855q9qdxb6ev.cloudfront.net/files/2020/09/20190320-Postkarte-Schulpreis01-final1.jpg"
-              description: "[*Nullable*]"
-  Event:
-    type: "object"
-    properties:
-      articles:
-        type: "array"
-        items:
-          type: "object"
-          properties:
-            date:
-              type: "string"
-              example: "2021-07-06"
-            title:
-              type: "string"
-              example: "Zeugnisausgabe"
-  Classes:
-    type: "object"
-    properties:
-      classes:
-        type: "array"
-        description: "Can be empty"
-        items:
-          type: "string"
-          example: "5a"
-  Teacher:
-    type: "object"
-    properties:
-      abbreviation:
+      taskId:
+        type: "number"
+        example: "1"
+        description: "Id of task to update and delete"
+      title:
         type: "string"
-        example: "AHE"
-        description: "Abbreviation of the teacher in reference to substitutes"
-      firstname:
+        example: "Mathebuch"
+        description: "Title of task"
+      created:
+        type: "number"
+        example: 1624990706194
+        description: "Time of creation in millis"
+      due:
+        type: "number"
+        example: 1624990932194
+        description: "Due date in millis"
+      subject:
         type: "string"
-        example: "Christine"
-        description: "Firstname of the teacher"
-      surname:
+        example: "mathematics"
+        description: "Subject of task"
+      content:
         type: "string"
-        example: "von der Ahé"
-        description: "Surname of the teacher"
-      gender:
-        type: "string"
-        example: "female"
-        description: "female or male"
-      mentionedPhD:
+        example: "S225 Nr.6"
+        description: "Content of task"
+      done:
         type: "boolean"
-        example: false
-        description: "True if a PhD is mentioned"
-      jobs:
-        type: "array"
-        items:
-          type: "string"
-          example: "Biologie"
-  Error404:
+        example: true
+        description: "Is task marked as done?"
+  Timetable:
     type: "object"
+    properties:
+      day:
+        type: number
+        example: 2
+      lesson:
+        type: number
+        example: 6
+      subject:
+        type: "string"
+        example: "M"
+      teacher:
+        type: "string"
+        example: "KRÄ"
+      className:
+        type: "string"
+        example: "10c"
+      room:
+        type: "string"
+        example: "H001"
+  ErrorForbidden:
+    type: "object"
+    description: "A resource can't be accessed because of lacking permission"
+    properties:
+      status:
+        type: "number"
+        example: 403
+      messageKey:
+        type: "string"
+        example: "FORBIDDEN"
+      extra:
+        type: "string"
+        example: "substitutes"
+  ErrorNotFound:
+    type: "object"
+    description: "A resource wasn't found"
     properties:
       status:
         type: "number"
@@ -744,9 +1543,36 @@ definitions:
         example: "NOT_FOUND"
       extra:
         type: "string"
-        example: "what wasn't found e.g.'substitutes'"
+        example: "substitutes"
+  ErrorNotModified:
+    type: "object"
+    description: "The request resource assumed as not modified by the sent hash"
+    properties:
+      status:
+        type: "number"
+        example: 304
+      messageKey:
+        type: "string"
+        example: "NOT_MODIFIED"
+      extra:
+        type: "string"
+        example: "substitutes"
+  ErrorAlreadyExists:
+    type: "object"
+    description: "A resource already exists"
+    properties:
+      status:
+        type: "number"
+        example: 409
+      messageKey:
+        type: "string"
+        example: "ALREADY_EXISTS"
+      extra:
+        type: "string"
+        example: "substitutes"
   ErrorInvalidParam:
     type: "object"
+    description: "A given parameter is invalid"
     properties:
       status:
         type: "number"
@@ -756,4 +1582,69 @@ definitions:
         example: "INVALID_PARAM"
       extra:
         type: "string"
-        example: "what param was invalid and why"
+        example: "className"
+  ErrorUnauthorized:
+    type: "object"
+    description: "The request is not authorized"
+    properties:
+      status:
+        type: "number"
+        example: 401
+      messageKey:
+        type: "string"
+        example: "UNAUTHORIZED"
+      extra:
+        type: "string"
+        example: "substitutes"
+  ErrorJWTExpired:
+    type: "object"
+    description: "Sent JWT is expired: login again"
+    properties:
+      status:
+        type: "number"
+        example: 400
+      messageKey:
+        type: "string"
+        example: "EXPIRED"
+      extra:
+        type: "string"
+        example: "token"
+  ErrorJWTInvalid:
+    type: "object"
+    description: "Sent JWT is invalid"
+    properties:
+      status:
+        type: "number"
+        example: 400
+      messageKey:
+        type: "string"
+        example: "INVALID"
+      extra:
+        type: "string"
+        example: "token"
+  ErrorJWTFailed:
+    type: "object"
+    description: "JWT Authentication failed"
+    properties:
+      status:
+        type: "number"
+        example: 400
+      messageKey:
+        type: "string"
+        example: "FAILED"
+      extra:
+        type: "string"
+        example: "token"
+  ErrorInternalServerError:
+    type: "object"
+    description: "An internal server error occurred"
+    properties:
+      status:
+        type: "number"
+        example: 500
+      messageKey:
+        type: "string"
+        example: "INTERNAL_SERVER_ERROR"
+      extra:
+        type: "string"
+        example: "substitutes"

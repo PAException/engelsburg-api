@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DeleteTimetableEntryRequestDTO {
 
-	private int day;
-	private int lesson;
+	private int day = -1;
+	private int lesson = -1;
 
 }

@@ -13,6 +13,7 @@ import io.github.paexception.engelsburg.api.endpoint.dto.request.ResetPasswordRe
 import io.github.paexception.engelsburg.api.endpoint.dto.request.SignUpRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.LoginResponseDTO;
 import io.github.paexception.engelsburg.api.service.email.EmailService;
+import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -85,7 +86,6 @@ public class AuthenticationController implements UserDataHandler {
 		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		UserModel user = optionalUser.get();
-		if (!user.isVerified()) return Result.of(Error.NOT_VERIFIED, NAME_KEY);
 		if (!user.getPassword().equals(this.hashPassword(dto.getPassword(), user.getSalt())))
 			return Result.of(Error.FORBIDDEN, NAME_KEY);
 
@@ -99,7 +99,7 @@ public class AuthenticationController implements UserDataHandler {
 	 * @return empty response or error
 	 */
 	public Result<?> signUp(SignUpRequestDTO dto) {
-		if (!dto.getSchoolToken().equals(System.getenv("SCHOOL_TOKEN")))
+		if (!dto.getSchoolToken().equals(Environment.SCHOOL_TOKEN))
 			return Result.of(Error.FORBIDDEN, NAME_KEY);
 
 		Optional<UserModel> optionalUser = this.userRepository.findByEmail(dto.getEmail());

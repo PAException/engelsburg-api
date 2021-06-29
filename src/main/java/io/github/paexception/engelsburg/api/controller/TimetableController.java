@@ -7,6 +7,7 @@ import io.github.paexception.engelsburg.api.database.repository.TimetableReposit
 import io.github.paexception.engelsburg.api.endpoint.dto.TimetableDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.DeleteTimetableEntryRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.GetTimetableEntriesRequestDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.response.GetTimetableEntriesResponseDTO;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,7 @@ public class TimetableController implements UserDataHandler {
 	 * @return empty result or error
 	 */
 	public Result<?> setTimetableEntry(TimetableDTO dto, DecodedJWT jwt) {
-		if (dto.getDay() == -1 || dto.getLesson() == -1) return Result.of(Error.MISSING_PARAM, NAME_KEY);
+		if (dto.getDay() == -1 || dto.getLesson() == -1) return Result.of(Error.INVALID_PARAM, NAME_KEY);
 		UUID userId = UUID.fromString(jwt.getSubject());
 		Optional<TimetableModel> optionalTimetable = this.timetableRepository
 				.findByUserIdAndDayAndLesson(userId, dto.getDay(), dto.getLesson());
@@ -81,7 +82,7 @@ public class TimetableController implements UserDataHandler {
 	 * @param jwt with userId
 	 * @return list of timetable entries
 	 */
-	public Result<List<TimetableDTO>> getTimetableEntries(GetTimetableEntriesRequestDTO dto, DecodedJWT jwt) {
+	public Result<GetTimetableEntriesResponseDTO> getTimetableEntries(GetTimetableEntriesRequestDTO dto, DecodedJWT jwt) {
 		UUID userId = UUID.fromString(jwt.getSubject());
 		List<TimetableDTO> dtos;
 		if (dto.getDay() >= 0 && dto.getLesson() >= 0) {
@@ -99,7 +100,7 @@ public class TimetableController implements UserDataHandler {
 		}
 
 		if (dtos.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
-		else return Result.of(dtos);
+		else return Result.of(new GetTimetableEntriesResponseDTO(dtos));
 	}
 
 	/**

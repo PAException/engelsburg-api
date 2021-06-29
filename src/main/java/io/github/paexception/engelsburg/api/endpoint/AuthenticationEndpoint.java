@@ -8,6 +8,8 @@ import io.github.paexception.engelsburg.api.endpoint.dto.request.SignUpRequestDT
 import io.github.paexception.engelsburg.api.spring.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,7 +33,7 @@ public class AuthenticationEndpoint {
 	 *
 	 * @see AuthenticationController#login(LoginRequestDTO)
 	 */
-	@PostMapping("/auth/login")
+	@GetMapping("/auth/login")
 	public Object login(@RequestBody @Valid LoginRequestDTO dto) {
 		return this.authenticationController.login(dto).getHttpResponse();
 	}
@@ -61,7 +63,7 @@ public class AuthenticationEndpoint {
 	 *
 	 * @see AuthenticationController#resetPassword(ResetPasswordRequestDTO)
 	 */
-	@PostMapping("/auth/reset_password")
+	@PatchMapping("/auth/reset_password")
 	public Object resetPassword(@RequestBody @Valid ResetPasswordRequestDTO dto) {
 		return this.authenticationController.resetPassword(dto).getHttpResponse();
 	}
@@ -72,7 +74,7 @@ public class AuthenticationEndpoint {
 	 * @see AuthenticationController#verify(DecodedJWT, String)
 	 */
 	@AuthScope
-	@PostMapping("/auth/verify/{token}")
+	@PatchMapping("/auth/verify/{token}")
 	public Object verify(DecodedJWT jwt, @PathVariable @NotBlank String token) {
 		return this.authenticationController.verify(jwt, token).getHttpResponse();
 	}

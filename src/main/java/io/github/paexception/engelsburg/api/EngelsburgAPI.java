@@ -1,5 +1,6 @@
 package io.github.paexception.engelsburg.api;
 
+import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.JwtUtil;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -16,7 +17,7 @@ import java.util.Collections;
 public class EngelsburgAPI {
 
 	@Getter
-	private static final JwtUtil jwtUtil = new JwtUtil("engelsburg-api", Collections.emptyList(), System.getenv("JWT_SECRET"));
+	private static final JwtUtil jwtUtil = new JwtUtil("engelsburg-api", Collections.emptyList(), Environment.JWT_SECRET);
 	@Getter
 	private static final Logger LOGGER = LoggerFactory.getLogger(EngelsburgAPI.class.getSimpleName());
 

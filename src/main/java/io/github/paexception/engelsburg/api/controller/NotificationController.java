@@ -51,12 +51,6 @@ public class NotificationController implements UserDataHandler {
 		}
 
 		notificationSettings.setEnabled(dto.isEnabled());
-		notificationSettings.setByClass(dto.isByClass());
-		if (dto.isByClass() && dto.getClassName().isBlank()) Result.of(Error.MISSING_PARAM, NAME_KEY);
-		else notificationSettings.setClassName(dto.getClassName());
-		notificationSettings.setByTeacher(dto.isByTeacher());
-		if (dto.isByTeacher() && dto.getTeacherAbbreviation().isBlank()) Result.of(Error.MISSING_PARAM, NAME_KEY);
-		else notificationSettings.setTeacherAbbreviation(dto.getTeacherAbbreviation());
 		notificationSettings.setByTimetable(dto.isByTimetable());
 
 		this.notificationSettingsRepository.save(notificationSettings);
@@ -121,61 +115,15 @@ public class NotificationController implements UserDataHandler {
 	}
 
 	/**
-	 * Fetch all device tokens of users who enabled notifications by className
-	 *
-	 * @param classNames Set of classNames needed to fetch device tokens
-	 * @return a Set of device tokens
-	 */
-	@Transactional
-	public Set<String> getSubstituteNotificationTokensByClassName(Set<String> classNames) {
-		return classNames.stream().flatMap(className -> this.notificationSettingsRepository
-				.findAllByEnabledAndByClassAndClassName(true, true, className)//Get all users with enabled notifications and filter byClass
-				.map(NotificationSettingsModel::getUserId))
-
-				.flatMap(userId -> this.notificationDeviceRepository.findAllByUserId(userId).stream()//Get all device tokens of those users
-						.map(NotificationDeviceModel::getToken)).collect(Collectors.toSet());
-	}
-
-	/**
-	 * Fetch all device tokens of users who enabled notifications by teacherAbbreviation
-	 *
-	 * @param teachers Set of teacherAbbreviations needed to fetch device tokens
-	 * @return a Set of device tokens
-	 */
-	@Transactional
-	public Set<String> getSubstituteNotificationTokensByTeacher(Set<String> teachers) {
-		return teachers.stream().flatMap(teacher -> this.notificationSettingsRepository
-				.findAllByEnabledAndByTeacherAndTeacherAbbreviation(true, true, teacher)//Get all users with enabled notifications and filter byTeacher
-				.map(NotificationSettingsModel::getUserId))
-
-				.flatMap(userId -> this.notificationDeviceRepository.findAllByUserId(userId).stream()//Get all device tokens of those users
-						.map(NotificationDeviceModel::getToken)).collect(Collectors.toSet());
-	}
-
-	/**
 	 * Fetch all device tokens of userIds
 	 *
 	 * @param userIds Set of userIds to fetch for
 	 * @return a Set of device tokens
 	 */
 	@Transactional
-	public Set<String> getTokensOfUsers(Stream<UUID> userIds) {
-		return userIds.flatMap(userId -> this.notificationDeviceRepository.findAllByUserId(userId).stream()
-				.map(NotificationDeviceModel::getToken)).collect(Collectors.toSet());
-	}
-
-	/**
-	 * Fetch all device tokens of users who enabled article notifications
-	 *
-	 * @return a Set of device tokens
-	 */
-	@Transactional
-	public Set<String> getArticleNotificationTokens() {
-		return this.notificationSettingsRepository
-				.findAllByEnabledAndArticleNotifications(true, true)//Get all users with enabled article notifications
-				.map(NotificationSettingsModel::getUserId)
-
-				.flatMap(userId -> this.notificationDeviceRepository.findAllByUserId(userId).stream()//Get all device tokens of those users
+	public Set<String> getTimetableNotificationTokensOfUsers(Stream<UUID> userIds) {
+		return userIds.filter(userId -> this.notificationSettingsRepository.existsByUserIdAndEnabledAndByTimetable(userId, true, true))
+				.flatMap(userId -> this.notificationDeviceRepository.findAllByUserId(userId).stream()
 						.map(NotificationDeviceModel::getToken)).collect(Collectors.toSet());
 	}
 

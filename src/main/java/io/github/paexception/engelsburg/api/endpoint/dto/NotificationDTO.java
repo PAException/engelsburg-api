@@ -11,6 +11,6 @@ import java.util.Set;
 public class NotificationDTO {
 
 	private Set<String> tokens;
-	private SubstituteDTO dto;
+	private Object dto;
 
 }

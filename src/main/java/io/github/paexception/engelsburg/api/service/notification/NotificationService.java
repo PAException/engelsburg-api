@@ -9,10 +9,9 @@ import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
 import io.github.paexception.engelsburg.api.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -26,21 +25,18 @@ public class NotificationService {
 	@Autowired
 	private NotificationController notificationController;
 
+	/**
+	 * Processes SubstituteDTOs to send as notification
+	 *
+	 * @param dtos SubstituteDTOs
+	 */
 	public void sendSubstituteNotifications(List<SubstituteDTO> dtos) {
-		Set<String> tokens = new HashSet<>();
-		Set<String> classNames = new HashSet<>();
-		Set<String> teachers = new HashSet<>();
 		dtos.forEach(dto -> {
-			classNames.add(dto.getClassName());
-			teachers.add(dto.getTeacher());
-			teachers.add(dto.getSubstituteTeacher());
+			this.firebaseCloudMessaging.sendNotificationToTopics("substitute", dto, this.splitClasses(dto.getClassName()));
+			this.firebaseCloudMessaging.sendNotificationToTopics("substitute", dto, "teacher." + dto.getSubstituteTeacher());
 		});
 
-		tokens.addAll(this.notificationController.getSubstituteNotificationTokensByClassName(classNames));
-		tokens.addAll(this.notificationController.getSubstituteNotificationTokensByTeacher(teachers));
-		this.firebaseCloudMessaging.sendNotifications(tokens.toArray(String[]::new));
-
-		this.firebaseCloudMessaging.sendAdvancedNotifications(dtos.stream().map(dto -> {
+		this.firebaseCloudMessaging.sendAdvancedNotifications("substitute", dtos.stream().map(dto -> {
 			calendar.setTime(dto.getDate());
 			return Pair.of(this.timetableController.getAllByWeekDayAndLessonAndTeacherOrClassName(
 					calendar.get(Calendar.DAY_OF_WEEK),
@@ -48,14 +44,61 @@ public class NotificationService {
 					dto.getTeacher(),
 					dto.getClassName()), dto);
 		}).map(dtoPair -> new NotificationDTO(
-				this.notificationController.getTokensOfUsers(dtoPair.getLeft().stream().map(TimetableModel::getUserId)),
+				this.notificationController.getTimetableNotificationTokensOfUsers(dtoPair.getLeft().stream().map(TimetableModel::getUserId)),
 				dtoPair.getRight())).collect(Collectors.toList()
 		));
 	}
 
+	/**
+	 * Sends article notifications
+	 *
+	 * @param dto ArticleDTO
+	 */
 	public void sendArticleNotifications(ArticleDTO dto) {
-		this.firebaseCloudMessaging.sendArticleNotifications(this.notificationController
-				.getArticleNotificationTokens().toArray(String[]::new), dto);
+		this.firebaseCloudMessaging.sendNotificationToTopics("article", dto, "article");
+	}
+
+	/**
+	 * Splits possible className merges like 10ab to 10a, 10b to send notifications to specific topics
+	 *
+	 * @param className to split
+	 * @return array of classNames
+	 */
+	private String[] splitClasses(String className) {
+		if (className.length() <= 2 || (Character.isDigit(className.charAt(1)) && className.length() == 3)) {
+			return new String[]{"class." + className};
+		} else {//5ab or 5ab6ab or E2Q2Q4
+			List<String> strings = new ArrayList<>();
+			StringBuilder curr = new StringBuilder();
+			char c;
+			boolean write = false, adv = false;
+			for (int i = 0; i < className.length(); i++) {
+				c = className.charAt(i);
+				if (Character.isDigit(c)) {
+					if (!adv || write) {
+						if (!write) {
+							write = true;
+							curr = new StringBuilder();
+						}
+						curr.append(c);
+					} else {
+						strings.add("class." + curr + c);
+						curr = new StringBuilder();
+					}
+				} else {
+					if (Character.isLowerCase(c)) {
+						write = false;
+						strings.add("class." + curr + c);
+					} else {
+						curr = new StringBuilder();
+						adv = true;
+						curr.append(c);
+					}
+				}
+			}
+
+			return strings.toArray(String[]::new);
+		}
 	}
 
 }

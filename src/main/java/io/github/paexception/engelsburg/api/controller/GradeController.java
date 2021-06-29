@@ -55,7 +55,7 @@ public class GradeController implements UserDataHandler {
 	 */
 	public Result<GradeDTO> updateGrade(UpdateGradeRequestDTO dto, DecodedJWT jwt) {
 		UUID userId = UUID.fromString(jwt.getSubject());
-		if (dto.getGradeId() < 0) return Result.of(Error.MISSING_PARAM, NAME_KEY);
+		if (dto.getGradeId() < 0) return Result.of(Error.INVALID_PARAM, NAME_KEY);
 
 		Optional<GradeModel> optionalGrade = this.gradeRepository.findById(dto.getGradeId());
 		if (optionalGrade.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);

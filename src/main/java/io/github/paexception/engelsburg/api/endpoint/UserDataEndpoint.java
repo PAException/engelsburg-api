@@ -25,7 +25,7 @@ public class UserDataEndpoint {
 	 * @see UserDataController#getUserData(DecodedJWT)
 	 */
 	@AuthScope("user.data.read.self")
-	@GetMapping("/user/data/get")
+	@GetMapping("/user/data")
 	public Object getData(DecodedJWT jwt) {
 		return this.userDataController.getUserData(jwt).getHttpResponse();
 	}
@@ -38,7 +38,7 @@ public class UserDataEndpoint {
 	 * @see UserDataController#deleteUserData(DecodedJWT)
 	 */
 	@AuthScope("user.data.delete.self")
-	@DeleteMapping("/user/data/delete")
+	@DeleteMapping("/user/data")
 	public Object deleteData(DecodedJWT jwt) {
 		return this.userDataController.deleteUserData(jwt).getHttpResponse();
 	}

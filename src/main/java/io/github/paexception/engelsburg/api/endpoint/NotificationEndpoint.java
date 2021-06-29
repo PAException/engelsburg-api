@@ -8,6 +8,7 @@ import io.github.paexception.engelsburg.api.spring.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,7 +29,7 @@ public class NotificationEndpoint {
 	 * @see NotificationController#changeNotificationSettings(ChangeNotificationSettingsRequestDTO, DecodedJWT)
 	 */
 	@AuthScope("notification.settings.write.self")
-	@PostMapping("/user/notification")
+	@PatchMapping("/user/notification")
 	public Object changeNotificationSettings(@RequestBody @Valid ChangeNotificationSettingsRequestDTO dto, DecodedJWT jwt) {
 		return this.notificationController.changeNotificationSettings(dto, jwt).getHttpResponse();
 	}

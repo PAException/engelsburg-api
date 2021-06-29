@@ -60,7 +60,7 @@ public class TaskController implements UserDataHandler {
 	 */
 	public Result<TaskDTO> updateTask(UpdateTaskRequestDTO dto, DecodedJWT jwt) {
 		UUID userId = UUID.fromString(jwt.getSubject());
-		if (dto.getTaskId() < 0) return Result.of(Error.MISSING_PARAM, NAME_KEY);
+		if (dto.getTaskId() < 0) return Result.of(Error.INVALID_PARAM, NAME_KEY);
 		Optional<TaskModel> optionalTask = this.taskRepository.findById(dto.getTaskId());
 		if (optionalTask.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 		if (!optionalTask.get().getUserId().equals(userId)) Result.of(Error.FORBIDDEN, NAME_KEY);
@@ -83,7 +83,7 @@ public class TaskController implements UserDataHandler {
 	 * @param jwt with userId
 	 * @return list of taskDTOs
 	 */
-	public Result<List<TaskDTO>> getTasks(GetTasksRequestDTO dto, DecodedJWT jwt) {
+	public Result<GetTasksResponseDTO> getTasks(GetTasksRequestDTO dto, DecodedJWT jwt) {
 		UUID userId = UUID.fromString(jwt.getSubject());
 		List<TaskDTO> dtos;
 		if (dto.isOnlyUndone())
@@ -93,7 +93,7 @@ public class TaskController implements UserDataHandler {
 				.map(TaskModel::toResponseDTO).collect(Collectors.toList());
 
 		if (dtos.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
-		else return Result.of(dtos);
+		else return Result.of(new GetTasksResponseDTO(dtos));
 	}
 
 	/**

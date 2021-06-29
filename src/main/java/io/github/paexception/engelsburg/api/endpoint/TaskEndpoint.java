@@ -10,6 +10,7 @@ import io.github.paexception.engelsburg.api.spring.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,7 +31,7 @@ public class TaskEndpoint {
 	 * @see TaskController#createTask(CreateTaskRequestDTO, DecodedJWT)
 	 */
 	@AuthScope("task.write.self")
-	@PostMapping("/task/create")
+	@PostMapping("/task")
 	public Object createTask(@RequestBody CreateTaskRequestDTO dto, DecodedJWT jwt) {
 		return this.taskController.createTask(dto, jwt).getHttpResponse();
 	}
@@ -41,7 +42,7 @@ public class TaskEndpoint {
 	 * @see TaskController#updateTask(UpdateTaskRequestDTO, DecodedJWT)
 	 */
 	@AuthScope("task.write.self")
-	@PostMapping("/task/update")
+	@PatchMapping("/task")
 	public Object updateTask(@RequestBody UpdateTaskRequestDTO dto, DecodedJWT jwt) {
 		return this.taskController.updateTask(dto, jwt).getHttpResponse();
 	}
@@ -63,7 +64,7 @@ public class TaskEndpoint {
 	 * @see TaskController#markAsDone(MarkTaskAsDoneRequestDTO, DecodedJWT)
 	 */
 	@AuthScope("task.write.self")
-	@PostMapping("/task/done")
+	@PatchMapping("/task/done")
 	public Object markTaskAsDone(@RequestBody MarkTaskAsDoneRequestDTO dto, DecodedJWT jwt) {
 		return this.taskController.markAsDone(dto, jwt).getHttpResponse();
 	}

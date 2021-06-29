@@ -9,6 +9,7 @@ import io.github.paexception.engelsburg.api.spring.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,7 +30,7 @@ public class GradeEndpoint {
 	 * @see GradeController#createGrade(CreateGradeRequestDTO, DecodedJWT)
 	 */
 	@AuthScope("grade.write.self")
-	@PostMapping("/grade/create")
+	@PostMapping("/grade")
 	public Object createGrade(@RequestBody CreateGradeRequestDTO dto, DecodedJWT jwt) {
 		return this.gradeController.createGrade(dto, jwt).getHttpResponse();
 	}
@@ -40,7 +41,7 @@ public class GradeEndpoint {
 	 * @see GradeController#updateGrade(UpdateGradeRequestDTO, DecodedJWT)
 	 */
 	@AuthScope("grade.write.self")
-	@PostMapping("/grade/update")
+	@PatchMapping("/grade")
 	public Object updateGrade(@RequestBody UpdateGradeRequestDTO dto, DecodedJWT jwt) {
 		return this.gradeController.updateGrade(dto, jwt).getHttpResponse();
 	}
