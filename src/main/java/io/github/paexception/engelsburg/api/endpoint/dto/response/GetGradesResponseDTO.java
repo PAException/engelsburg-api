@@ -1,16 +1,16 @@
 package io.github.paexception.engelsburg.api.endpoint.dto.response;
 
-import io.github.paexception.engelsburg.api.endpoint.dto.EventDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.GradeDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class GetEventsResponseDTO {
+@AllArgsConstructor
+public class GetGradesResponseDTO {
 
-	private List<EventDTO> events;
+	private List<GradeDTO> grades;
 
 }

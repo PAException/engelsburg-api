@@ -9,6 +9,10 @@ import java.util.List;
 @Repository
 public interface ArticleRepository extends PagingAndSortingRepository<ArticleModel, Integer> {
 
-	List<ArticleModel> findAllByDateGreaterThanEqual(long date, Pageable pageable);
+	List<ArticleModel> findAllByDateGreaterThanEqualOrderByDateAsc(long date, Pageable pageable);
+
+	List<ArticleModel> findAllByDateLessThanEqualOrderByDateDesc(long date, Pageable pageable);
+
+	boolean existsByDate(long date);
 
 }

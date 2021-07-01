@@ -1,4 +1,4 @@
-package io.github.paexception.engelsburg.api.spring.interceptor;
+package io.github.paexception.engelsburg.api.spring;
 
 import lombok.NoArgsConstructor;
 import org.springframework.core.MethodParameter;
@@ -16,7 +16,7 @@ import java.util.List;
  */
 @ControllerAdvice
 @NoArgsConstructor
-public class HashInterceptor implements ResponseBodyAdvice<Object> {
+public class HashVerifier implements ResponseBodyAdvice<Object> {
 
 	@Override
 	public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {

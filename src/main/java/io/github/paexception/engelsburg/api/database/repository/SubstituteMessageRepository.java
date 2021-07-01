@@ -11,6 +11,4 @@ public interface SubstituteMessageRepository extends JpaRepository<SubstituteMes
 
 	List<SubstituteMessageModel> findAllByDateGreaterThanEqual(Date date);
 
-	List<SubstituteMessageModel> findAllByDate(Date date);
-
 }

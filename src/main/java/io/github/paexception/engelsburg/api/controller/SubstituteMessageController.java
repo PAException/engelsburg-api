@@ -1,11 +1,12 @@
 package io.github.paexception.engelsburg.api.controller;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.database.model.SubstituteMessageModel;
 import io.github.paexception.engelsburg.api.database.repository.SubstituteMessageRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateSubstituteMessageRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetSubstituteMessagesResponseDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.response.SubstituteMessageResponseDTO;
 import io.github.paexception.engelsburg.api.service.scheduled.SubstituteUpdateService;
+import io.github.paexception.engelsburg.api.util.Constants;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.apache.commons.lang3.time.DateUtils;
@@ -13,8 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import static io.github.paexception.engelsburg.api.util.Constants.SubstituteMessage.NAME_KEY;
 
 /**
@@ -25,6 +26,19 @@ public class SubstituteMessageController {
 
 	@Autowired
 	private SubstituteMessageRepository substituteMessageRepository;
+
+	/**
+	 * Checks if sender has permission to get past substitutes messages
+	 *
+	 * @param jwt  with scopes
+	 * @param date specified
+	 * @return true if permitted, false if not
+	 */
+	private static boolean pastTimeCheck(DecodedJWT jwt, long date) {
+		if (!jwt.getClaim("scopes").asList(String.class).contains("substitute.message.read.all")) {
+			return DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date)) || System.currentTimeMillis() <= date;//Same day or in the future
+		} else return true;
+	}
 
 	/**
 	 * Create a substitute message
@@ -66,21 +80,14 @@ public class SubstituteMessageController {
 	 * @param date can't be in the past
 	 * @return all found substitute messages
 	 */
-	public Result<GetSubstituteMessagesResponseDTO> getAllSubstituteMessages(long date) {
-		if (!(DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date))
-				|| System.currentTimeMillis() < date) && date != 0)
-			return Result.of(Error.INVALID_PARAM, "Date can't be in the past");
+	public Result<GetSubstituteMessagesResponseDTO> getAllSubstituteMessages(long date, DecodedJWT jwt) {
+		if (date < 0) date = System.currentTimeMillis();
+		if (!pastTimeCheck(jwt, date)) return Result.of(Error.FORBIDDEN, Constants.Substitute.NAME_KEY);
 
-		List<SubstituteMessageModel> substitutes;
-		if (date == 0)
-			substitutes = this.substituteMessageRepository.findAllByDateGreaterThanEqual(new Date(System.currentTimeMillis()));
-		else substitutes = this.substituteMessageRepository.findAllByDate(new Date(date));
+		List<SubstituteMessageModel> substitutes = this.substituteMessageRepository.findAllByDateGreaterThanEqual(new Date(System.currentTimeMillis()));
 		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
-
-		List<SubstituteMessageResponseDTO> responseDTOs = new ArrayList<>();
-		substitutes.forEach(substituteModel -> responseDTOs.add(substituteModel.toResponseDTO()));
-
-		return Result.of(new GetSubstituteMessagesResponseDTO(responseDTOs));
+		else return Result.of(new GetSubstituteMessagesResponseDTO(substitutes.stream()
+				.map(SubstituteMessageModel::toResponseDTO).collect(Collectors.toList())));
 	}
 
 }

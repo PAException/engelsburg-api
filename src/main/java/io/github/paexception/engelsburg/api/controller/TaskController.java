@@ -9,6 +9,9 @@ import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateTaskReque
 import io.github.paexception.engelsburg.api.endpoint.dto.request.GetTasksRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.MarkTaskAsDoneRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.UpdateTaskRequestDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.response.GetTasksResponseDTO;
+import io.github.paexception.engelsburg.api.spring.paging.AbstractPageable;
+import io.github.paexception.engelsburg.api.spring.paging.Paging;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,16 +21,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import static io.github.paexception.engelsburg.api.util.Constants.Task.NAME_KEY;
 
 /**
  * Controller for tasks
  */
 @Component
-public class TaskController implements UserDataHandler {
+public class TaskController extends AbstractPageable implements UserDataHandler {
 
 	@Autowired
 	private TaskRepository taskRepository;
+
+	public TaskController() {
+		super(1, 50);
+	}
 
 	/**
 	 * Create a new task
@@ -83,15 +91,24 @@ public class TaskController implements UserDataHandler {
 	 * @param jwt with userId
 	 * @return list of taskDTOs
 	 */
-	public Result<GetTasksResponseDTO> getTasks(GetTasksRequestDTO dto, DecodedJWT jwt) {
+	public Result<GetTasksResponseDTO> getTasks(GetTasksRequestDTO dto, DecodedJWT jwt, Paging paging) {
 		UUID userId = UUID.fromString(jwt.getSubject());
-		List<TaskDTO> dtos;
-		if (dto.isOnlyUndone())
-			dtos = this.taskRepository.findAllByUserIdAndCreatedAfterAndDone(userId, dto.getDate(), true)
-					.map(TaskModel::toResponseDTO).collect(Collectors.toList());
-		else dtos = this.taskRepository.findAllByUserIdAndCreatedAfter(userId, dto.getDate())
-				.map(TaskModel::toResponseDTO).collect(Collectors.toList());
+		Stream<TaskModel> taskStream;
+		if (dto.isOnlyUndone()) {
+			if (dto.getDate() < 0) {
+				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterAndDoneOrderByCreatedDesc(userId, System.currentTimeMillis(), true, this.toPage(paging));
+			} else {
+				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterAndDoneOrderByCreatedAsc(userId, dto.getDate(), true, this.toPage(paging));
+			}
+		} else {
+			if (dto.getDate() < 0) {
+				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterOrderByCreatedDesc(userId, System.currentTimeMillis(), this.toPage(paging));
+			} else {
+				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterOrderByCreatedAsc(userId, dto.getDate(), this.toPage(paging));
+			}
+		}
 
+		List<TaskDTO> dtos = taskStream.map(TaskModel::toResponseDTO).collect(Collectors.toList());
 		if (dtos.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 		else return Result.of(new GetTasksResponseDTO(dtos));
 	}

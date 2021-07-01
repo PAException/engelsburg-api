@@ -1,7 +1,7 @@
 package io.github.paexception.engelsburg.api.endpoint;
 
 import io.github.paexception.engelsburg.api.controller.InformationController;
-import io.github.paexception.engelsburg.api.spring.AuthScope;
+import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

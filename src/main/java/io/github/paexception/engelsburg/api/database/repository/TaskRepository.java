@@ -2,6 +2,7 @@ package io.github.paexception.engelsburg.api.database.repository;
 
 
 import io.github.paexception.engelsburg.api.database.model.TaskModel;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -15,8 +16,12 @@ public interface TaskRepository extends JpaRepository<TaskModel, Integer> {
 
 	List<TaskModel> findAllByUserId(UUID userId);
 
-	Stream<TaskModel> findAllByUserIdAndCreatedAfterAndDone(UUID userId, long created, boolean done);
+	Stream<TaskModel> findAllByUserIdAndCreatedAfterAndDoneOrderByCreatedDesc(UUID userId, long created, boolean done, Pageable pageable);
 
-	Stream<TaskModel> findAllByUserIdAndCreatedAfter(UUID userId, long created);
+	Stream<TaskModel> findAllByUserIdAndCreatedAfterOrderByCreatedAsc(UUID userId, long created, Pageable pageable);
+
+	Stream<TaskModel> findAllByUserIdAndCreatedAfterAndDoneOrderByCreatedAsc(UUID userId, long created, boolean done, Pageable pageable);
+
+	Stream<TaskModel> findAllByUserIdAndCreatedAfterOrderByCreatedDesc(UUID userId, long created, Pageable pageable);
 
 }

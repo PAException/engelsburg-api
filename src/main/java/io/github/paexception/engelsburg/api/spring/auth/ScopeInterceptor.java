@@ -1,15 +1,18 @@
-package io.github.paexception.engelsburg.api.spring.interceptor;
+package io.github.paexception.engelsburg.api.spring.auth;
 
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import io.github.paexception.engelsburg.api.spring.AuthScope;
-import io.github.paexception.engelsburg.api.spring.Authorization;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.JwtUtil;
 import io.github.paexception.engelsburg.api.util.Pair;
 import io.github.paexception.engelsburg.api.util.Result;
 import lombok.AllArgsConstructor;
+import org.springframework.core.MethodParameter;
+import org.springframework.web.bind.support.WebDataBinderFactory;
+import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,7 +20,7 @@ import java.io.IOException;
 import java.util.List;
 
 @AllArgsConstructor
-public class ScopeInterceptor extends HandlerInterceptorAdapter {
+public class ScopeInterceptor extends HandlerInterceptorAdapter implements HandlerMethodArgumentResolver {
 
 	private final JwtUtil jwtUtil;
 
@@ -74,6 +77,16 @@ public class ScopeInterceptor extends HandlerInterceptorAdapter {
 		request.setAttribute("jwt", result.getLeft());
 
 		return true;
+	}
+
+	@Override
+	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+		return ((HttpServletRequest) webRequest.getNativeRequest()).getAttribute("jwt");
+	}
+
+	@Override
+	public boolean supportsParameter(MethodParameter parameter) {
+		return parameter.getParameterType().equals(DecodedJWT.class);
 	}
 
 }

@@ -1,9 +1,9 @@
 package io.github.paexception.engelsburg.api.endpoint.dto.response;
 
+import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteMessageDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
@@ -11,7 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 public class GetSubstituteMessagesResponseDTO {
 
-	@NotNull
-	private List<SubstituteMessageResponseDTO> substituteMessages;
+	private List<SubstituteMessageDTO> substituteMessages;
 
 }

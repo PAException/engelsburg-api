@@ -37,16 +37,19 @@ public class NotificationService {
 		});
 
 		this.firebaseCloudMessaging.sendAdvancedNotifications("substitute", dtos.stream().map(dto -> {
-			calendar.setTime(dto.getDate());
-			return Pair.of(this.timetableController.getAllByWeekDayAndLessonAndTeacherOrClassName(
-					calendar.get(Calendar.DAY_OF_WEEK),
-					dto.getLesson(),
-					dto.getTeacher(),
-					dto.getClassName()), dto);
-		}).map(dtoPair -> new NotificationDTO(
-				this.notificationController.getTimetableNotificationTokensOfUsers(dtoPair.getLeft().stream().map(TimetableModel::getUserId)),
-				dtoPair.getRight())).collect(Collectors.toList()
-		));
+					calendar.setTime(dto.getDate());
+					return Pair.of(this.timetableController.getAllByWeekDayAndLessonAndTeacherOrClassName(
+							calendar.get(Calendar.DAY_OF_WEEK) - 2,//MON starts at 2
+							dto.getLesson(),
+							dto.getTeacher(),
+							dto.getClassName()
+					), dto);
+				}).filter(dtoPair -> !dtoPair.getLeft().isEmpty())
+						.map(dtoPair -> new NotificationDTO(
+								this.notificationController.getTimetableNotificationTokensOfUsers(dtoPair.getLeft().stream().map(TimetableModel::getUserId)),
+								dtoPair.getRight()
+						)).collect(Collectors.toList())
+		);
 	}
 
 	/**

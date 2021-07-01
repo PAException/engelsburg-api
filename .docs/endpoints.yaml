@@ -43,7 +43,20 @@ paths:
         - in: "body"
           name: "Body"
           schema:
-            $ref: "#/definitions/Grade"
+            type: "object"
+            properties:
+              email:
+                type: "string"
+                example: "hello@gmail.com"
+                description: "[*Required*]"
+              password:
+                type: "string"
+                example: "password123"
+                description: "[*Required*]"
+              schoolToken:
+                type: "string"
+                example: "schoolToken123"
+                description: "[*Required*]"
       responses:
         "200":
           description: "OK - Successful operation"
@@ -190,17 +203,17 @@ paths:
         - in: "query"
           type: "number"
           name: "date"
-          description: "All articles after timestamp (ms) will be listed (min: 0, default: 0, so all articles will be listed)"
+          description: "All articles after timestamp (ms) will be listed (min: 0, default: current ms, so all articles will be listed from new to old. If date specified from old to new)"
           required: false
         - in: "query"
           type: "number"
           name: "page"
-          description: "Specify page (min: 1, default: 1)"
+          description: "Specify page (min: 0, default: 0)"
           required: false
         - in: "query"
           type: "number"
           name: "size"
-          description: "Specify articles per page (min: 1, max: 20, default: 10)"
+          description: "Specify articles per page (min: 1, max: 20, default: 20)"
           required: false
       responses:
         "200":
@@ -989,6 +1002,16 @@ paths:
           name: "Hash"
           description: "Hash of last request to check if response changed"
           required: false
+        - in: "query"
+          type: "number"
+          name: "page"
+          description: "Specify page (min: 0, default: 0)"
+          required: false
+        - in: "query"
+          type: "number"
+          name: "size"
+          description: "Specify articles per page (min: 1, max: 20, default: 20)"
+          required: false
         - in: "body"
           name: "Body"
           schema:
@@ -1001,7 +1024,7 @@ paths:
               date:
                 type: number
                 example: 1624991306588
-                description: "Get tasks to present from this date in millis"
+                description: "All articles after timestamp (ms) will be listed (min: 0, default: current ms, so all articles will be listed from new to old. If date specified from old to new)"
       responses:
         "200":
           description: "Successful operation"

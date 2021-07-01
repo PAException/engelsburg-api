@@ -12,7 +12,6 @@ import io.github.paexception.engelsburg.api.service.notification.NotificationSer
 import io.github.paexception.engelsburg.api.service.scheduled.SubstituteUpdateService;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
-import io.github.paexception.engelsburg.api.util.Validation;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,6 +32,26 @@ public class SubstituteController {
 	private SubstituteRepository substituteRepository;
 	@Autowired
 	private NotificationService notificationService;
+
+	/**
+	 * Checks if sender has permission to get past substitutes
+	 *
+	 * @param jwt  with scopes
+	 * @param date specified
+	 * @return true if permitted, false if not
+	 */
+	private static boolean pastTimeCheck(DecodedJWT jwt, long date) {
+		if (!jwt.getClaim("scopes").asList(String.class).contains("substitute.read.all")) {
+			return DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date)) || System.currentTimeMillis() <= date;//Same day or in the future
+		} else return true;
+	}
+
+	/**
+	 * Returns true if given string is not blank or null
+	 */
+	private static boolean notBlank(String value) {
+		return value != null && !value.isBlank();
+	}
 
 	/**
 	 * Update substitutes
@@ -86,18 +105,18 @@ public class SubstituteController {
 	 */
 	public Result<GetSubstitutesResponseDTO> getSubstitutesByTeacher(GetSubstitutesByTeacherRequestDTO dto, DecodedJWT jwt) {
 		if (dto.getDate() < 0) dto.setDate(System.currentTimeMillis());
-		if (!this.pastTimeCheck(jwt, dto.getDate())) return Result.of(Error.FORBIDDEN, NAME_KEY);
+		if (!pastTimeCheck(jwt, dto.getDate())) return Result.of(Error.FORBIDDEN, NAME_KEY);
 
 		List<SubstituteModel> substitutes;
 		if (dto.getLesson() != -1) {
-			if (Validation.validateNotNullOrEmpty(dto.getClassName())) {
+			if (notBlank(dto.getClassName())) {
 				substitutes = this.substituteRepository.findAllByDateAndTeacherAndLessonAndClassName(
 						new Date(dto.getDate()), dto.getTeacher(), dto.getLesson(), dto.getClassName());
 			} else {
 				substitutes = this.substituteRepository.findAllByDateAndTeacherAndLesson(
 						new Date(dto.getDate()), dto.getTeacher(), dto.getLesson());
 			}
-		} else if (Validation.validateNotNullOrEmpty(dto.getClassName())) {
+		} else if (notBlank(dto.getClassName())) {
 			substitutes = this.substituteRepository.findAllByDateAndTeacherAndClassName(
 					new Date(dto.getDate()), dto.getTeacher(), dto.getClassName());
 		} else {
@@ -117,7 +136,7 @@ public class SubstituteController {
 	 */
 	public Result<GetSubstitutesResponseDTO> getSubstitutesBySubstituteTeacher(GetSubstitutesBySubstituteTeacherRequestDTO dto, DecodedJWT jwt) {
 		if (dto.getDate() < 0) dto.setDate(System.currentTimeMillis());
-		if (!this.pastTimeCheck(jwt, dto.getDate())) return Result.of(Error.FORBIDDEN, NAME_KEY);
+		if (!pastTimeCheck(jwt, dto.getDate())) return Result.of(Error.FORBIDDEN, NAME_KEY);
 
 		List<SubstituteModel> substitutes = this.substituteRepository.findAllByDateAndSubstituteTeacher(
 				new Date(dto.getDate()), dto.getTeacher().toUpperCase());
@@ -134,7 +153,7 @@ public class SubstituteController {
 	 */
 	public Result<GetSubstitutesResponseDTO> getSubstitutesByClassName(GetSubstitutesByClassNameRequestDTO dto, DecodedJWT jwt) {
 		if (dto.getDate() < 0) dto.setDate(System.currentTimeMillis());
-		if (!this.pastTimeCheck(jwt, dto.getDate())) return Result.of(Error.FORBIDDEN, NAME_KEY);
+		if (!pastTimeCheck(jwt, dto.getDate())) return Result.of(Error.FORBIDDEN, NAME_KEY);
 
 		List<SubstituteModel> substitutes;
 		if (Character.isDigit(dto.getClassName().charAt(0)))
@@ -155,7 +174,7 @@ public class SubstituteController {
 	 */
 	public Result<GetSubstitutesResponseDTO> getAllSubstitutes(long date, DecodedJWT jwt) {
 		if (date < 0) date = System.currentTimeMillis();
-		if (!this.pastTimeCheck(jwt, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
+		if (!pastTimeCheck(jwt, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
 
 		List<SubstituteModel> substitutes = this.substituteRepository.findAllByDateGreaterThanEqual(new Date(date));
 		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
@@ -193,21 +212,6 @@ public class SubstituteController {
 	private Result<GetSubstitutesResponseDTO> returnSubstitutes(List<SubstituteModel> substitutes) {
 		return Result.of(new GetSubstitutesResponseDTO(substitutes.stream()
 				.map(SubstituteModel::toResponseDTO).collect(Collectors.toList())));
-	}
-
-	/**
-	 * Checks if sender has permission to get past substitutes
-	 *
-	 * @param jwt  with scopes
-	 * @param date specified
-	 * @return true if permitted, false if not
-	 */
-	private boolean pastTimeCheck(DecodedJWT jwt, long date) {
-		if (!jwt.getClaim("scopes").asList(String.class).contains("substitute.read.all")) {
-			return DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date)) || System.currentTimeMillis() <= date;//Same day or in the future
-		}
-
-		return true;
 	}
 
 }

@@ -4,7 +4,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.controller.NotificationController;
 import io.github.paexception.engelsburg.api.endpoint.dto.NotificationDeviceDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.ChangeNotificationSettingsRequestDTO;
-import io.github.paexception.engelsburg.api.spring.AuthScope;
+import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;

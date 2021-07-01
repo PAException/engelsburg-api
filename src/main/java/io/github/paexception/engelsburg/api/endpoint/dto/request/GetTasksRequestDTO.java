@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class GetTasksRequestDTO {
 
 	private boolean onlyUndone = false;
-	private long date = 0;
+	private long date = -1;
 
 }

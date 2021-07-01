@@ -4,7 +4,7 @@ Unofficial API of the Engelsburg-Gymnasium-Kassel.
 
 ## Structure
 
-The Engelsburg-API can be divided into three sections.
+The Engelsburg-API can be divided into two sections.
 
 ### Public
 
@@ -38,7 +38,7 @@ requests to the private part of the api.
 
 Login
 
-To login send a `POST` request with `email` and `password` parameter in the request body to `/auth/login`. If email and
+To login send a `GET` request with `email` and `password` parameter in the request body to `/auth/login`. If email and
 password are correct, the account is verified, the request will include an *Json-Web-Token* in the response body with
 the key `token`.
 
@@ -67,6 +67,8 @@ This project needs several environment variables:
 | SERVICE_TOKEN       | Service-Token to secure access         |
 | SCHOOL_TOKEN        | Token given by the school for the substitutes|
 | JWT_SECRET          | Secret for JWT                         |
+| GOOGLE_ACCOUNT_CREDENTIALS| Google account credentials for firebase cloud messaging|
+| PRODUCTION          | Production mode to actually send notifications and more|
 | use.ssl             | Enable https and ssl                   |
 
 If you want to enable https and ssl (use.ssl=true) which is highly recommended you also need following environment

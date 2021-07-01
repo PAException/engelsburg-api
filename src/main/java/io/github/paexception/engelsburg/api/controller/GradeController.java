@@ -8,12 +8,12 @@ import io.github.paexception.engelsburg.api.endpoint.dto.GradeDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateGradeRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.GetGradesRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.UpdateGradeRequestDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.response.GetGradesResponseDTO;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -78,14 +78,14 @@ public class GradeController implements UserDataHandler {
 	 * @param jwt with userId
 	 * @return list of grades
 	 */
-	public Result<List<GradeDTO>> getGrades(GetGradesRequestDTO dto, DecodedJWT jwt) {
+	public Result<GetGradesResponseDTO> getGrades(GetGradesRequestDTO dto, DecodedJWT jwt) {
 		UUID userId = UUID.fromString(jwt.getSubject());
 
-		if (dto.getSubject() != null) return Result.of(this.gradeRepository
+		if (dto.getSubject() != null) return Result.of(new GetGradesResponseDTO(this.gradeRepository
 				.findAllByUserIdAndSubject(userId, dto.getSubject())
-				.map(GradeModel::toResponseDTO).collect(Collectors.toList()));
-		else return Result.of(this.gradeRepository.findAllByUserId(userId).stream()
-				.map(GradeModel::toResponseDTO).collect(Collectors.toList()));
+				.map(GradeModel::toResponseDTO).collect(Collectors.toList())));
+		else return Result.of(new GetGradesResponseDTO(this.gradeRepository.findAllByUserId(userId).stream()
+				.map(GradeModel::toResponseDTO).collect(Collectors.toList())));
 	}
 
 	/**

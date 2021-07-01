@@ -23,6 +23,9 @@ public interface UserDataHandler {
 	 */
 	Object[] getUserData(UUID userId);
 
+	/**
+	 * Help to map data for {@link UserDataHandler#getUserData(UUID)}
+	 */
 	default Object[] mapData(Object... data) {
 		return data;
 	}

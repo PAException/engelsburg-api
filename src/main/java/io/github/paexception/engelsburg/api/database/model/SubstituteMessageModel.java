@@ -1,6 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
-import io.github.paexception.engelsburg.api.endpoint.dto.response.SubstituteMessageResponseDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteMessageDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -41,8 +41,8 @@ public class SubstituteMessageModel {
 	@Lob
 	private String messages;
 
-	public SubstituteMessageResponseDTO toResponseDTO() {
-		return new SubstituteMessageResponseDTO(
+	public SubstituteMessageDTO toResponseDTO() {
+		return new SubstituteMessageDTO(
 				this.date,
 				this.absenceTeachers,
 				this.absenceClasses,

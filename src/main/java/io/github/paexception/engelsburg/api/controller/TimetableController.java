@@ -54,7 +54,7 @@ public class TimetableController implements UserDataHandler {
 		if (optionalTimetable.isEmpty()) this.timetableRepository.save(new TimetableModel(
 				-1,
 				userId,
-				dto.getDay() + 2,//In Calendar MON starts at 2
+				dto.getDay(),
 				dto.getLesson(),
 				dto.getTeacher(),
 				dto.getClassName(),
@@ -82,14 +82,15 @@ public class TimetableController implements UserDataHandler {
 	 * @param jwt with userId
 	 * @return list of timetable entries
 	 */
+	@Transactional
 	public Result<GetTimetableEntriesResponseDTO> getTimetableEntries(GetTimetableEntriesRequestDTO dto, DecodedJWT jwt) {
 		UUID userId = UUID.fromString(jwt.getSubject());
 		List<TimetableDTO> dtos;
 		if (dto.getDay() >= 0 && dto.getLesson() >= 0) {
-			dtos = this.timetableRepository.findAllByUserIdAndDayAndLesson(userId, dto.getDay() + 2, dto.getLesson())
+			dtos = this.timetableRepository.findAllByUserIdAndDayAndLesson(userId, dto.getDay(), dto.getLesson())
 					.map(TimetableModel::toResponseDTO).collect(Collectors.toList());
 		} else if (dto.getDay() >= 0) {
-			dtos = this.timetableRepository.findAllByUserIdAndDay(userId, dto.getDay() + 2)
+			dtos = this.timetableRepository.findAllByUserIdAndDay(userId, dto.getDay())
 					.map(TimetableModel::toResponseDTO).collect(Collectors.toList());
 		} else if (dto.getLesson() >= 0) {
 			dtos = this.timetableRepository.findAllByUserIdAndLesson(userId, dto.getLesson())

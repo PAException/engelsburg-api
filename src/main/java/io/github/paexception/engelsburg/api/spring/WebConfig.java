@@ -1,26 +1,21 @@
 package io.github.paexception.engelsburg.api.spring;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.paexception.engelsburg.api.EngelsburgAPI;
-import io.github.paexception.engelsburg.api.spring.interceptor.ScopeInterceptor;
+import io.github.paexception.engelsburg.api.spring.auth.ScopeInterceptor;
+import io.github.paexception.engelsburg.api.spring.paging.PagingInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.bind.support.WebDataBinderFactory;
-import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -28,8 +23,10 @@ import java.util.List;
  */
 @Configuration
 @EnableWebMvc
-public class WebConfig implements WebMvcConfigurer, HandlerMethodArgumentResolver {
+public class WebConfig implements WebMvcConfigurer {
 
+	private final ScopeInterceptor scopeInterceptor = new ScopeInterceptor(EngelsburgAPI.getJwtUtil());
+	private final PagingInterceptor pagingInterceptor = new PagingInterceptor();
 	@Autowired
 	private ObjectMapper mapper;
 
@@ -37,7 +34,7 @@ public class WebConfig implements WebMvcConfigurer, HandlerMethodArgumentResolve
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/**")
 				.allowedOrigins("*")
-				.allowedMethods("GET")
+				.allowedMethods("GET", "POST", "DELETE", "PATCH", "PUT")
 				.allowCredentials(false).maxAge(3600);
 	}
 
@@ -49,25 +46,13 @@ public class WebConfig implements WebMvcConfigurer, HandlerMethodArgumentResolve
 	}
 
 	@Override
-	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-		return ((HttpServletRequest) webRequest.getNativeRequest()).getAttribute("jwt");
-	}
-
-	@Override
-	public boolean supportsParameter(MethodParameter parameter) {
-		return parameter.getParameterType().equals(DecodedJWT.class);
-	}
-
-	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-		resolvers.add(this);
+		resolvers.addAll(List.of(this.pagingInterceptor, this.scopeInterceptor));
 	}
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		List<HandlerInterceptorAdapter> handlerInterceptors = List.of(
-				new ScopeInterceptor(EngelsburgAPI.getJwtUtil())
-		);
+		List<HandlerInterceptorAdapter> handlerInterceptors = List.of(this.pagingInterceptor, this.scopeInterceptor);
 
 		for (HandlerInterceptorAdapter interceptors : handlerInterceptors)
 			registry.addInterceptor(interceptors).addPathPatterns("/**/*");

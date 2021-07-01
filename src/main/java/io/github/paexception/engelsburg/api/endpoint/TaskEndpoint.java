@@ -6,7 +6,8 @@ import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateTaskReque
 import io.github.paexception.engelsburg.api.endpoint.dto.request.GetTasksRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.MarkTaskAsDoneRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.UpdateTaskRequestDTO;
-import io.github.paexception.engelsburg.api.spring.AuthScope;
+import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
+import io.github.paexception.engelsburg.api.spring.paging.Paging;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,12 +51,12 @@ public class TaskEndpoint {
 	/**
 	 * Get tasks by specific parameters
 	 *
-	 * @see TaskController#getTasks(GetTasksRequestDTO, DecodedJWT)
+	 * @see TaskController#getTasks(GetTasksRequestDTO, DecodedJWT, Paging)
 	 */
 	@AuthScope("task.read.self")
 	@GetMapping("/task")
-	public Object getTasks(@RequestBody GetTasksRequestDTO dto, DecodedJWT jwt) {
-		return this.taskController.getTasks(dto, jwt).getHttpResponse();
+	public Object getTasks(@RequestBody GetTasksRequestDTO dto, DecodedJWT jwt, Paging paging) {
+		return this.taskController.getTasks(dto, jwt, paging).getHttpResponse();
 	}
 
 	/**

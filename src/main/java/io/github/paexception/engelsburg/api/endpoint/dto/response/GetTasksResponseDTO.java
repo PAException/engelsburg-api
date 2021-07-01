@@ -1,4 +1,4 @@
-package io.github.paexception.engelsburg.api.controller;
+package io.github.paexception.engelsburg.api.endpoint.dto.response;
 
 import io.github.paexception.engelsburg.api.endpoint.dto.TaskDTO;
 import lombok.AllArgsConstructor;

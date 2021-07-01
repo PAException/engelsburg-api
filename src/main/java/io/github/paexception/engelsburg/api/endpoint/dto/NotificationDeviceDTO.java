@@ -10,7 +10,7 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 public class NotificationDeviceDTO {
 
-	@NotBlank
+	@NotBlank //Because of endpoint use
 	private String token;
 
 }

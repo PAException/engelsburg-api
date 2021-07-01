@@ -5,7 +5,7 @@ import io.github.paexception.engelsburg.api.controller.AuthenticationController;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.LoginRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.ResetPasswordRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.SignUpRequestDTO;
-import io.github.paexception.engelsburg.api.spring.AuthScope;
+import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -51,7 +51,7 @@ public class EventUpdateService {
 	}
 
 	/**
-	 * Private void to parse dates on the engelsburg website properly
+	 * Parse dates of the engelsburg website properly
 	 *
 	 * @param toParse String to parse
 	 * @return parsed Date
@@ -60,7 +60,7 @@ public class EventUpdateService {
 		try {
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
-			return new Date(simpleDateFormat.parse(toParse.substring(1, toParse.length() - 3)).getTime());
+			return new Date(simpleDateFormat.parse(toParse.split(":")[0]).getTime());
 		} catch (ParseException ignored) {
 			return new Date(System.currentTimeMillis());
 		}

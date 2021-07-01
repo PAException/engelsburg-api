@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -48,13 +49,15 @@ public class FirebaseCloudMessagingImpl {
 	 */
 	public void sendNotificationToTopics(String type, Object payload, String... topics) {
 		try {
+			System.out.println(Arrays.toString(topics));
 			Message.Builder messageBuilder = Message.builder()
 					.putData("type", type)
 					.putData("data", this.objectMapper.writeValueAsString(payload));
 
 			for (String topic : topics) {
-				topic = topic.replace("Ä", "AE").replace("Ö", "OE").replace("Ü", "UE");
-				FirebaseMessaging.getInstance().send(messageBuilder.setTopic(topic).build());
+				topic = topic.replace("Ä", "AE").replace("Ö", "OE").replace("Ü", "UE").toLowerCase();
+				if (!topic.contains("+"))
+					FirebaseMessaging.getInstance().send(messageBuilder.setTopic(topic).build(), !Environment.PRODUCTION);
 			}
 		} catch (JsonProcessingException | FirebaseMessagingException e) {
 			EngelsburgAPI.getLOGGER().error("Couldn't send notification", e);
@@ -70,12 +73,14 @@ public class FirebaseCloudMessagingImpl {
 	public void sendAdvancedNotifications(String type, List<NotificationDTO> dtos) {
 		dtos.forEach(dto -> {
 			try {
-				MulticastMessage multicastMessage = MulticastMessage.builder()
-						.addAllTokens(dto.getTokens())
-						.putData("type", type)
-						.putData("data", this.objectMapper.writeValueAsString(dto.getDto()))
-						.build();
-				FirebaseMessaging.getInstance().sendMulticast(multicastMessage);
+				if (dto.getTokens().size() > 0) {
+					MulticastMessage multicastMessage = MulticastMessage.builder()
+							.addAllTokens(dto.getTokens())
+							.putData("type", type)
+							.putData("data", this.objectMapper.writeValueAsString(dto.getDto()))
+							.build();
+					FirebaseMessaging.getInstance().sendMulticast(multicastMessage);
+				}
 			} catch (JsonProcessingException | FirebaseMessagingException e) {
 				EngelsburgAPI.getLOGGER().error("Couldn't send notification", e);
 			}

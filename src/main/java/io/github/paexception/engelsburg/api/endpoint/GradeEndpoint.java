@@ -5,7 +5,7 @@ import io.github.paexception.engelsburg.api.controller.GradeController;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateGradeRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.GetGradesRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.UpdateGradeRequestDTO;
-import io.github.paexception.engelsburg.api.spring.AuthScope;
+import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
