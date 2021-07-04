@@ -6,7 +6,6 @@ import io.github.paexception.engelsburg.api.database.model.GradeModel;
 import io.github.paexception.engelsburg.api.database.repository.GradeRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.GradeDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateGradeRequestDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.GetGradesRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.UpdateGradeRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetGradesResponseDTO;
 import io.github.paexception.engelsburg.api.util.Error;
@@ -14,6 +13,7 @@ import io.github.paexception.engelsburg.api.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -63,10 +63,10 @@ public class GradeController implements UserDataHandler {
 		GradeModel grade = optionalGrade.get();
 		if (!userId.equals(grade.getUserId())) return Result.of(Error.FORBIDDEN, NAME_KEY);
 
-		if (dto.getName() != null) grade.setName(dto.getName());
+		if (dto.getName() != null && !dto.getName().isBlank()) grade.setName(dto.getName());
 		if (dto.getShare() >= 0) grade.setShare(dto.getShare());
 		if (dto.getValue() >= 0) grade.setValue(dto.getValue());
-		if (dto.getSubject() != null) grade.setSubject(dto.getSubject());
+		if (dto.getSubject() != null && !dto.getSubject().isBlank()) grade.setSubject(dto.getSubject());
 
 		return Result.of(this.gradeRepository.save(grade).toResponseDTO());
 	}
@@ -74,18 +74,22 @@ public class GradeController implements UserDataHandler {
 	/**
 	 * Get all grades of user or filter by subject
 	 *
-	 * @param dto with possible subject information
-	 * @param jwt with userId
+	 * @param subject (optional)
+	 * @param jwt     with userId
 	 * @return list of grades
 	 */
-	public Result<GetGradesResponseDTO> getGrades(GetGradesRequestDTO dto, DecodedJWT jwt) {
+	@Transactional
+	public Result<GetGradesResponseDTO> getGrades(String subject, DecodedJWT jwt) {
 		UUID userId = UUID.fromString(jwt.getSubject());
 
-		if (dto.getSubject() != null) return Result.of(new GetGradesResponseDTO(this.gradeRepository
-				.findAllByUserIdAndSubject(userId, dto.getSubject())
-				.map(GradeModel::toResponseDTO).collect(Collectors.toList())));
-		else return Result.of(new GetGradesResponseDTO(this.gradeRepository.findAllByUserId(userId).stream()
-				.map(GradeModel::toResponseDTO).collect(Collectors.toList())));
+		List<GradeDTO> dtos;
+		if (subject != null) dtos = this.gradeRepository
+				.findAllByUserIdAndSubject(userId, subject).map(GradeModel::toResponseDTO).collect(Collectors.toList());
+		else dtos = this.gradeRepository.findAllByUserId(userId).stream()
+				.map(GradeModel::toResponseDTO).collect(Collectors.toList());
+
+		if (dtos.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
+		else return Result.of(new GetGradesResponseDTO(dtos));
 	}
 
 	/**

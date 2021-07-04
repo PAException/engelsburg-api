@@ -74,10 +74,10 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 		if (!optionalTask.get().getUserId().equals(userId)) Result.of(Error.FORBIDDEN, NAME_KEY);
 
 		TaskModel task = optionalTask.get();
-		if (dto.getTitle() != null) task.setTitle(dto.getTitle());
+		if (dto.getTitle() != null && !dto.getTitle().isBlank()) task.setTitle(dto.getTitle());
 		if (dto.getDue() >= 0) task.setDue(dto.getDue());
-		if (dto.getSubject() != null) task.setSubject(dto.getSubject());
-		if (dto.getContent() != null) task.setContent(dto.getContent());
+		if (dto.getSubject() != null && !dto.getSubject().isBlank()) task.setSubject(dto.getSubject());
+		if (dto.getContent() != null && !dto.getContent().isBlank()) task.setContent(dto.getContent());
 
 		return Result.of(this.taskRepository.save(task).toResponseDTO());
 	}
@@ -91,18 +91,19 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	 * @param jwt with userId
 	 * @return list of taskDTOs
 	 */
+	@Transactional
 	public Result<GetTasksResponseDTO> getTasks(GetTasksRequestDTO dto, DecodedJWT jwt, Paging paging) {
 		UUID userId = UUID.fromString(jwt.getSubject());
 		Stream<TaskModel> taskStream;
 		if (dto.isOnlyUndone()) {
 			if (dto.getDate() < 0) {
-				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterAndDoneOrderByCreatedDesc(userId, System.currentTimeMillis(), true, this.toPage(paging));
+				taskStream = this.taskRepository.findAllByUserIdAndCreatedBeforeAndDoneOrderByCreatedDesc(userId, System.currentTimeMillis(), false, this.toPage(paging));
 			} else {
-				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterAndDoneOrderByCreatedAsc(userId, dto.getDate(), true, this.toPage(paging));
+				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterAndDoneOrderByCreatedAsc(userId, dto.getDate(), false, this.toPage(paging));
 			}
 		} else {
 			if (dto.getDate() < 0) {
-				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterOrderByCreatedDesc(userId, System.currentTimeMillis(), this.toPage(paging));
+				taskStream = this.taskRepository.findAllByUserIdAndCreatedBeforeOrderByCreatedDesc(userId, System.currentTimeMillis(), this.toPage(paging));
 			} else {
 				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterOrderByCreatedAsc(userId, dto.getDate(), this.toPage(paging));
 			}

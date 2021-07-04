@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import javax.validation.Valid;
 
 /**
  * RestController for task actions
@@ -33,7 +34,7 @@ public class TaskEndpoint {
 	 */
 	@AuthScope("task.write.self")
 	@PostMapping("/task")
-	public Object createTask(@RequestBody CreateTaskRequestDTO dto, DecodedJWT jwt) {
+	public Object createTask(@RequestBody @Valid CreateTaskRequestDTO dto, DecodedJWT jwt) {
 		return this.taskController.createTask(dto, jwt).getHttpResponse();
 	}
 
@@ -44,7 +45,7 @@ public class TaskEndpoint {
 	 */
 	@AuthScope("task.write.self")
 	@PatchMapping("/task")
-	public Object updateTask(@RequestBody UpdateTaskRequestDTO dto, DecodedJWT jwt) {
+	public Object updateTask(@RequestBody @Valid UpdateTaskRequestDTO dto, DecodedJWT jwt) {
 		return this.taskController.updateTask(dto, jwt).getHttpResponse();
 	}
 
@@ -55,7 +56,7 @@ public class TaskEndpoint {
 	 */
 	@AuthScope("task.read.self")
 	@GetMapping("/task")
-	public Object getTasks(@RequestBody GetTasksRequestDTO dto, DecodedJWT jwt, Paging paging) {
+	public Object getTasks(@RequestBody @Valid GetTasksRequestDTO dto, DecodedJWT jwt, Paging paging) {
 		return this.taskController.getTasks(dto, jwt, paging).getHttpResponse();
 	}
 
@@ -66,7 +67,7 @@ public class TaskEndpoint {
 	 */
 	@AuthScope("task.write.self")
 	@PatchMapping("/task/done")
-	public Object markTaskAsDone(@RequestBody MarkTaskAsDoneRequestDTO dto, DecodedJWT jwt) {
+	public Object markTaskAsDone(@RequestBody @Valid MarkTaskAsDoneRequestDTO dto, DecodedJWT jwt) {
 		return this.taskController.markAsDone(dto, jwt).getHttpResponse();
 	}
 

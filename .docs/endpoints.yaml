@@ -356,15 +356,11 @@ paths:
           name: "Hash"
           description: "Hash of last request to check if response changed"
           required: false
-        - in: "body"
-          name: "Body"
-          schema:
-            type: object
-            properties:
-              subject:
-                type: string
-                example: "mathematics"
-                description: "Subject to get grades to"
+        - in: "query"
+          type: "string"
+          name: "Subject"
+          description: "Subject to get grades to (optional)"
+          required: false
       responses:
         "200":
           description: "Successful operation"

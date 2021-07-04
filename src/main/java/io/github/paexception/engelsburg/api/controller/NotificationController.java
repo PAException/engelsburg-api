@@ -93,6 +93,7 @@ public class NotificationController implements UserDataHandler {
 	 * @param jwt with userId
 	 * @return empty result or error
 	 */
+	@Transactional
 	public Result<?> removeNotificationDevice(NotificationDeviceDTO dto, DecodedJWT jwt) {
 		UUID userId = UUID.fromString(jwt.getSubject());
 		if (!this.notificationDeviceRepository.existsByUserIdAndToken(userId, dto.getToken()))

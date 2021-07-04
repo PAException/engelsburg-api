@@ -70,7 +70,10 @@ public class ScopeInterceptor extends HandlerInterceptorAdapter implements Handl
 						isPresent = true;
 						break;
 					}
-				if (!isPresent) return false;
+				if (!isPresent) {
+					Result.of(Error.FORBIDDEN, "auth").respond(response);
+					return false;
+				}
 			}
 		}
 

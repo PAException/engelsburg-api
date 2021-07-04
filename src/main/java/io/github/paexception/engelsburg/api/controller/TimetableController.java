@@ -115,7 +115,7 @@ public class TimetableController implements UserDataHandler {
 	public Result<?> deleteTimetableEntry(DeleteTimetableEntryRequestDTO dto, DecodedJWT jwt) {
 		UUID userId = UUID.fromString(jwt.getSubject());
 		Optional<TimetableModel> optionalTimetable = this.timetableRepository
-				.findByUserIdAndDayAndLesson(userId, dto.getDay() + 2, dto.getLesson());
+				.findByUserIdAndDayAndLesson(userId, dto.getDay(), dto.getLesson());
 
 		if (optionalTimetable.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 		else {

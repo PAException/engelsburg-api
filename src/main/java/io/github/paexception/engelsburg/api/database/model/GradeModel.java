@@ -4,13 +4,13 @@ import io.github.paexception.engelsburg.api.endpoint.dto.GradeDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Range;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.UUID;
@@ -32,10 +32,10 @@ public class GradeModel {
 
 	@NotBlank
 	private String name;
-	@Min(0)
 	private double share;
-	@Min(0)
+	@Range(min = 0, max = 15)
 	private int value;
+	@NotBlank
 	private String subject;
 
 	public GradeDTO toResponseDTO() {

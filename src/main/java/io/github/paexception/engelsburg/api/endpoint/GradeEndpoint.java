@@ -3,7 +3,6 @@ package io.github.paexception.engelsburg.api.endpoint;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.controller.GradeController;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateGradeRequestDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.GetGradesRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.UpdateGradeRequestDTO;
 import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,9 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import javax.validation.Valid;
 
 /**
  * RestController for grade actions
@@ -31,7 +32,7 @@ public class GradeEndpoint {
 	 */
 	@AuthScope("grade.write.self")
 	@PostMapping("/grade")
-	public Object createGrade(@RequestBody CreateGradeRequestDTO dto, DecodedJWT jwt) {
+	public Object createGrade(@RequestBody @Valid CreateGradeRequestDTO dto, DecodedJWT jwt) {
 		return this.gradeController.createGrade(dto, jwt).getHttpResponse();
 	}
 
@@ -42,19 +43,19 @@ public class GradeEndpoint {
 	 */
 	@AuthScope("grade.write.self")
 	@PatchMapping("/grade")
-	public Object updateGrade(@RequestBody UpdateGradeRequestDTO dto, DecodedJWT jwt) {
+	public Object updateGrade(@RequestBody @Valid UpdateGradeRequestDTO dto, DecodedJWT jwt) {
 		return this.gradeController.updateGrade(dto, jwt).getHttpResponse();
 	}
 
 	/**
 	 * Get all grades or by subject
 	 *
-	 * @see GradeController#getGrades(GetGradesRequestDTO, DecodedJWT)
+	 * @see GradeController#getGrades(String, DecodedJWT)
 	 */
 	@AuthScope("grade.read.self")
 	@GetMapping("/grade")
-	public Object getGrade(@RequestBody GetGradesRequestDTO dto, DecodedJWT jwt) {
-		return this.gradeController.getGrades(dto, jwt).getHttpResponse();
+	public Object getGrade(@RequestParam(value = "subject", required = false) String subject, DecodedJWT jwt) {
+		return this.gradeController.getGrades(subject, jwt).getHttpResponse();
 	}
 
 	/**

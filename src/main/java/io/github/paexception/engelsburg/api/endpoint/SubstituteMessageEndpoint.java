@@ -8,7 +8,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import javax.validation.constraints.Min;
 
 /**
  * RestController for substitute messages actions
@@ -28,7 +27,7 @@ public class SubstituteMessageEndpoint {
 	 */
 	@AuthScope("substitute.message.read.current")
 	@GetMapping("/substitute/message")
-	public Object getAllSubstituteMessages(@RequestParam(required = false, defaultValue = "0") @Min(0) long date, DecodedJWT jwt) {
+	public Object getAllSubstituteMessages(@RequestParam(required = false, defaultValue = "-1") long date, DecodedJWT jwt) {
 		return this.substituteMessageController.getAllSubstituteMessages(date, jwt).getHttpResponse();
 	}
 

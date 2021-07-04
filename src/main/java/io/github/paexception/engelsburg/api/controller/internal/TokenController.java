@@ -6,6 +6,7 @@ import io.github.paexception.engelsburg.api.database.repository.TokenRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -99,6 +100,7 @@ public class TokenController implements UserDataHandler {
 	 * @param type   of token
 	 * @param token  itself
 	 */
+	@Transactional
 	public void deleteToken(UUID userId, String type, String token) {
 		this.tokenRepository.deleteByUserIdAndTypeAndToken(userId, type, token);
 	}

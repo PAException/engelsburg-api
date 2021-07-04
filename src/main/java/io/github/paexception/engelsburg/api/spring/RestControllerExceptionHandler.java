@@ -7,8 +7,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -45,8 +47,17 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
 		if (ex instanceof MethodArgumentNotValidException) {
 			BindingResult result = ((MethodArgumentNotValidException) ex).getBindingResult();
 
-			return Result.of(Error.INVALID_PARAM, result.getFieldError() != null ? result.getFieldError().getField() : null).getHttpResponse();
-		} else return super.handleExceptionInternal(ex, body, headers, status, request);
+			StringBuilder stringBuilder = new StringBuilder();
+			result.getFieldErrors().forEach(field -> stringBuilder.append(field.getField()).append(", "));
+			stringBuilder.delete(stringBuilder.length() - 2, stringBuilder.length());
+
+			return Result.of(Error.INVALID_PARAM, stringBuilder.toString()).getHttpResponse();
+		} else if (ex instanceof HttpMessageNotReadableException) {
+			return Result.of(Error.INVALID_PARAM, "possible missing body or content type").getHttpResponse();
+		} else if (ex instanceof MissingServletRequestParameterException) {
+			return Result.of(Error.INVALID_PARAM, "missing request param: "
+					+ ((MissingServletRequestParameterException) ex).getParameterName()).getHttpResponse();
+		} else return Result.of(Error.fromHttpStatus(status)).getHttpResponse();
 	}
 
 }

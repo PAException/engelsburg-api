@@ -19,23 +19,29 @@ public class Error extends ResponseEntity<Object> {
 	public static final Error ALREADY_EXISTS = new Error(HttpStatus.CONFLICT, I18n.ALREADY_EXISTS);
 	public static final Error NOT_MODIFIED = new Error(HttpStatus.NOT_MODIFIED, I18n.NOT_MODIFIED);
 	public static final Error INVALID_PARAM = new Error(HttpStatus.BAD_REQUEST, I18n.INVALID_PARAM);
+	public static final Error BAD_REQUEST = new Error(HttpStatus.BAD_REQUEST, I18n.BAD_REQUEST);
 	public static final Error EXPIRED = new Error(HttpStatus.BAD_REQUEST, I18n.EXPIRED);
 	public static final Error FAILED = new Error(HttpStatus.BAD_REQUEST, I18n.FAILED);
 	public static final Error INVALID = new Error(HttpStatus.BAD_REQUEST, I18n.INVALID);
-
 	private final int status;
 	private final String messageKey;
 	private final String extra;
-
 	public Error(HttpStatus status, String messageKey) {
 		this(status, messageKey, null);
 	}
-
 	private Error(HttpStatus status, String messageKey, String extra) {
 		super(status);
 		this.status = status.value();
 		this.messageKey = messageKey;
 		this.extra = extra;
+	}
+
+	public static Error fromHttpStatus(HttpStatus status) {
+		return new Error(status, status.getReasonPhrase().toUpperCase().replace(" ", "_"), null);
+	}
+
+	public static Error fromHttpStatus(HttpStatus status, String extra) {
+		return new Error(status, status.getReasonPhrase().toUpperCase().replace(" ", "_"), extra);
 	}
 
 	@Override

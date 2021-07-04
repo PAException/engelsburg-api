@@ -3,11 +3,16 @@ package io.github.paexception.engelsburg.api.controller.userdata;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetUserDataResponseDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetUserDataResponseDTOModel;
+import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.springframework.stereotype.Component;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 public class UserDataController {
@@ -33,10 +38,16 @@ public class UserDataController {
 	public Result<GetUserDataResponseDTO> getUserData(DecodedJWT jwt) {
 		UUID userId = UUID.fromString(jwt.getSubject());
 		List<GetUserDataResponseDTOModel> responseDTOs = new ArrayList<>();
-		for (UserDataHandler userHandler : USER_HANDLERS)
-			responseDTOs.add(new GetUserDataResponseDTOModel(this.getNameKey(userHandler), userHandler.getUserData(userId)));
+		for (UserDataHandler userHandler : USER_HANDLERS) {
+			Object[] data = userHandler.getUserData(userId);
+			data = Arrays.stream(data).filter(o -> o != null && ((o instanceof Collection) && !((Collection<?>) o).isEmpty()))//Drop if object null or empty
+					.collect(Collectors.toList()).toArray(Object[]::new);
 
-		return Result.of(new GetUserDataResponseDTO(userId, responseDTOs));
+			if (data.length > 0) responseDTOs.add(new GetUserDataResponseDTOModel(this.getNameKey(userHandler), data));
+		}
+
+		if (responseDTOs.isEmpty()) return Result.of(Error.NOT_FOUND, "user_data");
+		else return Result.of(new GetUserDataResponseDTO(userId, responseDTOs));
 	}
 
 	/**
@@ -45,6 +56,7 @@ public class UserDataController {
 	 * @param jwt with userId
 	 * @return empty result
 	 */
+	@Transactional
 	public Result<?> deleteUserData(DecodedJWT jwt) {
 		USER_HANDLERS.forEach(userHandler -> userHandler.deleteUserData(UUID.fromString(jwt.getSubject())));
 

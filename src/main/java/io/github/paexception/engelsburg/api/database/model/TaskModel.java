@@ -35,7 +35,7 @@ public class TaskModel {
 	private String title;
 	@Min(0)
 	private long created;
-	@Min(0)
+	@Min(-1)
 	private long due;
 	private String subject;
 	@Lob

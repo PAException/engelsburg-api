@@ -16,12 +16,12 @@ public interface TaskRepository extends JpaRepository<TaskModel, Integer> {
 
 	List<TaskModel> findAllByUserId(UUID userId);
 
-	Stream<TaskModel> findAllByUserIdAndCreatedAfterAndDoneOrderByCreatedDesc(UUID userId, long created, boolean done, Pageable pageable);
+	Stream<TaskModel> findAllByUserIdAndCreatedBeforeAndDoneOrderByCreatedDesc(UUID userId, long created, boolean done, Pageable pageable);
 
 	Stream<TaskModel> findAllByUserIdAndCreatedAfterOrderByCreatedAsc(UUID userId, long created, Pageable pageable);
 
 	Stream<TaskModel> findAllByUserIdAndCreatedAfterAndDoneOrderByCreatedAsc(UUID userId, long created, boolean done, Pageable pageable);
 
-	Stream<TaskModel> findAllByUserIdAndCreatedAfterOrderByCreatedDesc(UUID userId, long created, Pageable pageable);
+	Stream<TaskModel> findAllByUserIdAndCreatedBeforeOrderByCreatedDesc(UUID userId, long created, Pageable pageable);
 
 }

@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -49,7 +48,6 @@ public class FirebaseCloudMessagingImpl {
 	 */
 	public void sendNotificationToTopics(String type, Object payload, String... topics) {
 		try {
-			System.out.println(Arrays.toString(topics));
 			Message.Builder messageBuilder = Message.builder()
 					.putData("type", type)
 					.putData("data", this.objectMapper.writeValueAsString(payload));
