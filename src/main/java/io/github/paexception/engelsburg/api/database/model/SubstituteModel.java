@@ -1,6 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
-import io.github.paexception.engelsburg.api.endpoint.dto.response.SubstituteResponseDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,40 +20,39 @@ import java.sql.Date;
 @Table
 public class SubstituteModel {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int substituteId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int substituteId;
 
-    @NotNull
-    private Date date;
-    @NotBlank
-    private String className;
-    @NotBlank
-    private String lesson;
-    private String subject;
-    @NotBlank
-    private String substituteTeacher;
-    @NotBlank
-    private String teacher;
-    @NotBlank
-    private String type;
-    private String substituteOf;
-    private String room;
-    private String text;
+	@NotNull
+	private Date date;
+	@NotBlank
+	private String className;
+	private int lesson;
+	private String subject;
+	@NotBlank
+	private String substituteTeacher;
+	@NotBlank
+	private String teacher;
+	@NotBlank
+	private String type;
+	private String substituteOf;
+	private String room;
+	private String text;
 
-    public SubstituteResponseDTO toResponseDTO() {
-        return new SubstituteResponseDTO(
-                this.date,
-                this.className,
-                this.lesson,
-                this.subject,
-                this.substituteTeacher,
-                this.teacher,
-                this.type,
-                this.substituteOf,
-                this.room,
-                this.text
-        );
-    }
+	public SubstituteDTO toResponseDTO() {
+		return new SubstituteDTO(
+				this.date,
+				this.className,
+				this.lesson,
+				this.subject,
+				this.substituteTeacher,
+				this.teacher,
+				this.type,
+				this.substituteOf,
+				this.room,
+				this.text
+		);
+	}
 
 }

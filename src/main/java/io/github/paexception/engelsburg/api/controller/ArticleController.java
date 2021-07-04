@@ -2,49 +2,79 @@ package io.github.paexception.engelsburg.api.controller;
 
 import io.github.paexception.engelsburg.api.database.model.ArticleModel;
 import io.github.paexception.engelsburg.api.database.repository.ArticleRepository;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateArticleRequestDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.response.ArticleResponseDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetArticlesResponseDTO;
+import io.github.paexception.engelsburg.api.service.scheduled.ArticleUpdateService;
+import io.github.paexception.engelsburg.api.spring.paging.AbstractPageable;
+import io.github.paexception.engelsburg.api.spring.paging.Paging;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import static io.github.paexception.engelsburg.api.util.Constants.Article.NAME_KEY;
 
+/**
+ * Controller for articles
+ */
 @Component
-public class ArticleController {
+public class ArticleController extends AbstractPageable {
 
-	@Autowired private ArticleRepository articleRepository;
+	@Autowired
+	private ArticleRepository articleRepository;
 
-	public void createArticle(CreateArticleRequestDTO dto) {
-		this.articleRepository.save(new ArticleModel(
-				-1,
-				dto.getDate(),
-				dto.getLink(),
-				dto.getTitle(),
-				dto.getContent(),
-				dto.getMediaUrl()
-		));
+	/**
+	 * Paging information
+	 */
+	public ArticleController() {
+		super(1, 20);
 	}
 
-	public Result<GetArticlesResponseDTO> getArticlesAfter(long date, int page, int size) {
-		//TODO: replace with hibernate validator in endpoint
-		if (date < 0) return Result.of(Error.INVALID_PARAM, "date must be 0 or greater");
-		if (page < 1) return Result.of(Error.INVALID_PARAM, "page must be greater than 0");
-		if (size < 1 || size > 20) return Result.of(Error.INVALID_PARAM, "size must be between 1 and 20");
+	/**
+	 * Create a new Article
+	 *
+	 * @param dto which has article information
+	 */
+	public void createArticle(ArticleDTO dto) {
+		if (!this.articleRepository.existsByDate(dto.getDate())) {
+			this.articleRepository.save(new ArticleModel(
+					-1,
+					dto.getDate(),
+					dto.getLink(),
+					dto.getTitle(),
+					dto.getContent(),
+					dto.getMediaUrl()
+			));
+		}
+	}
 
-		List<ArticleResponseDTO> responseDTOs = new ArrayList<>();
-		this.articleRepository.findAllByDateGreaterThanEqual(date, PageRequest.of(page-1, size))
+	/**
+	 * Get articles after date with pagination
+	 *
+	 * @param date   since when articles should be listed
+	 * @param paging of articles
+	 * @return found articles
+	 */
+	public Result<GetArticlesResponseDTO> getArticlesAfter(long date, Paging paging) {
+		List<ArticleDTO> responseDTOs = new ArrayList<>();
+		if (date < 0) {
+			date = System.currentTimeMillis();
+			this.articleRepository.findAllByDateLessThanEqualOrderByDateDesc(date, this.toPage(paging))
+					.forEach(article -> responseDTOs.add(article.toResponseDTO()));
+		} else this.articleRepository.findAllByDateGreaterThanEqualOrderByDateAsc(date, this.toPage(paging))
 				.forEach(article -> responseDTOs.add(article.toResponseDTO()));
-		if (responseDTOs.isEmpty()) return Result.of(Error.NOT_FOUND, "article");
-		System.out.println(responseDTOs);
+		if (responseDTOs.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		return Result.of(new GetArticlesResponseDTO(responseDTOs));
 	}
 
+	/**
+	 * Delete all articles
+	 * Only {@link ArticleUpdateService} is supposed to call
+	 * this function!
+	 */
 	@Transactional
 	public void clearAllArticles() {
 		this.articleRepository.deleteAll();

@@ -1,6 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
-import io.github.paexception.engelsburg.api.endpoint.dto.response.EventResponseDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.EventDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,8 +28,8 @@ public class EventModel {
 	@NotBlank
 	private String title;
 
-	public EventResponseDTO toResponseDTO() {
-		return new EventResponseDTO(this.date, this.title);
+	public EventDTO toResponseDTO() {
+		return new EventDTO(this.date, this.title);
 	}
 
 }

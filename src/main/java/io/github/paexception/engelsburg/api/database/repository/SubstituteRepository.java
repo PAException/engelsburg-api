@@ -5,38 +5,38 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.sql.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SubstituteRepository extends JpaRepository<SubstituteModel, Integer> {
 
-    List<SubstituteModel> findAllByDate(Date date);
+	static String likeClassName(String className) {
+		if (className.length() == 2) return className.charAt(0) + "%" + className.charAt(1) + "%";
+		else return className.substring(0, 2) + "%" + className.charAt(2) + "%";
+	}
 
-    List<SubstituteModel> findAllByDateAndClassName(Date date, String className);
+	List<SubstituteModel> findAllByDate(Date date);
 
-    List<SubstituteModel> findAllByDateAndTeacher(Date date, String teacher);
+	List<SubstituteModel> findAllByDateAndClassName(Date date, String className);
 
-    List<SubstituteModel> findAllByDateAndTeacherAndLessonContaining(Date date, String teacher, String lesson);
+	List<SubstituteModel> findAllByDateAndTeacher(Date date, String teacher);
 
-    List<SubstituteModel> findAllByDateAndTeacherAndClassName(Date date, String teacher, String className);
+	List<SubstituteModel> findAllByDateAndTeacherAndLesson(Date date, String teacher, int lesson);
 
-    List<SubstituteModel> findAllByDateAndTeacherAndLessonContainingAndClassName(Date date, String teacher, String lesson, String className);
+	List<SubstituteModel> findAllByDateAndTeacherAndClassName(Date date, String teacher, String className);
 
-    List<SubstituteModel> findAllByDateAndSubstituteTeacher(Date date, String substituteTeacher);
+	List<SubstituteModel> findAllByDateAndTeacherAndLessonAndClassName(Date date, String teacher, int lesson, String className);
 
-    List<SubstituteModel> findAllByDateGreaterThanEqual(Date date);
+	List<SubstituteModel> findAllByDateAndSubstituteTeacher(Date date, String substituteTeacher);
 
-    List<SubstituteModel> findAllByDateGreaterThanEqualAndClassName(Date date, String className);
+	List<SubstituteModel> findAllByDateGreaterThanEqual(Date date);
 
-    List<SubstituteModel> findAllByDateGreaterThanEqualAndTeacher(Date date, String teacher);
+	List<SubstituteModel> findAllByDateGreaterThanEqualAndClassNameIsLike(Date date, String className);
 
-    List<SubstituteModel> findAllByDateGreaterThanEqualAndTeacherAndLessonContaining(Date date, String teacher, String lesson);
+	Optional<SubstituteModel> findByDateAndLessonAndTeacher(Date date, int lesson, String teacher);
 
-    List<SubstituteModel> findAllByDateGreaterThanEqualAndTeacherAndClassName(Date date, String teacher, String className);
+	Optional<SubstituteModel> findByDateAndLessonAndClassNameIsLike(Date date, int lesson, String className);
 
-    List<SubstituteModel> findAllByDateGreaterThanEqualAndTeacherAndLessonContainingAndClassName(Date date, String teacher, String lesson, String className);
-
-    List<SubstituteModel> findAllByDateGreaterThanEqualAndSubstituteTeacher(Date date, String substituteTeacher);
-
-	void deleteAllByDate(Date date);
+	Optional<SubstituteModel> findByDateAndLessonAndSubject(Date date, int lesson, String subject);
 
 }

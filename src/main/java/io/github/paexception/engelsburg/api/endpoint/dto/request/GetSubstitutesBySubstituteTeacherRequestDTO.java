@@ -12,6 +12,6 @@ public class GetSubstitutesBySubstituteTeacherRequestDTO {
 
 	@NotBlank
 	private String teacher;
-	private long date;
+	private long date = -1;
 
 }
