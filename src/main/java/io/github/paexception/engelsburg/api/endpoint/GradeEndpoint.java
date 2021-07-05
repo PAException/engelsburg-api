@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 /**
- * RestController for grade actions
+ * RestController for grade actions.
  */
 @RestController
 public class GradeEndpoint {
@@ -26,7 +26,7 @@ public class GradeEndpoint {
 	private GradeController gradeController;
 
 	/**
-	 * Create a new grade
+	 * Create a new grade.
 	 *
 	 * @see GradeController#createGrade(CreateGradeRequestDTO, DecodedJWT)
 	 */
@@ -37,7 +37,7 @@ public class GradeEndpoint {
 	}
 
 	/**
-	 * Update a grade
+	 * Update a grade.
 	 *
 	 * @see GradeController#updateGrade(UpdateGradeRequestDTO, DecodedJWT)
 	 */
@@ -48,7 +48,7 @@ public class GradeEndpoint {
 	}
 
 	/**
-	 * Get all grades or by subject
+	 * Get all grades or by subject.
 	 *
 	 * @see GradeController#getGrades(String, DecodedJWT)
 	 */
@@ -59,7 +59,7 @@ public class GradeEndpoint {
 	}
 
 	/**
-	 * Delete a grade by gradeId
+	 * Delete a grade by gradeId.
 	 *
 	 * @see GradeController#deleteGrade(int, DecodedJWT)
 	 */

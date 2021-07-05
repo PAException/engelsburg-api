@@ -15,7 +15,7 @@ import java.util.List;
 import static io.github.paexception.engelsburg.api.util.Constants.Event.NAME_KEY;
 
 /**
- * Controller for events
+ * Controller for events.
  */
 @Component
 public class EventController {
@@ -24,7 +24,7 @@ public class EventController {
 	private EventRepository eventRepository;
 
 	/**
-	 * Create a new event
+	 * Create a new event.
 	 *
 	 * @param dto which has article information
 	 */
@@ -33,7 +33,7 @@ public class EventController {
 	}
 
 	/**
-	 * Delete all events
+	 * Delete all events.
 	 * Only {@link EventUpdateService} is supposed to call
 	 * this function!
 	 */
@@ -43,7 +43,7 @@ public class EventController {
 	}
 
 	/**
-	 * Get all events
+	 * Get all events.
 	 *
 	 * @return found events in DTO
 	 */

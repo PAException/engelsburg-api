@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 /**
- * RestController for notification actions
+ * RestController for notification actions.
  */
 @RestController
 public class NotificationEndpoint {
@@ -24,7 +24,7 @@ public class NotificationEndpoint {
 	private NotificationController notificationController;
 
 	/**
-	 * Change user notification settings
+	 * Change user notification settings.
 	 *
 	 * @see NotificationController#changeNotificationSettings(ChangeNotificationSettingsRequestDTO, DecodedJWT)
 	 */
@@ -35,7 +35,7 @@ public class NotificationEndpoint {
 	}
 
 	/**
-	 * Get notification settings
+	 * Get notification settings.
 	 *
 	 * @see NotificationController#getNotificationSettings(DecodedJWT)
 	 */
@@ -46,7 +46,7 @@ public class NotificationEndpoint {
 	}
 
 	/**
-	 * Add a notification device
+	 * Add a notification device.
 	 *
 	 * @see NotificationController#addNotificationDevice(NotificationDeviceDTO, DecodedJWT)
 	 */
@@ -57,7 +57,7 @@ public class NotificationEndpoint {
 	}
 
 	/**
-	 * Remove a notification device
+	 * Remove a notification device.
 	 *
 	 * @see NotificationController#removeNotificationDevice(NotificationDeviceDTO, DecodedJWT)
 	 */

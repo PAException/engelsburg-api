@@ -16,17 +16,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class to return on endpoints
+ * Class to return on endpoints.
  * It can handle any type as well as errors and format them properly as a http response
  *
- * @param <T>
+ * @param <T> any type to respond
  */
 @Getter
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Result<T> {
 
-	private static final ObjectMapper objectMapper = new ObjectMapper();
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 	private static MessageDigest digest;
 	private T result;
 	private Error error;
@@ -65,13 +65,12 @@ public class Result<T> {
 	 * @param instance The instance to map
 	 * @return the given instance
 	 */
-	@SuppressWarnings({"unchecked", "rawtypes"})
 	public static <T> Result<T> ret(Result instance) {
 		return instance;
 	}
 
 	/**
-	 * Hash function for header on response
+	 * Hash function for header on response.
 	 *
 	 * @param o The object o to hash
 	 * @return hash of o
@@ -88,7 +87,7 @@ public class Result<T> {
 	}
 
 	/**
-	 * Function to convert a bytearray into a hex string
+	 * Function to convert a bytearray into a hex string.
 	 *
 	 * @param hash bytearray to convert to hex string
 	 * @return hex string
@@ -105,7 +104,7 @@ public class Result<T> {
 	}
 
 	/**
-	 * Convert Result in a HttpServletResponse for preHandles
+	 * Convert Result in a HttpServletResponse for preHandles.
 	 *
 	 * @param response HttpServletResponse given by preHandle method
 	 * @throws IOException if there's an error writing the response
@@ -115,12 +114,12 @@ public class Result<T> {
 		response.setStatus(responseEntity.getStatusCodeValue());
 		for (Map.Entry<String, List<String>> header : responseEntity.getHeaders().entrySet())
 			for (String valor : header.getValue()) response.addHeader(header.getKey(), valor);
-		response.getWriter().write(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(responseEntity.getBody()));
+		response.getWriter().write(OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(responseEntity.getBody()));
 		response.getWriter().flush();
 	}
 
 	/**
-	 * Convert Result into a HttpResponse
+	 * Convert Result into a HttpResponse.
 	 *
 	 * @return ResponseEntity for spring
 	 */

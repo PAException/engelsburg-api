@@ -17,7 +17,7 @@ import java.util.List;
 import static io.github.paexception.engelsburg.api.util.Constants.Article.NAME_KEY;
 
 /**
- * Controller for articles
+ * Controller for articles.
  */
 @Component
 public class ArticleController extends AbstractPageable {
@@ -26,14 +26,14 @@ public class ArticleController extends AbstractPageable {
 	private ArticleRepository articleRepository;
 
 	/**
-	 * Paging information
+	 * Paging information.
 	 */
 	public ArticleController() {
 		super(1, 20);
 	}
 
 	/**
-	 * Create a new Article
+	 * Create a new Article.
 	 *
 	 * @param dto which has article information
 	 */
@@ -51,7 +51,7 @@ public class ArticleController extends AbstractPageable {
 	}
 
 	/**
-	 * Get articles after date with pagination
+	 * Get articles after date with pagination.
 	 *
 	 * @param date   since when articles should be listed
 	 * @param paging of articles
@@ -71,7 +71,7 @@ public class ArticleController extends AbstractPageable {
 	}
 
 	/**
-	 * Delete all articles
+	 * Delete all articles.
 	 * Only {@link ArticleUpdateService} is supposed to call
 	 * this function!
 	 */

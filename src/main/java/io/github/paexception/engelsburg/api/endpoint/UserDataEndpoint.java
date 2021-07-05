@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * RestController for user data actions
+ * RestController for user data actions.
  */
 @Validated
 @RestController
@@ -20,7 +20,7 @@ public class UserDataEndpoint {
 	private UserDataController userDataController;
 
 	/**
-	 * Get data of user
+	 * Get data of user.
 	 *
 	 * @see UserDataController#getUserData(DecodedJWT)
 	 */
@@ -31,7 +31,7 @@ public class UserDataEndpoint {
 	}
 
 	/**
-	 * Delete all data of user
+	 * Delete all data of user.
 	 *
 	 * <b>The whole account will be deleted and there is no way of restoring</b>
 	 *

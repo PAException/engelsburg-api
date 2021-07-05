@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 /**
- * RestController for task actions
+ * RestController for task actions.
  */
 @RestController
 public class TaskEndpoint {
@@ -28,7 +28,7 @@ public class TaskEndpoint {
 	private TaskController taskController;
 
 	/**
-	 * Create a new task
+	 * Create a new task.
 	 *
 	 * @see TaskController#createTask(CreateTaskRequestDTO, DecodedJWT)
 	 */
@@ -39,7 +39,7 @@ public class TaskEndpoint {
 	}
 
 	/**
-	 * Update a task
+	 * Update a task.
 	 *
 	 * @see TaskController#updateTask(UpdateTaskRequestDTO, DecodedJWT)
 	 */
@@ -50,7 +50,7 @@ public class TaskEndpoint {
 	}
 
 	/**
-	 * Get tasks by specific parameters
+	 * Get tasks by specific parameters.
 	 *
 	 * @see TaskController#getTasks(GetTasksRequestDTO, DecodedJWT, Paging)
 	 */
@@ -61,7 +61,7 @@ public class TaskEndpoint {
 	}
 
 	/**
-	 * Mark a task as done
+	 * Mark a task as done.
 	 *
 	 * @see TaskController#markAsDone(MarkTaskAsDoneRequestDTO, DecodedJWT)
 	 */
@@ -72,7 +72,7 @@ public class TaskEndpoint {
 	}
 
 	/**
-	 * Delete a task by taskId
+	 * Delete a task by taskId.
 	 *
 	 * @see TaskController#deleteTask(int, DecodedJWT)
 	 */

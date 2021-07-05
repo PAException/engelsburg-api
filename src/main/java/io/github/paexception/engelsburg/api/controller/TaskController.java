@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 import static io.github.paexception.engelsburg.api.util.Constants.Task.NAME_KEY;
 
 /**
- * Controller for tasks
+ * Controller for tasks.
  */
 @Component
 public class TaskController extends AbstractPageable implements UserDataHandler {
@@ -38,7 +38,7 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	}
 
 	/**
-	 * Create a new task
+	 * Create a new task.
 	 *
 	 * @param dto with task information
 	 * @param jwt with userId
@@ -60,7 +60,7 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	}
 
 	/**
-	 * Update a specific task (taskId needed)
+	 * Update a specific task (taskId needed).
 	 *
 	 * @param dto with task information
 	 * @param jwt with userId
@@ -83,12 +83,14 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	}
 
 	/**
-	 * Get all tasks
+	 * Get all tasks.
 	 * <p>
-	 * Possible params are date after and only done tasks
+	 * Possible params are date after and only done tasks.
+	 * </p>
 	 *
-	 * @param dto for params
-	 * @param jwt with userId
+	 * @param dto    for params
+	 * @param jwt    with userId
+	 * @param paging paging options
 	 * @return list of taskDTOs
 	 */
 	@Transactional
@@ -115,7 +117,7 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	}
 
 	/**
-	 * Mark a task as done or undone
+	 * Mark a task as done or undone.
 	 *
 	 * @param dto with taskId and value to be set for done (default = true)
 	 * @param jwt with userId
@@ -133,7 +135,7 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	}
 
 	/**
-	 * Delete a task
+	 * Delete a task.
 	 *
 	 * @param taskId of task to delete
 	 * @param jwt    with userId

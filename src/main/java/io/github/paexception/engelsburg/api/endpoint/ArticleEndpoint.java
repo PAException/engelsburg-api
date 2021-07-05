@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * RestController for article actions
+ * RestController for article actions.
  */
 @RestController
 public class ArticleEndpoint {
@@ -17,7 +17,7 @@ public class ArticleEndpoint {
 	private ArticleController articleController;
 
 	/**
-	 * Return article by specific params
+	 * Return article by specific params.
 	 *
 	 * @see ArticleController#getArticlesAfter(long, Paging)
 	 */

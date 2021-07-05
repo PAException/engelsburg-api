@@ -35,7 +35,7 @@ public class PagingInterceptor extends HandlerInterceptorAdapter implements Hand
 
 	@Override
 	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
-		response.setHeader("Content-Type", "application/json; charset=utf-8");//Set content type for every response
+		response.setHeader("Content-Type", "application/json; charset=utf-8"); //Set content type for every response
 	}
 
 	@Override

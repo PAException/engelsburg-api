@@ -33,7 +33,7 @@ import java.util.UUID;
 import static io.github.paexception.engelsburg.api.util.Constants.Authentication.NAME_KEY;
 
 /**
- * Controller for authentication
+ * Controller for authentication.
  */
 @Component
 public class AuthenticationController implements UserDataHandler {
@@ -76,7 +76,7 @@ public class AuthenticationController implements UserDataHandler {
 	private TokenController tokenController;
 
 	/**
-	 * Login with credentials
+	 * Login with credentials.
 	 *
 	 * @param dto email and password
 	 * @return valid jwt token
@@ -93,7 +93,7 @@ public class AuthenticationController implements UserDataHandler {
 	}
 
 	/**
-	 * Sign up with credentials and schoolToken
+	 * Sign up with credentials and schoolToken.
 	 *
 	 * @param dto email, password and schoolToken
 	 * @return empty response or error
@@ -111,7 +111,7 @@ public class AuthenticationController implements UserDataHandler {
 
 		UUID userId = UUID.randomUUID();
 		this.userRepository.save(new UserModel(-1, userId, dto.getEmail(), hashedPassword, salt, false));
-		DEFAULT_SCOPES.forEach(scope -> this.scopeController.addScope(userId, scope));//Add default scopes
+		DEFAULT_SCOPES.forEach(scope -> this.scopeController.addScope(userId, scope)); //Add default scopes
 		if (this.emailService.verify(
 				dto.getEmail(),
 				this.tokenController.createRandomToken(userId, "verify")
@@ -138,7 +138,7 @@ public class AuthenticationController implements UserDataHandler {
 	}
 
 	/**
-	 * Set the new password with password reset token
+	 * Set the new password with password reset token.
 	 *
 	 * @param dto with email, new password and password reset token
 	 * @return empty result or error
@@ -157,7 +157,7 @@ public class AuthenticationController implements UserDataHandler {
 	}
 
 	/**
-	 * Verifies a user
+	 * Verifies a user.
 	 *
 	 * @param jwt   with userId
 	 * @param token to verify
@@ -176,7 +176,7 @@ public class AuthenticationController implements UserDataHandler {
 	}
 
 	/**
-	 * Update default scopes of all current users
+	 * Update default scopes of all current users.
 	 */
 	@EventListener(ApplicationStartedEvent.class)
 	public void updateDefaultScopes() {
@@ -184,21 +184,21 @@ public class AuthenticationController implements UserDataHandler {
 	}
 
 	/**
-	 * Create a valid jwt token
+	 * Create a valid jwt token.
 	 *
 	 * @param user with userId as subject of jwt
 	 * @return jwt token
 	 */
 	private String createJWT(UserModel user) {
-		JWTCreator.Builder builder = EngelsburgAPI.getJwtUtil()
+		JWTCreator.Builder builder = EngelsburgAPI.getJWT_UTIL()
 				.createBuilder(user.getUserId().toString(), 30, Calendar.MINUTE);
 		String[] scopes = this.scopeController.getScopes(user.getUserId());
 
-		return EngelsburgAPI.getJwtUtil().sign(builder.withArrayClaim("scopes", scopes));
+		return EngelsburgAPI.getJWT_UTIL().sign(builder.withArrayClaim("scopes", scopes));
 	}
 
 	/**
-	 * Hash a password
+	 * Hash a password.
 	 *
 	 * @param password password
 	 * @param salt     and salt to hash
@@ -209,7 +209,7 @@ public class AuthenticationController implements UserDataHandler {
 			if (md == null) md = MessageDigest.getInstance("SHA-256");
 
 			return new String(md.digest((password + salt).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-		} catch (NoSuchAlgorithmException ignored) {//Won't ever happen
+		} catch (NoSuchAlgorithmException ignored) { //Won't ever happen
 		}
 
 		return RandomStringUtils.randomAlphanumeric(6);

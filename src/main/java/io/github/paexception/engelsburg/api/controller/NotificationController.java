@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 import static io.github.paexception.engelsburg.api.util.Constants.Notification.NAME_KEY;
 
 /**
- * Controller for notifications
+ * Controller for notifications.
  */
 @Component
 public class NotificationController implements UserDataHandler {
@@ -33,7 +33,7 @@ public class NotificationController implements UserDataHandler {
 	private NotificationDeviceRepository notificationDeviceRepository;
 
 	/**
-	 * Change notification settings of user
+	 * Change notification settings of user.
 	 *
 	 * @param dto with all notification settings
 	 * @param jwt with userId
@@ -59,7 +59,7 @@ public class NotificationController implements UserDataHandler {
 	}
 
 	/**
-	 * Get notification settings of user
+	 * Get notification settings of user.
 	 *
 	 * @param jwt with userId
 	 * @return notification settings
@@ -71,7 +71,7 @@ public class NotificationController implements UserDataHandler {
 	}
 
 	/**
-	 * Add a new device to receive notifications on
+	 * Add a new device to receive notifications on.
 	 *
 	 * @param dto with device token
 	 * @param jwt with userId
@@ -87,7 +87,7 @@ public class NotificationController implements UserDataHandler {
 	}
 
 	/**
-	 * Remove an existing device which receives notifications
+	 * Remove an existing device which receives notifications.
 	 *
 	 * @param dto with device token
 	 * @param jwt with userId
@@ -116,7 +116,7 @@ public class NotificationController implements UserDataHandler {
 	}
 
 	/**
-	 * Fetch all device tokens of userIds
+	 * Fetch all device tokens of userIds.
 	 *
 	 * @param userIds Set of userIds to fetch for
 	 * @return a Set of device tokens

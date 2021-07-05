@@ -17,7 +17,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
- * Handles thrown exceptions in RestControllers and represent them in a solid http response
+ * Handles thrown exceptions in RestControllers and represent them in a solid http response.
  * Also a way to catch exceptions which are supposed to be thrown or can be ignored
  */
 @RestControllerAdvice
@@ -26,7 +26,7 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
 	private static final Logger LOGGER = LoggerFactory.getLogger(RestControllerExceptionHandler.class.getSimpleName());
 
 	/**
-	 * Handle any exception that was thrown and not be caught or processed
+	 * Handle any exception that was thrown and not be caught or processed.
 	 *
 	 * @param exception that was thrown
 	 * @return INTERNAL_SERVER_ERROR
@@ -39,7 +39,7 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
 	}
 
 	/**
-	 * Override method to handle exception already processed by {@link ResponseEntityExceptionHandler}
+	 * Override method to handle exception already processed by {@link ResponseEntityExceptionHandler}.
 	 * where {@link ExceptionHandler} would throw an error, because exception is already handled
 	 */
 	@Override

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * RestController for information actions
+ * RestController for information actions.
  */
 @RestController
 public class InformationEndpoint {
@@ -17,7 +17,7 @@ public class InformationEndpoint {
 	private InformationController informationController;
 
 	/**
-	 * Get information about a specific teacher
+	 * Get information about a specific teacher.
 	 *
 	 * @see InformationController#getTeacher(String)
 	 */
@@ -28,7 +28,7 @@ public class InformationEndpoint {
 	}
 
 	/**
-	 * Get all current classes
+	 * Get all current classes.
 	 *
 	 * @see InformationController#getCurrentClasses()
 	 */
@@ -39,7 +39,7 @@ public class InformationEndpoint {
 	}
 
 	/**
-	 * Get all known teachers
+	 * Get all known teachers.
 	 *
 	 * @see InformationController#getAllTeachers()
 	 */

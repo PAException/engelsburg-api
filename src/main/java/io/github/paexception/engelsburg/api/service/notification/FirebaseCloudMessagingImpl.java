@@ -24,7 +24,7 @@ public class FirebaseCloudMessagingImpl {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	/**
-	 * Initiates the firebase app to send notifications
+	 * Initiates the firebase app to send notifications.
 	 *
 	 * @throws IOException if account credentials can't be read
 	 */
@@ -40,7 +40,7 @@ public class FirebaseCloudMessagingImpl {
 	}
 
 	/**
-	 * Sends notification to topics
+	 * Sends notification to topics.
 	 *
 	 * @param type    of notification
 	 * @param payload with information
@@ -52,18 +52,18 @@ public class FirebaseCloudMessagingImpl {
 					.putData("type", type)
 					.putData("data", this.objectMapper.writeValueAsString(payload));
 
-			for (String topic : topics) {
-				topic = topic.replace("Ä", "AE").replace("Ö", "OE").replace("Ü", "UE").toLowerCase();
+			for (String topic : topics)
 				if (!topic.contains("+"))
-					FirebaseMessaging.getInstance().send(messageBuilder.setTopic(topic).build(), !Environment.PRODUCTION);
-			}
+					FirebaseMessaging.getInstance().send(messageBuilder.setTopic(topic.replace("Ä", "AE")
+							.replace("Ö", "OE").replace("Ü", "UE")
+							.toLowerCase()).build(), !Environment.PRODUCTION);
 		} catch (JsonProcessingException | FirebaseMessagingException e) {
 			EngelsburgAPI.getLOGGER().error("Couldn't send notification", e);
 		}
 	}
 
 	/**
-	 * Send advanced notifications to many
+	 * Send advanced notifications to many.
 	 *
 	 * @param type of notification
 	 * @param dtos with notification tokens and info
