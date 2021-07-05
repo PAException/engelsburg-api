@@ -112,7 +112,6 @@ public class Result<T> {
 	 */
 	public void respond(HttpServletResponse response) throws IOException {
 		ResponseEntity<Object> responseEntity = this.getHttpResponse();
-		response.setHeader("Content-Type", "application/json");
 		response.setStatus(responseEntity.getStatusCodeValue());
 		for (Map.Entry<String, List<String>> header : responseEntity.getHeaders().entrySet())
 			for (String valor : header.getValue()) response.addHeader(header.getKey(), valor);
