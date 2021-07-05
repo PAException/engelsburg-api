@@ -100,7 +100,6 @@
         <module name="EqualsHashCode"/>
         <module name="MissingSwitchDefault"/>
         <module name="IllegalThrows"/>
-        <module name="IllegalCatch"/>
         <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>
         <module name="OneStatementPerLine"/>

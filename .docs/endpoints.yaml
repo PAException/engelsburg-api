@@ -64,7 +64,7 @@ paths:
     get:
       tags:
         - "auth"
-      summary: "Login and retrieve JWT token"
+      summary: "Login and retrieve refresh token"
       operationId: "login"
       consumes:
         - "application/json"
@@ -84,6 +84,35 @@ paths:
                 type: "string"
                 example: "password123"
                 description: "[*Required*]"
+      responses:
+        "200":
+          description: "OK - Successful operation"
+          schema:
+            type: object
+            properties:
+              refreshToken:
+                type: string
+                example: "TsXiRmvAk7rVwRBj8Xe2JT7AAK8NwzrleQCeZUzxZrEHlEIJRfAKS1GfxaRBa0XevmouJg6aKRvaBwHKjGthS3cfTDGFfVJIfmGH"
+                description: "Refresh token for authentication"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /auth/refresh:
+    get:
+      tags:
+        - "auth"
+      summary: "Login and retrieve JWT token"
+      operationId: "refresh"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          name: "Refresh token"
+          type: "string"
+          required: true
       responses:
         "200":
           description: "OK - Successful operation"
