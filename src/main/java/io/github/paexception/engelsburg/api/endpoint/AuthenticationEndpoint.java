@@ -29,6 +29,16 @@ public class AuthenticationEndpoint {
 	private AuthenticationController authenticationController;
 
 	/**
+	 * Signup a user.
+	 *
+	 * @see AuthenticationController#signUp(SignUpRequestDTO)
+	 */
+	@PostMapping("/auth/signup")
+	public Object signup(@RequestBody @Valid SignUpRequestDTO dto) {
+		return this.authenticationController.signUp(dto).getHttpResponse();
+	}
+
+	/**
 	 * Login a user.
 	 *
 	 * @see AuthenticationController#login(LoginRequestDTO)
@@ -39,13 +49,13 @@ public class AuthenticationEndpoint {
 	}
 
 	/**
-	 * Signup a user.
+	 * Authenticate user.
 	 *
-	 * @see AuthenticationController#signUp(SignUpRequestDTO)
+	 * @see AuthenticationController#auth(String)
 	 */
-	@PostMapping("/auth/signup")
-	public Object signup(@RequestBody @Valid SignUpRequestDTO dto) {
-		return this.authenticationController.signUp(dto).getHttpResponse();
+	@GetMapping("/auth/refresh")
+	public Object auth(@RequestParam @NotBlank String refreshToken) {
+		return this.authenticationController.auth(refreshToken).getHttpResponse();
 	}
 
 	/**
