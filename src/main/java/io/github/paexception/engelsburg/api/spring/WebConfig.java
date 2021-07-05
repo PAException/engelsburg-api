@@ -25,7 +25,7 @@ import java.util.List;
 @EnableWebMvc
 public class WebConfig implements WebMvcConfigurer {
 
-	private final ScopeInterceptor scopeInterceptor = new ScopeInterceptor(EngelsburgAPI.getJwtUtil());
+	private final ScopeInterceptor scopeInterceptor = new ScopeInterceptor(EngelsburgAPI.getJWT_UTIL());
 	private final PagingInterceptor pagingInterceptor = new PagingInterceptor();
 	@Autowired
 	private ObjectMapper mapper;

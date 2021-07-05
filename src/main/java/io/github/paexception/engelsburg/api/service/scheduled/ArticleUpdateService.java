@@ -26,32 +26,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Service to update articles
+ * Service to update articles.
  */
 @Service
 public class ArticleUpdateService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ArticleUpdateService.class.getSimpleName());
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	@Autowired
 	private ArticleController articleController;
 	@Autowired
 	private NotificationService notificationService;
 
 	/**
-	 * Call {@link #updateArticles(String)} every 15 minutes and return all articles published in that passed 15 minutes
+	 * Call {@link #updateArticles(String)} every 15 minutes and return all articles published in that passed 15 minutes.
 	 */
 	@Scheduled(fixedRate = 15 * 60 * 1000)
 	public void fetchNewArticles() {
-		this.updateArticles(dateFormat.format(System.currentTimeMillis() - 15 * 60 * 1000)).stream()
+		this.updateArticles(DATE_FORMAT.format(System.currentTimeMillis() - 15 * 60 * 1000)).stream()
 				.peek(dto -> this.notificationService.sendArticleNotifications(dto))
 				.forEach(dto -> this.articleController.createArticle(dto));
 	}
 
 	/**
-	 * Fetch all articles past a specific date/time
+	 * Fetch all articles past a specific date/time.
 	 *
 	 * @param date to fetch articles past that date
+	 * @return fetched articles
 	 */
 	private List<ArticleDTO> updateArticles(String date) {
 		List<ArticleDTO> dtos = new ArrayList<>();
@@ -61,29 +62,29 @@ public class ArticleUpdateService {
 			DataInputStream input = new DataInputStream(
 					new URL("https://engelsburg.smmp.de/wp-json/wp/v2/posts?per_page=100&after=" + date)
 							.openConnection().getInputStream()
-			);//Fetch all articles after date from the wordpress api of the engelsburg
+			); //Fetch all articles after date from the wordpress api of the engelsburg
 			String raw = new String(input.readAllBytes());
-			if (raw.length() == 2) {//Input equal to "{}" which represents an empty result
+			if (raw.length() == 2) { //Input equal to "{}" which represents an empty result
 				LOGGER.debug("No new articles found");
 				return dtos;
 			}
 
-			JsonArray json = JsonParser.parseString(raw).getAsJsonArray();//Parse in article array
-			for (JsonElement article : json) {//Cycle through all articles
-				String content = article.getAsJsonObject().get("content").getAsJsonObject().get("rendered").getAsString();//Get content
+			JsonArray json = JsonParser.parseString(raw).getAsJsonArray(); //Parse in article array
+			for (JsonElement article : json) { //Cycle through all articles
+				String content = article.getAsJsonObject().get("content").getAsJsonObject().get("rendered").getAsString(); //Get content
 				Elements elements;
 				String mediaUrl = null;
 				int featuredMedia;
-				if ((featuredMedia = article.getAsJsonObject().get("featured_media").getAsInt()) != 0) {//Featured media listed?
+				if ((featuredMedia = article.getAsJsonObject().get("featured_media").getAsInt()) != 0) { //Featured media listed?
 					JsonObject mediaJson = JsonParser.parseReader(new InputStreamReader(
 							new URL("https://engelsburg.smmp.de/wp-json/wp/v2/media/" + featuredMedia)
-									.openConnection().getInputStream())).getAsJsonObject();//Then get img url via wordpress api
+									.openConnection().getInputStream())).getAsJsonObject(); //Then get img url via wordpress api
 					mediaUrl = mediaJson.get("source_url").getAsString();
-				} else if ((elements = Jsoup.parse(content).getElementsByClass("wp-block-image")).size() > 0) {//If not search for first image in article
+				} else if ((elements = Jsoup.parse(content).getElementsByClass("wp-block-image")).size() > 0) { //If not search for first image in article
 					mediaUrl = elements.get(0).getElementsByTag("img").get(0).attr("src");
 				}
 				ArticleDTO dto = new ArticleDTO(//Form ArticleDTO from information crawled
-						dateFormat.parse(article.getAsJsonObject().get("date").getAsString()).getTime(),
+						DATE_FORMAT.parse(article.getAsJsonObject().get("date").getAsString()).getTime(),
 						article.getAsJsonObject().get("link").getAsString(),
 						article.getAsJsonObject().get("title").getAsJsonObject().get("rendered").getAsString(),
 						content,
@@ -102,7 +103,7 @@ public class ArticleUpdateService {
 	}
 
 	/**
-	 * Load all articles on startup since 1/1/2020
+	 * Load all articles on startup since 1/1/2020.
 	 */
 	@EventListener(ApplicationStartedEvent.class)
 	public void loadPastArticles() {

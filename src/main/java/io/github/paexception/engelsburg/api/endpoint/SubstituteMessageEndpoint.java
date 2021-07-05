@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * RestController for substitute messages actions
+ * RestController for substitute messages actions.
  */
 @Validated
 @RestController
@@ -20,7 +20,7 @@ public class SubstituteMessageEndpoint {
 	private SubstituteMessageController substituteMessageController;
 
 	/**
-	 * Get all substitute messages since date
+	 * Get all substitute messages since date.
 	 *
 	 * @param date can't be in the past
 	 * @return all found substitute messages

@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import static io.github.paexception.engelsburg.api.util.Constants.SubstituteMessage.NAME_KEY;
 
 /**
- * Controller for substitute messages
+ * Controller for substitute messages.
  */
 @Component
 public class SubstituteMessageController {
@@ -28,7 +28,7 @@ public class SubstituteMessageController {
 	private SubstituteMessageRepository substituteMessageRepository;
 
 	/**
-	 * Checks if sender has permission to get past substitutes messages
+	 * Checks if sender has permission to get past substitutes messages.
 	 *
 	 * @param jwt  with scopes
 	 * @param date specified
@@ -36,12 +36,12 @@ public class SubstituteMessageController {
 	 */
 	private static boolean pastTimeCheck(DecodedJWT jwt, long date) {
 		if (!jwt.getClaim("scopes").asList(String.class).contains("substitute.message.read.all")) {
-			return DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date)) || System.currentTimeMillis() <= date;//Same day or in the future
+			return DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date)) || System.currentTimeMillis() <= date; //Same day or in the future
 		} else return true;
 	}
 
 	/**
-	 * Create a substitute message
+	 * Create a substitute message.
 	 * Only {@link SubstituteUpdateService} is supposed to call
 	 * this function!
 	 *
@@ -63,7 +63,7 @@ public class SubstituteMessageController {
 	}
 
 	/**
-	 * Clear substitute messages of specific day
+	 * Clear substitute messages of specific day.
 	 * Only {@link SubstituteUpdateService} is supposed to call
 	 * this function!
 	 *
@@ -75,9 +75,10 @@ public class SubstituteMessageController {
 	}
 
 	/**
-	 * Return all substitute messages since
+	 * Return all substitute messages since.
 	 *
 	 * @param date can't be in the past
+	 * @param jwt  to check permissions
 	 * @return all found substitute messages
 	 */
 	public Result<GetSubstituteMessagesResponseDTO> getAllSubstituteMessages(long date, DecodedJWT jwt) {

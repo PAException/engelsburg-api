@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 
 /**
  * Error class to return errors on RestControllers in a solid http response,
- * be it a not found element or an internal server error
+ * be it a not found element or an internal server error.
  */
 @Getter
 public class Error extends ResponseEntity<Object> {
@@ -26,9 +26,11 @@ public class Error extends ResponseEntity<Object> {
 	private final int status;
 	private final String messageKey;
 	private final String extra;
+
 	public Error(HttpStatus status, String messageKey) {
 		this(status, messageKey, null);
 	}
+
 	private Error(HttpStatus status, String messageKey, String extra) {
 		super(status);
 		this.status = status.value();

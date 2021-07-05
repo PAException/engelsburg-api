@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * RestController for event actions
+ * RestController for event actions.
  */
 @RestController
 public class EventEndpoint {
@@ -15,7 +15,7 @@ public class EventEndpoint {
 	private EventController eventController;
 
 	/**
-	 * Return all events
+	 * Return all events.
 	 *
 	 * @see EventController#getAllEvents()
 	 */

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import static io.github.paexception.engelsburg.api.util.Constants.Timetable.NAME_KEY;
 
 /**
- * Controller for timetable
+ * Controller for timetable.
  */
 @Component
 public class TimetableController implements UserDataHandler {
@@ -40,7 +40,7 @@ public class TimetableController implements UserDataHandler {
 	}
 
 	/**
-	 * Set a new or existing timetable entry
+	 * Set a new or existing timetable entry.
 	 *
 	 * @param dto with entry information
 	 * @param jwt to identify user and check permissions
@@ -74,9 +74,10 @@ public class TimetableController implements UserDataHandler {
 	}
 
 	/**
-	 * Get timetable entries
+	 * Get timetable entries.
 	 * <p>
 	 * All, by day or lesson or by day and lesson
+	 * </p>
 	 *
 	 * @param dto with day or/and lesson information
 	 * @param jwt with userId
@@ -105,7 +106,7 @@ public class TimetableController implements UserDataHandler {
 	}
 
 	/**
-	 * Delete a new timetable entry
+	 * Delete a new timetable entry.
 	 *
 	 * @param dto with day and lesson of entry
 	 * @param jwt to identify user and check permissions
@@ -125,8 +126,12 @@ public class TimetableController implements UserDataHandler {
 	}
 
 	/**
-	 * Get all timetable entries for notifications
+	 * Get all timetable entries for notifications.
 	 *
+	 * @param day       of timetable entry
+	 * @param lesson    of timetable entry
+	 * @param teacher   of timetable entry
+	 * @param className of timetable entry
 	 * @return all entries
 	 */
 	public List<TimetableModel> getAllByWeekDayAndLessonAndTeacherOrClassName(

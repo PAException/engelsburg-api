@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Service to send no-reply emails
+ * Service to send no-reply emails.
  */
 @Component
 public class EmailService {

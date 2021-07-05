@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Controller for tokens like verify or reset password tokens
+ * Controller for tokens like verify or reset password tokens.
  */
 @Component
 public class TokenController implements UserDataHandler {
@@ -20,7 +20,7 @@ public class TokenController implements UserDataHandler {
 	private TokenRepository tokenRepository;
 
 	/**
-	 * Creates a new token
+	 * Creates a new token.
 	 *
 	 * @param userId of token
 	 * @param type   of token
@@ -31,7 +31,7 @@ public class TokenController implements UserDataHandler {
 	}
 
 	/**
-	 * Creates a random alphanumeric token with a length of 8
+	 * Creates a random alphanumeric token with a length of 8.
 	 *
 	 * @param userId of token
 	 * @param type   of token
@@ -45,7 +45,7 @@ public class TokenController implements UserDataHandler {
 	}
 
 	/**
-	 * Creates a new temporary token
+	 * Creates a new temporary token.
 	 *
 	 * @param userId of token
 	 * @param type   of token
@@ -57,7 +57,7 @@ public class TokenController implements UserDataHandler {
 	}
 
 	/**
-	 * Creates a temporary random alphanumeric token with a length of 8
+	 * Creates a temporary random alphanumeric token with a length of 8.
 	 *
 	 * @param userId of token
 	 * @param type   of token
@@ -94,7 +94,7 @@ public class TokenController implements UserDataHandler {
 	}
 
 	/**
-	 * Deletes a token
+	 * Deletes a token.
 	 *
 	 * @param userId of token
 	 * @param type   of token

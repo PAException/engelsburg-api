@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import static io.github.paexception.engelsburg.api.util.Constants.Substitute.NAME_KEY;
 
 /**
- * Controller for substitutes
+ * Controller for substitutes.
  */
 @Component
 public class SubstituteController {
@@ -34,7 +34,7 @@ public class SubstituteController {
 	private NotificationService notificationService;
 
 	/**
-	 * Checks if sender has permission to get past substitutes
+	 * Checks if sender has permission to get past substitutes.
 	 *
 	 * @param jwt  with scopes
 	 * @param date specified
@@ -42,37 +42,41 @@ public class SubstituteController {
 	 */
 	private static boolean pastTimeCheck(DecodedJWT jwt, long date) {
 		if (!jwt.getClaim("scopes").asList(String.class).contains("substitute.read.all")) {
-			return DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date)) || System.currentTimeMillis() <= date;//Same day or in the future
+			return DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date)) || System.currentTimeMillis() <= date; //Same day or in the future
 		} else return true;
 	}
 
 	/**
-	 * Returns true if given string is not blank or null
+	 * Checks if a string is not blank, empty or null.
+	 *
+	 * @param value string to check
+	 * @return true if given string is not blank or null
 	 */
 	private static boolean notBlank(String value) {
 		return value != null && !value.isBlank();
 	}
 
 	/**
-	 * Update substitutes
+	 * Update substitutes.
 	 * Only {@link SubstituteUpdateService} is supposed to call
 	 * this function!
 	 *
 	 * @param fetchedDTOs with all crawled substitutes
+	 * @param date        of substitutes
 	 */
 	@Transactional
 	public void updateSubstitutes(List<SubstituteDTO> fetchedDTOs, Date date) {
 		this.substituteRepository.findAllByDate(date).stream().map(SubstituteModel::toResponseDTO)
-				.forEach(dto -> fetchedDTOs.removeIf(fetchedDTO -> fetchedDTO.equals(dto)));//Filter new or changed substitutes
+				.forEach(dto -> fetchedDTOs.removeIf(fetchedDTO -> fetchedDTO.equals(dto))); //Filter new or changed substitutes
 		fetchedDTOs.removeIf(dto -> {
-			if (Character.isDigit(dto.getClassName().charAt(0))) {//5a-10e
+			if (Character.isDigit(dto.getClassName().charAt(0))) { //5a-10e
 				Optional<SubstituteModel> optionalSubstitute = this.substituteRepository.findByDateAndLessonAndClassNameIsLike(
 						date, dto.getLesson(), SubstituteRepository.likeClassName(dto.getClassName()));
 				if (optionalSubstitute.isPresent()) {
 					this.substituteRepository.save(this.createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
 					return true;
 				}
-			} else {//E1-Q4
+			} else { //E1-Q4
 				if (dto.getTeacher().isBlank()) {
 					Optional<SubstituteModel> optionalSubstitute = this.substituteRepository.findByDateAndLessonAndSubject(
 							date, dto.getLesson(), dto.getSubject());
@@ -98,9 +102,10 @@ public class SubstituteController {
 	}
 
 	/**
-	 * Get all substitutes by Teacher
+	 * Get all substitutes by Teacher.
 	 *
 	 * @param dto with information
+	 * @param jwt with userId
 	 * @return all found substitutes
 	 */
 	public Result<GetSubstitutesResponseDTO> getSubstitutesByTeacher(GetSubstitutesByTeacherRequestDTO dto, DecodedJWT jwt) {
@@ -129,9 +134,10 @@ public class SubstituteController {
 	}
 
 	/**
-	 * Get all substitutes by the SubstituteTeacher
+	 * Get all substitutes by the SubstituteTeacher.
 	 *
 	 * @param dto with information
+	 * @param jwt with userId
 	 * @return all found substitutes
 	 */
 	public Result<GetSubstitutesResponseDTO> getSubstitutesBySubstituteTeacher(GetSubstitutesBySubstituteTeacherRequestDTO dto, DecodedJWT jwt) {
@@ -146,9 +152,10 @@ public class SubstituteController {
 	}
 
 	/**
-	 * Get all substitutes by a class name
+	 * Get all substitutes by a class name.
 	 *
 	 * @param dto with information
+	 * @param jwt with userId
 	 * @return all found substitutes
 	 */
 	public Result<GetSubstitutesResponseDTO> getSubstitutesByClassName(GetSubstitutesByClassNameRequestDTO dto, DecodedJWT jwt) {
@@ -158,7 +165,7 @@ public class SubstituteController {
 		List<SubstituteModel> substitutes;
 		if (Character.isDigit(dto.getClassName().charAt(0)))
 			substitutes = this.substituteRepository.findAllByDateGreaterThanEqualAndClassNameIsLike(
-					new Date(dto.getDate()), SubstituteRepository.likeClassName(dto.getClassName()));//Include like 5abcde
+					new Date(dto.getDate()), SubstituteRepository.likeClassName(dto.getClassName())); //Include like 5abcde
 		else substitutes = this.substituteRepository.findAllByDateAndClassName(
 				new Date(dto.getDate()), dto.getClassName());
 		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
@@ -167,9 +174,10 @@ public class SubstituteController {
 	}
 
 	/**
-	 * Get all substitutes since date
+	 * Get all substitutes since date.
 	 *
 	 * @param date can't be in the past
+	 * @param jwt  with userId
 	 * @return all found substitutes
 	 */
 	public Result<GetSubstitutesResponseDTO> getAllSubstitutes(long date, DecodedJWT jwt) {
@@ -183,9 +191,11 @@ public class SubstituteController {
 	}
 
 	/**
-	 * Create a {@link SubstituteModel} out of a {@link SubstituteDTO}
+	 * Create a {@link SubstituteModel} out of a {@link SubstituteDTO}.
 	 *
-	 * @param dto with information
+	 * @param substituteId id of substitute
+	 * @param dto          with information
+	 * @return created substitute model
 	 */
 	private SubstituteModel createSubstitute(int substituteId, SubstituteDTO dto) {
 		return new SubstituteModel(
@@ -204,7 +214,7 @@ public class SubstituteController {
 	}
 
 	/**
-	 * Function to convert a list of {@link SubstituteModel} into a list of {@link GetSubstitutesResponseDTO}
+	 * Function to convert a list of {@link SubstituteModel} into a list of {@link GetSubstitutesResponseDTO}.
 	 *
 	 * @param substitutes list to convert
 	 * @return converted list of {@link GetSubstitutesResponseDTO}

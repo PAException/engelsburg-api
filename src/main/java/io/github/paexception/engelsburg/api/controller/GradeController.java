@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import static io.github.paexception.engelsburg.api.util.Constants.Grade.NAME_KEY;
 
 /**
- * Controller for grades
+ * Controller for grades.
  */
 @Component
 public class GradeController implements UserDataHandler {
@@ -29,7 +29,7 @@ public class GradeController implements UserDataHandler {
 	private GradeRepository gradeRepository;
 
 	/**
-	 * Create new grade
+	 * Create new grade.
 	 *
 	 * @param dto with grade information
 	 * @param jwt with userId
@@ -47,7 +47,7 @@ public class GradeController implements UserDataHandler {
 	}
 
 	/**
-	 * Update an existing grade
+	 * Update an existing grade.
 	 *
 	 * @param dto with gradeId and information to change
 	 * @param jwt with userId
@@ -72,7 +72,7 @@ public class GradeController implements UserDataHandler {
 	}
 
 	/**
-	 * Get all grades of user or filter by subject
+	 * Get all grades of user or filter by subject.
 	 *
 	 * @param subject (optional)
 	 * @param jwt     with userId
@@ -93,7 +93,7 @@ public class GradeController implements UserDataHandler {
 	}
 
 	/**
-	 * Delete grade
+	 * Delete grade.
 	 *
 	 * @param gradeId to delete
 	 * @param jwt     with userId

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Controller for scopes
+ * Controller for scopes.
  */
 @Component
 public class ScopeController implements UserDataHandler {
@@ -19,7 +19,7 @@ public class ScopeController implements UserDataHandler {
 	private ScopeRepository scopeRepository;
 
 	/**
-	 * Get all scopes of a user
+	 * Get all scopes of a user.
 	 *
 	 * @param userId to search for
 	 * @return scopes as String[]
@@ -29,7 +29,7 @@ public class ScopeController implements UserDataHandler {
 	}
 
 	/**
-	 * Add a scope to a user
+	 * Add a scope to a user.
 	 *
 	 * @param userId to search for
 	 * @param scope  to add
@@ -39,7 +39,7 @@ public class ScopeController implements UserDataHandler {
 	}
 
 	/**
-	 * Update scopes of a user
+	 * Update scopes of a user.
 	 *
 	 * @param user   to search for
 	 * @param scopes to update if not existing

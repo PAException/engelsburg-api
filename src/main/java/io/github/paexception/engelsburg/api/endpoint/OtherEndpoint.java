@@ -7,13 +7,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * RestController for other mappings like "*" for fallbacks
+ * RestController for other mappings like "*" for fallbacks.
  */
 @RestController
 public class OtherEndpoint {
 
 	/**
-	 * Fallback redirects to usage of endpoints on Github
+	 * Fallback redirects to usage of endpoints on Github.
 	 *
 	 * @param response Given by spring to redirect
 	 * @throws IOException is thrown of streams are already closed or else

@@ -17,12 +17,12 @@ import java.util.Collections;
 public class EngelsburgAPI {
 
 	@Getter
-	private static final JwtUtil jwtUtil = new JwtUtil("engelsburg-api", Collections.emptyList(), Environment.JWT_SECRET);
+	private static final JwtUtil JWT_UTIL = new JwtUtil("engelsburg-api", Collections.emptyList(), Environment.JWT_SECRET);
 	@Getter
 	private static final Logger LOGGER = LoggerFactory.getLogger(EngelsburgAPI.class.getSimpleName());
 
 	/**
-	 * Start SpringApplication
+	 * Start SpringApplication.
 	 *
 	 * @param args given by command line
 	 */

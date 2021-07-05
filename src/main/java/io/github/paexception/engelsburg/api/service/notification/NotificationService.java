@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Component
 public class NotificationService {
 
-	private static final Calendar calendar = Calendar.getInstance();
+	private static final Calendar CALENDAR = Calendar.getInstance();
 	@Autowired
 	private TimetableController timetableController;
 	@Autowired
@@ -26,7 +26,7 @@ public class NotificationService {
 	private NotificationController notificationController;
 
 	/**
-	 * Processes SubstituteDTOs to send as notification
+	 * Processes SubstituteDTOs to send as notification.
 	 *
 	 * @param dtos SubstituteDTOs
 	 */
@@ -37,9 +37,9 @@ public class NotificationService {
 		});
 
 		this.firebaseCloudMessaging.sendAdvancedNotifications("substitute", dtos.stream().map(dto -> {
-					calendar.setTime(dto.getDate());
+					CALENDAR.setTime(dto.getDate());
 					return Pair.of(this.timetableController.getAllByWeekDayAndLessonAndTeacherOrClassName(
-							calendar.get(Calendar.DAY_OF_WEEK) - 2,//MON starts at 2
+							CALENDAR.get(Calendar.DAY_OF_WEEK) - 2, //MON starts at 2
 							dto.getLesson(),
 							dto.getTeacher(),
 							dto.getClassName()
@@ -53,7 +53,7 @@ public class NotificationService {
 	}
 
 	/**
-	 * Sends article notifications
+	 * Sends article notifications.
 	 *
 	 * @param dto ArticleDTO
 	 */
@@ -62,7 +62,7 @@ public class NotificationService {
 	}
 
 	/**
-	 * Splits possible className merges like 10ab to 10a, 10b to send notifications to specific topics
+	 * Splits possible className merges like 10ab to 10a, 10b to send notifications to specific topics.
 	 *
 	 * @param className to split
 	 * @return array of classNames
@@ -70,7 +70,7 @@ public class NotificationService {
 	private String[] splitClasses(String className) {
 		if (className.length() <= 2 || (Character.isDigit(className.charAt(1)) && className.length() == 3)) {
 			return new String[]{"class." + className};
-		} else {//5ab or 5ab6ab or E2Q2Q4
+		} else { //5ab or 5ab6ab or E2Q2Q4
 			List<String> strings = new ArrayList<>();
 			StringBuilder curr = new StringBuilder();
 			char c;

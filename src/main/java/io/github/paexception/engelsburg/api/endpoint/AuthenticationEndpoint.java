@@ -19,7 +19,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 
 /**
- * RestController for authentication actions
+ * RestController for authentication actions.
  */
 @Validated
 @RestController
@@ -29,7 +29,7 @@ public class AuthenticationEndpoint {
 	private AuthenticationController authenticationController;
 
 	/**
-	 * Login a user
+	 * Login a user.
 	 *
 	 * @see AuthenticationController#login(LoginRequestDTO)
 	 */
@@ -39,7 +39,7 @@ public class AuthenticationEndpoint {
 	}
 
 	/**
-	 * Signup a user
+	 * Signup a user.
 	 *
 	 * @see AuthenticationController#signUp(SignUpRequestDTO)
 	 */
@@ -49,7 +49,7 @@ public class AuthenticationEndpoint {
 	}
 
 	/**
-	 * Request to reset a password
+	 * Request to reset a password.
 	 *
 	 * @see AuthenticationController#requestResetPassword(String)
 	 */
@@ -59,7 +59,7 @@ public class AuthenticationEndpoint {
 	}
 
 	/**
-	 * Reset a password
+	 * Reset a password.
 	 *
 	 * @see AuthenticationController#resetPassword(ResetPasswordRequestDTO)
 	 */
@@ -69,7 +69,7 @@ public class AuthenticationEndpoint {
 	}
 
 	/**
-	 * Verify a user
+	 * Verify a user.
 	 *
 	 * @see AuthenticationController#verify(DecodedJWT, String)
 	 */

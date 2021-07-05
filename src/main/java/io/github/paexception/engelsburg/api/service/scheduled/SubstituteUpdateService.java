@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Service to update substitutes
+ * Service to update substitutes.
  */
 @Service
 public class SubstituteUpdateService {
@@ -41,7 +41,7 @@ public class SubstituteUpdateService {
 	private List<SubstituteDTO> substitutes;
 
 	/**
-	 * Scheduled function to update substitutes every 5 minutes
+	 * Scheduled function to update substitutes every 5 minutes.
 	 */
 	@Scheduled(fixedRate = 5 * 60 * 1000)
 	public void updateSubstitutes() {
@@ -49,8 +49,8 @@ public class SubstituteUpdateService {
 		try {
 			Document navbar = Jsoup.connect("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/frames/navbar.htm").get();
 
-			Map<String, Integer> weeks = new HashMap<>();//Week year
-			navbar.getElementsByAttributeValue("name", "week")//Get weeks necessary to get substitutes
+			Map<String, Integer> weeks = new HashMap<>(); //Week year
+			navbar.getElementsByAttributeValue("name", "week") //Get weeks necessary to get substitutes
 					.stream().filter(element -> element.hasClass("selectbox"))
 					.collect(Collectors.toList()).forEach(element -> element.children()
 					.forEach(element2 -> weeks.put(
@@ -66,7 +66,7 @@ public class SubstituteUpdateService {
 							.split(",")
 			);
 
-			for (String week : weeks.keySet()) {//Iterate weeks
+			for (String week : weeks.keySet()) { //Iterate weeks
 				Element substitute = Jsoup.connect("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/" + week + "/w/w00000.htm").get().getElementById("vertretung");
 				if (substitute != null) {
 					this.currentDate = this.parseDate(substitute.child(2).text().substring(0, substitute.child(2).text().lastIndexOf('.')), weeks.get(week));
@@ -123,7 +123,7 @@ public class SubstituteUpdateService {
 	}
 
 	/**
-	 * Function to create a substitute dto out of an html row
+	 * Function to create a substitute dto out of an html row.
 	 *
 	 * @param row with substitute information
 	 * @return substitute dto
@@ -153,7 +153,7 @@ public class SubstituteUpdateService {
 	}
 
 	/**
-	 * Private function to call if a row has no information except the text in the end which is used, to extend the writable
+	 * Private function to call if a row has no information except the text in the end which is used, to extend the writable.
 	 * text of substitutes
 	 *
 	 * @param row         which is empty except the text in the end
@@ -168,7 +168,7 @@ public class SubstituteUpdateService {
 	}
 
 	/**
-	 * Private function to parse a String with day and month and a year into a {@link Date}
+	 * Private function to parse a String with day and month and a year into a {@link Date}.
 	 *
 	 * @param dayAndMonth to parse
 	 * @param year        to parse

@@ -41,7 +41,7 @@ import static io.github.paexception.engelsburg.api.database.model.TeacherModel.J
 import static io.github.paexception.engelsburg.api.util.Constants.Information.NAME_KEY;
 
 /**
- * Controller for all other information
+ * Controller for all other information.
  */
 @Component
 public class InformationController {
@@ -51,7 +51,7 @@ public class InformationController {
 	private TeacherRepository teacherRepository;
 
 	/**
-	 * Get a teacher by its abbreviation
+	 * Get a teacher by its abbreviation.
 	 *
 	 * @param abbreviation to identify teacher
 	 * @return DTO with information about the teacher
@@ -64,7 +64,7 @@ public class InformationController {
 	}
 
 	/**
-	 * Add teachers manually on startup
+	 * Add teachers manually on startup.
 	 * <a>https:engelsburg.smmp.de/unser-gymnasium/lehrer/</a>
 	 */
 	@EventListener(ApplicationStartedEvent.class)
@@ -190,7 +190,7 @@ public class InformationController {
 	}
 
 	/**
-	 * Get all current classes
+	 * Get all current classes.
 	 *
 	 * @return current classes
 	 */
@@ -201,7 +201,7 @@ public class InformationController {
 	}
 
 	/**
-	 * Set current classes
+	 * Set current classes.
 	 * Only {@link SubstituteUpdateService} is supposed to call
 	 * this function!
 	 *
@@ -212,7 +212,7 @@ public class InformationController {
 	}
 
 	/**
-	 * Get all registered teachers
+	 * Get all registered teachers.
 	 *
 	 * @return DTO with all registered teachers
 	 */

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 /**
- * RestController for timetable actions
+ * RestController for timetable actions.
  */
 @RestController
 public class TimetableEndpoint {
@@ -24,7 +24,7 @@ public class TimetableEndpoint {
 	private TimetableController timetableController;
 
 	/**
-	 * Set a timetable entry
+	 * Set a timetable entry.
 	 *
 	 * @see TimetableController#setTimetableEntry(TimetableDTO, DecodedJWT)
 	 */
@@ -35,7 +35,7 @@ public class TimetableEndpoint {
 	}
 
 	/**
-	 * Get timetable entries
+	 * Get timetable entries.
 	 *
 	 * @see TimetableController#getTimetableEntries(GetTimetableEntriesRequestDTO, DecodedJWT)
 	 */
@@ -46,7 +46,7 @@ public class TimetableEndpoint {
 	}
 
 	/**
-	 * Delete a timetable entry
+	 * Delete a timetable entry.
 	 *
 	 * @see TimetableController#deleteTimetableEntry(DeleteTimetableEntryRequestDTO, DecodedJWT)
 	 */

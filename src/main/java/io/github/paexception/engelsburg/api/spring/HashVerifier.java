@@ -12,7 +12,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 import java.util.List;
 
 /**
- * Interceptor to compare send hash and hash of response to check if content has changed
+ * Interceptor to compare send hash and hash of response to check if content has changed.
  */
 @ControllerAdvice
 @NoArgsConstructor
