@@ -1,16 +1,19 @@
 package io.github.paexception.engelsburg.api.service.scheduled;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import io.github.paexception.engelsburg.api.controller.EventController;
 import io.github.paexception.engelsburg.api.endpoint.dto.EventDTO;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import java.io.DataInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -34,12 +37,17 @@ public class EventUpdateService {
 	public void updateEvents() {
 		LOGGER.debug("Starting fetching substitutes");
 		try {
-			Document doc = Jsoup.connect("https://engelsburg.smmp.de/organisation/termine/").get();
+			DataInputStream input = new DataInputStream(
+					new URL("https://engelsburg.smmp.de/wp-json/wp/v2/pages/318")
+							.openConnection().getInputStream());
+			JsonElement content = JsonParser.parseString(new String(input.readAllBytes()))
+					.getAsJsonObject().get("content").getAsJsonObject().get("rendered");
 
 			List<EventDTO> dtos = new ArrayList<>();
-			Element list = doc.select("#genesis-content > article > div.entry-content > ul.navlist").first(); //Select event container
-			list.getElementsByTag("li").forEach(element -> { //iterate through events
-				dtos.add(new EventDTO(this.parseDate(element.text()), element.getElementsByTag("a").first().text()));
+			Element list = Jsoup.parse(content.getAsString()).getElementsByTag("ul").first(); //Select event container
+			list.children().forEach(element -> { //iterate through events
+				if (element.getElementsByTag("a").first() != null)
+					dtos.add(new EventDTO(this.parseDate(element.text()), element.getElementsByTag("a").first().text()));
 			});
 
 			this.eventController.clearAllEvents();
