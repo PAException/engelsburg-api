@@ -53,7 +53,7 @@ public class FirebaseCloudMessagingImpl {
 					.putData("data", this.objectMapper.writeValueAsString(payload));
 
 			for (String topic : topics)
-				if (!topic.contains("+"))
+				if (topic.matches("[A-Za-z]"))
 					FirebaseMessaging.getInstance().send(messageBuilder.setTopic(topic.replace("Ä", "AE")
 							.replace("Ö", "OE").replace("Ü", "UE")
 							.toLowerCase()).build(), !Environment.PRODUCTION);

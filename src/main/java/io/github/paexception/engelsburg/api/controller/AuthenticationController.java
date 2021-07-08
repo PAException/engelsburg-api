@@ -39,8 +39,7 @@ import java.util.UUID;
 @Component
 public class AuthenticationController implements UserDataHandler {
 
-	private static final Random RANDOM = new SecureRandom();
-	private static final List<String> DEFAULT_SCOPES = List.of(
+	public static final List<String> DEFAULT_SCOPES = List.of(
 			"substitute.message.read.current",
 			"substitute.read.current",
 
@@ -50,7 +49,7 @@ public class AuthenticationController implements UserDataHandler {
 			"user.data.read.self",
 			"user.data.delete.self"
 	);
-	private static final List<String> VERIFIED_SCOPES = List.of(
+	public static final List<String> VERIFIED_SCOPES = List.of(
 			"grade.write.self",
 			"grade.read.self",
 			"grade.delete.self",
@@ -66,6 +65,7 @@ public class AuthenticationController implements UserDataHandler {
 			"timetable.read.self",
 			"timetable.delete.self"
 	);
+	private static final Random RANDOM = new SecureRandom();
 	private static MessageDigest md;
 	@Autowired
 	private UserRepository userRepository;
@@ -79,6 +79,36 @@ public class AuthenticationController implements UserDataHandler {
 	private RefreshTokenController refreshTokenController;
 
 	/**
+	 * Hash a password.
+	 *
+	 * @param password password
+	 * @param salt     and salt to hash
+	 * @return valid hash
+	 */
+	public static String hashPassword(String password, String salt) {
+		try {
+			if (md == null) md = MessageDigest.getInstance("SHA-256");
+
+			return new String(md.digest((password == null ? RandomStringUtils.randomAlphanumeric(16) : password + salt)
+					.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+		} catch (NoSuchAlgorithmException ignored) { //Won't ever happen
+		}
+
+		return RandomStringUtils.randomAlphanumeric(16);
+	}
+
+	/**
+	 * Create a new random salt.
+	 *
+	 * @return salt
+	 */
+	public static String randomSalt() {
+		byte[] rawSalt = new byte[16];
+		RANDOM.nextBytes(rawSalt);
+		return new String(rawSalt, StandardCharsets.UTF_8);
+	}
+
+	/**
 	 * Sign up with credentials and schoolToken.
 	 *
 	 * @param dto email, password and schoolToken
@@ -90,19 +120,19 @@ public class AuthenticationController implements UserDataHandler {
 
 		Optional<UserModel> optionalUser = this.userRepository.findByEmail(dto.getEmail());
 		if (optionalUser.isPresent()) return Result.of(Error.ALREADY_EXISTS, "user");
-		byte[] rawSalt = new byte[16];
-		RANDOM.nextBytes(rawSalt);
-		String salt = new String(rawSalt, StandardCharsets.UTF_8);
-		String hashedPassword = this.hashPassword(dto.getPassword(), salt);
+
+		String salt = randomSalt();
+		String hashedPassword = hashPassword(null, salt);
 
 		UUID userId = UUID.randomUUID();
-		this.userRepository.save(new UserModel(-1, userId, dto.getEmail(), hashedPassword, salt, false));
 		DEFAULT_SCOPES.forEach(scope -> this.scopeController.addScope(userId, scope)); //Add default scopes
 		if (this.emailService.verify(
-				dto.getEmail(),
-				this.tokenController.createRandomToken(userId, "verify")
-		)) return Result.empty();
-		else return Result.of(Error.FAILED, "signup");
+				dto.getEmail(), this.tokenController.createRandomToken(userId, "verify"))) {
+			this.userRepository.save(new UserModel(-1, userId, dto.getEmail(), hashedPassword, salt, false));
+		} else return Result.of(Error.FAILED, "signup");
+
+
+		return Result.empty();
 	}
 
 	/**
@@ -116,7 +146,7 @@ public class AuthenticationController implements UserDataHandler {
 		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, "user");
 
 		UserModel user = optionalUser.get();
-		if (!user.getPassword().equals(this.hashPassword(dto.getPassword(), user.getSalt())))
+		if (!user.getPassword().equals(hashPassword(dto.getPassword(), user.getSalt())))
 			return Result.of(Error.FORBIDDEN, "wrong_password");
 
 		return Result.of(new LoginResponseDTO(this.refreshTokenController.create(user.getUserId())));
@@ -165,7 +195,7 @@ public class AuthenticationController implements UserDataHandler {
 
 		UserModel user = optionalUser.get();
 		if (this.tokenController.checkToken(user.getUserId(), "reset_password", dto.getToken())) {
-			user.setPassword(this.hashPassword(dto.getPassword(), user.getSalt()));
+			user.setPassword(hashPassword(dto.getPassword(), user.getSalt()));
 			this.userRepository.save(user);
 			this.tokenController.deleteToken(user.getUserId(), "reset_password", dto.getToken());
 			return Result.empty();
@@ -212,24 +242,6 @@ public class AuthenticationController implements UserDataHandler {
 		String[] scopes = this.scopeController.getScopes(userId);
 
 		return EngelsburgAPI.getJWT_UTIL().sign(builder.withArrayClaim("scopes", scopes));
-	}
-
-	/**
-	 * Hash a password.
-	 *
-	 * @param password password
-	 * @param salt     and salt to hash
-	 * @return valid hash
-	 */
-	private String hashPassword(String password, String salt) {
-		try {
-			if (md == null) md = MessageDigest.getInstance("SHA-256");
-
-			return new String(md.digest((password + salt).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-		} catch (NoSuchAlgorithmException ignored) { //Won't ever happen
-		}
-
-		return RandomStringUtils.randomAlphanumeric(6);
 	}
 
 	@Override
