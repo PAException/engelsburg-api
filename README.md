@@ -68,6 +68,9 @@ This project needs several environment variables:
 | SCHOOL_TOKEN        | Token given by the school for the substitutes|
 | JWT_SECRET          | Secret for JWT                         |
 | GOOGLE_ACCOUNT_CREDENTIALS| Google account credentials for firebase cloud messaging|
+| GOOGLE_CLIENT_ID    | Google Client ID to auth api calls     |
+| GOOGLE_CLIENT_SECRET| Google Client Secret to auth api calls |
+| OAUTH2_REDIRECT_URI | OAuth redirect uri for oauth requests  |
 | PRODUCTION          | Production mode to actually send notifications and more|
 | use.ssl             | Enable https and ssl                   |
 
