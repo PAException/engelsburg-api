@@ -53,9 +53,14 @@ public class FirebaseCloudMessagingImpl {
 					.putData("data", this.objectMapper.writeValueAsString(payload));
 
 			for (String topic : topics)
-				if (topic.matches("[A-Za-z]"))
-					FirebaseMessaging.getInstance().send(messageBuilder.setTopic(topic.replace("Ä", "AE")
-							.replace("Ö", "OE").replace("Ü", "UE")
+				if (topic.matches("[A-ZÄÖÜa-zäöü]"))
+					FirebaseMessaging.getInstance().send(messageBuilder.setTopic(topic
+							.replace("Ä", "AE")
+							.replace("Ö", "OE")
+							.replace("Ü", "UE")
+							.replace("ä", "ae")
+							.replace("ö", "oe")
+							.replace("ü", "ue")
 							.toLowerCase()).build(), !Environment.PRODUCTION);
 		} catch (JsonProcessingException | FirebaseMessagingException e) {
 			EngelsburgAPI.getLOGGER().error("Couldn't send notification", e);
