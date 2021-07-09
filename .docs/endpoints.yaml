@@ -9,6 +9,8 @@ tags:
     description: "Authentication endpoint"
   - name: "article"
     description: "Access to published articles of homepage **(PUBLIC)**"
+  - name: "cafeteria"
+    description: "Access to cafeteria information **(PUBLIC)**"
   - name: "event"
     description: "Access to events **(PUBLIC)**"
   - name: "grade"
@@ -329,6 +331,42 @@ paths:
           description: "Successful operation"
           schema:
             $ref: "#/definitions/Article"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /cafeteria:
+    get:
+      tags:
+        - "cafeteria"
+      summary: "Get cafeteria information"
+      description: "Returns information of cafeteria"
+      operationId: "getCafeteria"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            type: object
+            properties:
+              content:
+                type: string
+                example: "<div class=\"wp-block-image\"><figure class=\"alig..."
+              link:
+                type: string
+                example: "https://engelsburg.smmp.de/leben-an-der-schule/cafeteria/"
+              mediaURL:
+                type: string
+                example: "https://d1855q9qdxb6ev.cloudfront.net/files/2021/05/WhatsApp-Image-2021-05-19-at-08.53.32-1-409x640.jpeg?iv=1838"
           headers:
             Hash:
               type: "string"
