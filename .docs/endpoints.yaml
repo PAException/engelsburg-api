@@ -17,6 +17,8 @@ tags:
     description: "Access to general information"
   - name: "notification"
     description: "Access to notification settings and devices"
+  - name: "solar_system"
+    description: "Access to solar system information **(PUBLIC)**"
   - name: "substitute"
     description: "Access to substitutes and substituteMessages"
   - name: "task"
@@ -681,6 +683,45 @@ paths:
       responses:
         "200":
           description: "Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /solar_system:
+    get:
+      tags:
+        - "solar_system"
+      summary: "Get solar system information"
+      description: "Returns information of the solar system"
+      operationId: "getSolarSystem"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            type: object
+            properties:
+              date:
+                type: string
+                example: "09.07.2021"
+              energy:
+                type: string
+                example: "78.213,24 kWh"
+              co2avoidance:
+                type: string
+                example: "54.749,27 kg"
+              payment:
+                type: string
+                example: "36.564,69"
           headers:
             Hash:
               type: "string"
