@@ -19,7 +19,7 @@ public class SolarSystemUpdateService {
 	private SolarSystemController solarSystemController;
 
 	/**
-	 * Scheduled function to update the solar system status every hour.
+	 * Scheduled function to update the solar system status.
 	 */
 	@Scheduled(fixedRate = 10 * 60 * 1000)
 	public void updateSolarSystemInfo() {

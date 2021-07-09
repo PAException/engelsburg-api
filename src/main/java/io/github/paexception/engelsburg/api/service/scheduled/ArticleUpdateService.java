@@ -2,13 +2,11 @@ package io.github.paexception.engelsburg.api.service.scheduled;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.github.paexception.engelsburg.api.controller.ArticleController;
 import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
 import io.github.paexception.engelsburg.api.service.notification.NotificationService;
-import org.jsoup.Jsoup;
-import org.jsoup.select.Elements;
+import io.github.paexception.engelsburg.api.util.WordpressAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +16,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -72,17 +69,8 @@ public class ArticleUpdateService {
 			JsonArray json = JsonParser.parseString(raw).getAsJsonArray(); //Parse in article array
 			for (JsonElement article : json) { //Cycle through all articles
 				String content = article.getAsJsonObject().get("content").getAsJsonObject().get("rendered").getAsString(); //Get content
-				Elements elements;
-				String mediaUrl = null;
-				int featuredMedia;
-				if ((featuredMedia = article.getAsJsonObject().get("featured_media").getAsInt()) != 0) { //Featured media listed?
-					JsonObject mediaJson = JsonParser.parseReader(new InputStreamReader(
-							new URL("https://engelsburg.smmp.de/wp-json/wp/v2/media/" + featuredMedia)
-									.openConnection().getInputStream())).getAsJsonObject(); //Then get img url via wordpress api
-					mediaUrl = mediaJson.get("source_url").getAsString();
-				} else if ((elements = Jsoup.parse(content).getElementsByClass("wp-block-image")).size() > 0) { //If not search for first image in article
-					mediaUrl = elements.get(0).getElementsByTag("img").get(0).attr("src");
-				}
+				String mediaUrl = WordpressAPI.getFeaturedMedia(article.getAsJsonObject().get("featured_media").getAsInt(), content);
+
 				ArticleDTO dto = new ArticleDTO(//Form ArticleDTO from information crawled
 						DATE_FORMAT.parse(article.getAsJsonObject().get("date").getAsString()).getTime(),
 						article.getAsJsonObject().get("link").getAsString(),
