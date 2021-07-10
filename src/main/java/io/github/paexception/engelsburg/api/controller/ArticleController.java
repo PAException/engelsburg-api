@@ -80,4 +80,15 @@ public class ArticleController extends AbstractPageable {
 		this.articleRepository.deleteAll();
 	}
 
+	/**
+	 * Get specific article.
+	 *
+	 * @param articleId id of article
+	 * @return article
+	 */
+	public Result<ArticleDTO> getArticle(int articleId) {
+		return this.articleRepository.findById(articleId).map(articleModel -> Result.of(articleModel.toResponseDTO()))
+				.orElseGet(() -> Result.of(Error.NOT_FOUND, NAME_KEY));
+	}
+
 }

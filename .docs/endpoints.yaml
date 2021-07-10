@@ -330,6 +330,41 @@ paths:
         "200":
           description: "Successful operation"
           schema:
+            type: "object"
+            properties:
+              articles:
+                type: "array"
+                items:
+                  $ref: "#/definitions/Article"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+  /article/{articleId}:
+    get:
+      tags:
+        - "article"
+      summary: "Get specific article of homepage"
+      operationId: "getArticle"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "path"
+          type: "number"
+          name: "articleId"
+          description: "ArticleId to identify article"
+          required: true
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
             $ref: "#/definitions/Article"
           headers:
             Hash:
@@ -1494,27 +1529,25 @@ definitions:
   Article:
     type: "object"
     properties:
-      articles:
-        type: "array"
-        items:
-          type: "object"
-          properties:
-            date:
-              type: "number"
-              example: 1602194843562
-            link:
-              type: "string"
-              example: "https://engelsburg.smmp.de/2020/10/02/informationsveranstaltungen-zur-aufnahme-2021/"
-            title:
-              type: "string"
-              example: "Informationsveranstaltungen zur Aufnahme 2021"
-            content:
-              type: "string"
-              example: "<p>Liebe Eltern, liebe Interessierte an der Engelsburg,</p>\n\n\n\n<p>nun beginnt die Zeit, ..."
-            mediaUrl:
-              type: "string"
-              example: "https://d1855q9qdxb6ev.cloudfront.net/files/2020/09/20190320-Postkarte-Schulpreis01-final1.jpg"
-              description: "[*Nullable*]"
+      articleId:
+        type: "number"
+        example: 7126
+      date:
+        type: "number"
+        example: 1602194843562
+      link:
+        type: "string"
+        example: "https://engelsburg.smmp.de/2020/10/02/informationsveranstaltungen-zur-aufnahme-2021/"
+      title:
+        type: "string"
+        example: "Informationsveranstaltungen zur Aufnahme 2021"
+      content:
+        type: "string"
+        example: "<p>Liebe Eltern, liebe Interessierte an der Engelsburg,</p>\n\n\n\n<p>nun beginnt die Zeit, ..."
+      mediaUrl:
+        type: "string"
+        example: "https://d1855q9qdxb6ev.cloudfront.net/files/2020/09/20190320-Postkarte-Schulpreis01-final1.jpg"
+        description: "[*Nullable*]"
   Event:
     type: "object"
     properties:
