@@ -72,6 +72,7 @@ public class ArticleUpdateService {
 				String mediaUrl = WordpressAPI.getFeaturedMedia(article.getAsJsonObject().get("featured_media").getAsInt(), content);
 
 				ArticleDTO dto = new ArticleDTO(//Form ArticleDTO from information crawled
+						-1,
 						DATE_FORMAT.parse(article.getAsJsonObject().get("date").getAsString()).getTime(),
 						article.getAsJsonObject().get("link").getAsString(),
 						article.getAsJsonObject().get("title").getAsJsonObject().get("rendered").getAsString(),

@@ -35,7 +35,7 @@ public class ArticleModel {
 	private String mediaUrl;
 
 	public ArticleDTO toResponseDTO() {
-		return new ArticleDTO(this.date, this.link, this.title, this.content, this.mediaUrl);
+		return new ArticleDTO(this.articleId, this.date, this.link, this.title, this.content, this.mediaUrl);
 	}
 
 }
