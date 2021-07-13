@@ -45,7 +45,8 @@ public class ArticleController extends AbstractPageable {
 					dto.getLink(),
 					dto.getTitle(),
 					dto.getContent(),
-					dto.getMediaUrl()
+					dto.getMediaUrl(),
+					dto.getBlurHash()
 			));
 		}
 	}

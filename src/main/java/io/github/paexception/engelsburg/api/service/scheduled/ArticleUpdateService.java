@@ -8,6 +8,7 @@ import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
 import io.github.paexception.engelsburg.api.service.notification.NotificationService;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.WordpressAPI;
+import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
@@ -71,6 +72,14 @@ public class ArticleUpdateService extends LoggingComponent {
 			for (JsonElement article : json) { //Cycle through all articles
 				String content = article.getAsJsonObject().get("content").getAsJsonObject().get("rendered").getAsString(); //Get content
 				String mediaUrl = WordpressAPI.getFeaturedMedia(article.getAsJsonObject().get("featured_media").getAsInt(), content);
+				String blurHash = null;
+
+				try {
+					content = WordpressAPI.applyBlurHashToAllImages(Jsoup.parse(content)).toString();
+					blurHash = mediaUrl != null ? WordpressAPI.getBlurHash(mediaUrl) : null;
+				} catch (IOException e) {
+					this.logError("Couldn't load blur hash of image", e);
+				}
 
 				ArticleDTO dto = new ArticleDTO(//Form ArticleDTO from information crawled
 						-1,
@@ -78,7 +87,8 @@ public class ArticleUpdateService extends LoggingComponent {
 						article.getAsJsonObject().get("link").getAsString(),
 						article.getAsJsonObject().get("title").getAsJsonObject().get("rendered").getAsString(),
 						content,
-						mediaUrl
+						mediaUrl,
+						blurHash
 				);
 				dtos.add(dto);
 			}

@@ -51,7 +51,7 @@
         <module name="AvoidStarImport"/>
         <module name="RedundantImport"/>
         <module name="IllegalImport">
-            <property name="illegalPkgs" value="java.awt, javafx, sun"/>
+            <property name="illegalPkgs" value="javafx, sun"/>
         </module>
 
         <!-- Check declaration order of variables -->

@@ -6,6 +6,7 @@ import io.github.paexception.engelsburg.api.controller.shared.CafeteriaControlle
 import io.github.paexception.engelsburg.api.endpoint.dto.CafeteriaInformationDTO;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.WordpressAPI;
+import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -42,8 +43,16 @@ public class CafeteriaUpdateService extends LoggingComponent {
 			String link = json.get("link").getAsString();
 			String content = json.get("content").getAsJsonObject().get("rendered").getAsString();
 			String mediaUrl = WordpressAPI.getFeaturedMedia(json.get("featured_media").getAsInt(), content);
+			String blurHash = null;
 
-			this.cafeteriaController.update(new CafeteriaInformationDTO(content, link, mediaUrl));
+			try {
+				content = WordpressAPI.applyBlurHashToAllImages(Jsoup.parse(content)).toString();
+				blurHash = mediaUrl != null ? WordpressAPI.getBlurHash(mediaUrl) : null;
+			} catch (IOException e) {
+				this.logError("Couldn't load blur hash of image", e);
+			}
+
+			this.cafeteriaController.update(new CafeteriaInformationDTO(content, link, mediaUrl, blurHash));
 			this.logger.info("Updated cafeteria information");
 		} catch (IOException e) {
 			this.logError("Couldn't fetch cafeteria information", e);

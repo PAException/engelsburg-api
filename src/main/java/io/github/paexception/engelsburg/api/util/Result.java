@@ -1,7 +1,6 @@
 package io.github.paexception.engelsburg.api.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.paexception.engelsburg.api.EngelsburgAPI;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -78,8 +77,7 @@ public class Result<T> {
 	public static String hash(Object o) {
 		try {
 			if (digest == null) digest = MessageDigest.getInstance("SHA-1");
-		} catch (NoSuchAlgorithmException e) {
-			EngelsburgAPI.getLOGGER().error("Couldn't find defined Algorithm");
+		} catch (NoSuchAlgorithmException ignored) {
 		}
 		if (o == null) return null;
 
