@@ -33,9 +33,18 @@ public class ArticleModel {
 	@Lob
 	private String content;
 	private String mediaUrl;
+	private String blurHash;
 
 	public ArticleDTO toResponseDTO() {
-		return new ArticleDTO(this.articleId, this.date, this.link, this.title, this.content, this.mediaUrl);
+		return new ArticleDTO(
+				this.articleId,
+				this.date,
+				this.link,
+				this.title,
+				this.content,
+				this.mediaUrl,
+				this.blurHash
+		);
 	}
 
 }

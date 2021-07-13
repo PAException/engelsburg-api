@@ -114,6 +114,11 @@
             <version>1.31.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>io.trbl</groupId>
+            <artifactId>blurhash</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -1,6 +1,5 @@
 package io.github.paexception.engelsburg.api.controller.reserved;
 
-import io.github.paexception.engelsburg.api.EngelsburgAPI;
 import io.github.paexception.engelsburg.api.database.model.TeacherModel;
 import io.github.paexception.engelsburg.api.database.repository.TeacherRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.TeacherDTO;
@@ -8,6 +7,7 @@ import io.github.paexception.engelsburg.api.endpoint.dto.response.GetClassesResp
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetTeachersResponseDTO;
 import io.github.paexception.engelsburg.api.service.scheduled.SubstituteUpdateService;
 import io.github.paexception.engelsburg.api.util.Error;
+import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -44,11 +44,15 @@ import static io.github.paexception.engelsburg.api.util.Constants.Information.NA
  * Controller for all other information.
  */
 @Component
-public class InformationController {
+public class InformationController extends LoggingComponent {
 
 	private static String[] currentClasses;
 	@Autowired
 	private TeacherRepository teacherRepository;
+
+	public InformationController() {
+		super(InformationController.class);
+	}
 
 	/**
 	 * Get a teacher by its abbreviation.
@@ -69,6 +73,7 @@ public class InformationController {
 	 */
 	@EventListener(ApplicationStartedEvent.class)
 	public void setTeacher() {
+		this.logger.debug("Starting to add teachers");
 		this.teacherRepository.deleteAll();
 		List<TeacherModel> teachers = new ArrayList<>();
 
@@ -186,7 +191,7 @@ public class InformationController {
 		//Some teachers aren't listed on the website
 
 		this.teacherRepository.saveAll(teachers);
-		EngelsburgAPI.getLOGGER().info("Added " + teachers.size() + " teachers");
+		this.logger.info("Added " + teachers.size() + " teachers");
 	}
 
 	/**

@@ -15,5 +15,6 @@ public class ArticleDTO {
 	private String title;
 	private String content;
 	private String mediaUrl;
+	private String blurHash;
 
 }

@@ -3,8 +3,6 @@ package io.github.paexception.engelsburg.api;
 import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.JwtUtil;
 import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -18,8 +16,6 @@ public class EngelsburgAPI {
 
 	@Getter
 	private static final JwtUtil JWT_UTIL = new JwtUtil("engelsburg-api", Collections.emptyList(), Environment.JWT_SECRET);
-	@Getter
-	private static final Logger LOGGER = LoggerFactory.getLogger(EngelsburgAPI.class.getSimpleName());
 
 	/**
 	 * Start SpringApplication.

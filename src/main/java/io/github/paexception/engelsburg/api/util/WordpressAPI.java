@@ -2,16 +2,47 @@ package io.github.paexception.engelsburg.api.util;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.trbl.blurhash.BlurHash;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class WordpressAPI {
+
+	/**
+	 * Apply blur hashes to all images in html attributes.
+	 *
+	 * @param element to apply
+	 * @return this element
+	 * @throws IOException if image couldn't be read
+	 */
+	public static Element applyBlurHashToAllImages(Element element) throws IOException {
+		for (Element img : element.getElementsByTag("img"))
+			img.attr("blurHash", getBlurHash(img.attr("src")));
+
+		return element;
+	}
+
+	/**
+	 * Get the blur hash of an image.
+	 *
+	 * @param imageUrl to read
+	 * @return the blur hash
+	 * @throws IOException the image couldn't be read
+	 */
+	public static String getBlurHash(String imageUrl) throws IOException {
+		BufferedImage image = ImageIO.read(new URL(imageUrl));
+
+		return BlurHash.encode(image);
+	}
 
 	/**
 	 * Parse the mediaUrl from an wordpress entity.

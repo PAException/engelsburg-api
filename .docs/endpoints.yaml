@@ -402,6 +402,10 @@ paths:
               mediaURL:
                 type: string
                 example: "https://d1855q9qdxb6ev.cloudfront.net/files/2021/05/WhatsApp-Image-2021-05-19-at-08.53.32-1-409x640.jpeg?iv=1838"
+              blurHash:
+                type: "string"
+                example: "U8EVjC4:~q00~S4m4o4o9sRjXU?Gt7IU?bE1"
+                description: "[*Nullable*]"
           headers:
             Hash:
               type: "string"
@@ -1547,6 +1551,10 @@ definitions:
       mediaUrl:
         type: "string"
         example: "https://d1855q9qdxb6ev.cloudfront.net/files/2020/09/20190320-Postkarte-Schulpreis01-final1.jpg"
+        description: "[*Nullable*]"
+      blurHash:
+        type: "string"
+        example: "U8EVjC4:~q00~S4m4o4o9sRjXU?Gt7IU?bE1"
         description: "[*Nullable*]"
   Event:
     type: "object"

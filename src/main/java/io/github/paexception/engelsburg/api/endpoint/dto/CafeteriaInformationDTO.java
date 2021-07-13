@@ -12,5 +12,6 @@ public class CafeteriaInformationDTO {
 	private String content;
 	private String link;
 	private String mediaURL;
+	private String blurHash;
 
 }
