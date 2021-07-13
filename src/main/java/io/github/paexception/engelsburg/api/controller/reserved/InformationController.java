@@ -1,4 +1,4 @@
-package io.github.paexception.engelsburg.api.controller;
+package io.github.paexception.engelsburg.api.controller.reserved;
 
 import io.github.paexception.engelsburg.api.EngelsburgAPI;
 import io.github.paexception.engelsburg.api.database.model.TeacherModel;

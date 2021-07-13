@@ -1,7 +1,7 @@
-package io.github.paexception.engelsburg.api.endpoint;
+package io.github.paexception.engelsburg.api.endpoint.reserved;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import io.github.paexception.engelsburg.api.controller.NotificationController;
+import io.github.paexception.engelsburg.api.controller.reserved.NotificationController;
 import io.github.paexception.engelsburg.api.endpoint.dto.NotificationDeviceDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.ChangeNotificationSettingsRequestDTO;
 import io.github.paexception.engelsburg.api.spring.auth.AuthScope;

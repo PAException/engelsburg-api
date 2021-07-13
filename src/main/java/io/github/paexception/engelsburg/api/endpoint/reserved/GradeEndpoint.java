@@ -1,7 +1,7 @@
-package io.github.paexception.engelsburg.api.endpoint;
+package io.github.paexception.engelsburg.api.endpoint.reserved;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import io.github.paexception.engelsburg.api.controller.GradeController;
+import io.github.paexception.engelsburg.api.controller.reserved.GradeController;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateGradeRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.UpdateGradeRequestDTO;
 import io.github.paexception.engelsburg.api.spring.auth.AuthScope;

@@ -3,12 +3,11 @@ package io.github.paexception.engelsburg.api.service.scheduled;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import io.github.paexception.engelsburg.api.controller.ArticleController;
+import io.github.paexception.engelsburg.api.controller.shared.ArticleController;
 import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
 import io.github.paexception.engelsburg.api.service.notification.NotificationService;
+import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.WordpressAPI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
@@ -26,20 +25,24 @@ import java.util.List;
  * Service to update articles.
  */
 @Service
-public class ArticleUpdateService {
+public class ArticleUpdateService extends LoggingComponent {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ArticleUpdateService.class.getSimpleName());
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	@Autowired
 	private ArticleController articleController;
 	@Autowired
 	private NotificationService notificationService;
 
+	public ArticleUpdateService() {
+		super(ArticleUpdateService.class);
+	}
+
 	/**
 	 * Call {@link #updateArticles(String)} every 15 minutes and return all articles published in that passed 15 minutes.
 	 */
 	@Scheduled(fixedRate = 15 * 60 * 1000)
 	public void fetchNewArticles() {
+		this.logger.debug("Starting fetching new articles");
 		this.updateArticles(DATE_FORMAT.format(System.currentTimeMillis() - 15 * 60 * 1000)).stream()
 				.peek(dto -> this.notificationService.sendArticleNotifications(dto))
 				.forEach(dto -> this.articleController.createArticle(dto));
@@ -54,15 +57,13 @@ public class ArticleUpdateService {
 	private List<ArticleDTO> updateArticles(String date) {
 		List<ArticleDTO> dtos = new ArrayList<>();
 		try {
-			LOGGER.debug("Starting fetching articles");
-
 			DataInputStream input = new DataInputStream(
 					new URL("https://engelsburg.smmp.de/wp-json/wp/v2/posts?per_page=100&after=" + date)
 							.openConnection().getInputStream()
 			); //Fetch all articles after date from the wordpress api of the engelsburg
 			String raw = new String(input.readAllBytes());
 			if (raw.length() == 2) { //Input equal to "{}" which represents an empty result
-				LOGGER.debug("No new articles found");
+				this.logger.debug("No articles found");
 				return dtos;
 			}
 
@@ -82,11 +83,11 @@ public class ArticleUpdateService {
 				dtos.add(dto);
 			}
 
-			LOGGER.info("Fetched articles");
+			this.logger.info("Fetched articles");
 			if (json.size() == 100) this.updateArticles(json.get(99).getAsJsonObject().get("date").getAsString())
 					.forEach(dto -> this.articleController.createArticle(dto));
 		} catch (IOException | ParseException e) {
-			LOGGER.error("Couldn't load articles from homepage", e);
+			this.logError("Couldn't fetch articles", e);
 		}
 		return dtos;
 	}
@@ -96,6 +97,7 @@ public class ArticleUpdateService {
 	 */
 	@EventListener(ApplicationStartedEvent.class)
 	public void loadPastArticles() {
+		this.logger.debug("Starting fetching past articles since 01-01-2020");
 		this.articleController.clearAllArticles();
 		this.updateArticles("2020-01-01T00:00:00").forEach(dto -> this.articleController.createArticle(dto));
 	}

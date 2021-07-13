@@ -1,6 +1,6 @@
-package io.github.paexception.engelsburg.api.endpoint;
+package io.github.paexception.engelsburg.api.endpoint.shared;
 
-import io.github.paexception.engelsburg.api.controller.ArticleController;
+import io.github.paexception.engelsburg.api.controller.shared.ArticleController;
 import io.github.paexception.engelsburg.api.spring.paging.Paging;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

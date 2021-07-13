@@ -1,4 +1,4 @@
-package io.github.paexception.engelsburg.api.controller;
+package io.github.paexception.engelsburg.api.controller.reserved;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.database.model.SubstituteMessageModel;

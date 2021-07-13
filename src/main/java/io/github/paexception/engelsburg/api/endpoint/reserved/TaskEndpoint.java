@@ -1,7 +1,7 @@
-package io.github.paexception.engelsburg.api.endpoint;
+package io.github.paexception.engelsburg.api.endpoint.reserved;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import io.github.paexception.engelsburg.api.controller.TaskController;
+import io.github.paexception.engelsburg.api.controller.reserved.TaskController;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateTaskRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.GetTasksRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.MarkTaskAsDoneRequestDTO;

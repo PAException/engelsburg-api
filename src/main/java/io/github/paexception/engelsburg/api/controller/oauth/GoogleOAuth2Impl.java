@@ -40,7 +40,7 @@ public class GoogleOAuth2Impl extends OAuthHandler {
 		parameters.put("client_id", Environment.GOOGLE_CLIENT_ID);
 		parameters.put("redirect_uri", this.getRedirectUri());
 		parameters.put("response_type", "code");
-		parameters.put("state", this.createToken());
+		parameters.put("state", "{token}");
 		parameters.put("scope", "https://www.googleapis.com/auth/userinfo.email");
 
 		StringBuilder builder = new StringBuilder();
@@ -104,7 +104,7 @@ public class GoogleOAuth2Impl extends OAuthHandler {
 
 	@Override
 	public Result<?> resolveOAuthLoginRequest(HttpServletRequest request, HttpServletResponse response) {
-		return defaultRedirect(response, this.oauth2Request);
+		return defaultRedirect(response, this.oauth2Request.replace("{token}", this.createToken()));
 	}
 
 	@Override

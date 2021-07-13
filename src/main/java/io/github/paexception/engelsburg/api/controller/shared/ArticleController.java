@@ -1,4 +1,4 @@
-package io.github.paexception.engelsburg.api.controller;
+package io.github.paexception.engelsburg.api.controller.shared;
 
 import io.github.paexception.engelsburg.api.database.model.ArticleModel;
 import io.github.paexception.engelsburg.api.database.repository.ArticleRepository;

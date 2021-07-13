@@ -1,4 +1,4 @@
-package io.github.paexception.engelsburg.api.controller;
+package io.github.paexception.engelsburg.api.controller.shared;
 
 import io.github.paexception.engelsburg.api.endpoint.dto.CafeteriaInformationDTO;
 import io.github.paexception.engelsburg.api.util.Error;
