@@ -50,7 +50,7 @@ public class OAuthController implements UserDataHandler {
 		if (!schoolToken.equals(Environment.SCHOOL_TOKEN)) //Check school token
 			return Result.of(Error.FORBIDDEN, "school_token");
 
-		for (OAuthHandler oAuthHandler : OAuthHandler.O_AUTH_HANDLERS) {
+		for (OAuthHandler oAuthHandler : OAuthHandler.getOAuthHandlers()) {
 			if (oAuthHandler.getName().equals(service))
 				return oAuthHandler.resolveOAuthLoginRequest(request, response);
 		}
@@ -67,7 +67,7 @@ public class OAuthController implements UserDataHandler {
 	 * @return signup of user
 	 */
 	public Result<?> redirect(String service, HttpServletRequest request, HttpServletResponse response) {
-		for (OAuthHandler oAuthHandler : OAuthHandler.O_AUTH_HANDLERS) {
+		for (OAuthHandler oAuthHandler : OAuthHandler.getOAuthHandlers()) {
 			if (oAuthHandler.getName().equals(service))
 				return this.signup(oAuthHandler.resolveOAuthResponse(request, response), oAuthHandler.getName());
 		}

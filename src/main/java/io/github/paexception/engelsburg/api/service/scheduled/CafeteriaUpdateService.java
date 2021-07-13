@@ -2,8 +2,9 @@ package io.github.paexception.engelsburg.api.service.scheduled;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.github.paexception.engelsburg.api.controller.CafeteriaController;
+import io.github.paexception.engelsburg.api.controller.shared.CafeteriaController;
 import io.github.paexception.engelsburg.api.endpoint.dto.CafeteriaInformationDTO;
+import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.WordpressAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,16 +14,21 @@ import java.io.IOException;
 import java.net.URL;
 
 @Service
-public class CafeteriaUpdateService {
+public class CafeteriaUpdateService extends LoggingComponent {
 
 	@Autowired
 	private CafeteriaController cafeteriaController;
+
+	public CafeteriaUpdateService() {
+		super(CafeteriaUpdateService.class);
+	}
 
 	/**
 	 * Scheduled function to update cafeteria information.
 	 */
 	@Scheduled(fixedRate = 10 * 60 * 1000)
 	public void updateCafeteriaInformation() {
+		this.logger.debug("Starting to fetch cafeteria information");
 		DataInputStream input;
 		try {
 			input = new DataInputStream(
@@ -38,8 +44,9 @@ public class CafeteriaUpdateService {
 			String mediaUrl = WordpressAPI.getFeaturedMedia(json.get("featured_media").getAsInt(), content);
 
 			this.cafeteriaController.update(new CafeteriaInformationDTO(content, link, mediaUrl));
+			this.logger.info("Updated cafeteria information");
 		} catch (IOException e) {
-			e.printStackTrace();
+			this.logError("Couldn't fetch cafeteria information", e);
 		}
 	}
 

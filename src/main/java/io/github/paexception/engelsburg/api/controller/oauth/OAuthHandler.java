@@ -16,7 +16,7 @@ import java.util.Set;
  */
 public abstract class OAuthHandler {
 
-	public static final Set<OAuthHandler> O_AUTH_HANDLERS = new HashSet<>();
+	private static final Set<OAuthHandler> O_AUTH_HANDLERS = new HashSet<>();
 	private final Set<String> tokens = new HashSet<>();
 
 	/**
@@ -84,6 +84,15 @@ public abstract class OAuthHandler {
 	 * @return result
 	 */
 	abstract public Result<?> resolveOAuthLoginRequest(HttpServletRequest request, HttpServletResponse response);
+
+	/**
+	 * Getter of all oauth handlers.
+	 *
+	 * @return all oauth handlers.
+	 */
+	public static OAuthHandler[] getOAuthHandlers() {
+		return O_AUTH_HANDLERS.toArray(OAuthHandler[]::new);
+	}
 
 	/**
 	 * Get the service specific redirect uri to process the oauth response.

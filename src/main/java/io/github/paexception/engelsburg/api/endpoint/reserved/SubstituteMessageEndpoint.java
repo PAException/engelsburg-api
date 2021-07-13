@@ -1,7 +1,7 @@
-package io.github.paexception.engelsburg.api.endpoint;
+package io.github.paexception.engelsburg.api.endpoint.reserved;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import io.github.paexception.engelsburg.api.controller.SubstituteMessageController;
+import io.github.paexception.engelsburg.api.controller.reserved.SubstituteMessageController;
 import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;

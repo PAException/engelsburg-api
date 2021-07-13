@@ -1,16 +1,15 @@
 package io.github.paexception.engelsburg.api.service.scheduled;
 
-import io.github.paexception.engelsburg.api.controller.InformationController;
-import io.github.paexception.engelsburg.api.controller.SubstituteController;
-import io.github.paexception.engelsburg.api.controller.SubstituteMessageController;
+import io.github.paexception.engelsburg.api.controller.reserved.InformationController;
+import io.github.paexception.engelsburg.api.controller.reserved.SubstituteController;
+import io.github.paexception.engelsburg.api.controller.reserved.SubstituteMessageController;
 import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateSubstituteMessageRequestDTO;
+import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -28,9 +27,8 @@ import java.util.stream.Collectors;
  * Service to update substitutes.
  */
 @Service
-public class SubstituteUpdateService {
+public class SubstituteUpdateService extends LoggingComponent {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SubstituteUpdateService.class.getSimpleName());
 	@Autowired
 	private SubstituteController substituteController;
 	@Autowired
@@ -40,12 +38,16 @@ public class SubstituteUpdateService {
 	private Date currentDate;
 	private List<SubstituteDTO> substitutes;
 
+	public SubstituteUpdateService() {
+		super(SubstituteUpdateService.class);
+	}
+
 	/**
 	 * Scheduled function to update substitutes every 5 minutes.
 	 */
 	@Scheduled(fixedRate = 5 * 60 * 1000)
 	public void updateSubstitutes() {
-		LOGGER.debug("Starting fetching substitutes");
+		this.logger.debug("Starting to fetch substitutes");
 		try {
 			Document navbar = Jsoup.connect("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/frames/navbar.htm").get();
 
@@ -116,9 +118,9 @@ public class SubstituteUpdateService {
 					}
 				}
 			}
-			LOGGER.info("Fetched substitutes");
+			this.logger.info("Updated substitutes");
 		} catch (IOException | ParseException e) {
-			LOGGER.error("Couldn't fetch Substitutes", e);
+			this.logError("Couldn't fetch substitutes", e);
 		}
 	}
 

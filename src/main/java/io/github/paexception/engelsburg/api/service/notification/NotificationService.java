@@ -1,11 +1,13 @@
 package io.github.paexception.engelsburg.api.service.notification;
 
-import io.github.paexception.engelsburg.api.controller.NotificationController;
-import io.github.paexception.engelsburg.api.controller.TimetableController;
+import io.github.paexception.engelsburg.api.controller.reserved.NotificationController;
+import io.github.paexception.engelsburg.api.controller.reserved.TimetableController;
 import io.github.paexception.engelsburg.api.database.model.TimetableModel;
 import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.ErrorNotificationDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.NotificationDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
+import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class NotificationService {
+public class NotificationService extends LoggingComponent {
 
 	private static final Calendar CALENDAR = Calendar.getInstance();
 	@Autowired
@@ -25,12 +27,17 @@ public class NotificationService {
 	@Autowired
 	private NotificationController notificationController;
 
+	public NotificationService() {
+		super(NotificationService.class);
+	}
+
 	/**
 	 * Processes SubstituteDTOs to send as notification.
 	 *
 	 * @param dtos SubstituteDTOs
 	 */
 	public void sendSubstituteNotifications(List<SubstituteDTO> dtos) {
+		this.logger.debug("Starting to send substitute notifications");
 		dtos.forEach(dto -> {
 			this.firebaseCloudMessaging.sendNotificationToTopics("substitute", dto, this.splitClasses(dto.getClassName()));
 			this.firebaseCloudMessaging.sendNotificationToTopics("substitute", dto, "teacher." + dto.getSubstituteTeacher());
@@ -50,6 +57,7 @@ public class NotificationService {
 								dtoPair.getRight()
 						)).collect(Collectors.toList())
 		);
+		this.logger.info("Sent substitute notifications");
 	}
 
 	/**
@@ -58,6 +66,7 @@ public class NotificationService {
 	 * @param dto ArticleDTO
 	 */
 	public void sendArticleNotifications(ArticleDTO dto) {
+		this.logger.info("Sending article notifications");
 		this.firebaseCloudMessaging.sendNotificationToTopics("article", dto, "article");
 	}
 
@@ -102,6 +111,25 @@ public class NotificationService {
 
 			return strings.toArray(String[]::new);
 		}
+	}
+
+	/**
+	 * Sends error notifications.
+	 *
+	 * @param msg       error message
+	 * @param throwable exception
+	 */
+	public void sendErrorNotifications(String msg, Throwable throwable) {
+		ErrorNotificationDTO dto = new ErrorNotificationDTO();
+		dto.setMessage(msg);
+		dto.setErrorMessage(throwable.getMessage());
+
+		String[] stacktrace = new String[throwable.getStackTrace().length];
+		for (int i = 0; i < throwable.getStackTrace().length; i++)
+			stacktrace[i] = throwable.getStackTrace()[i].toString();
+		dto.setStacktrace(stacktrace);
+
+		this.firebaseCloudMessaging.sendNotificationToTopics("error", dto, "error");
 	}
 
 }

@@ -9,9 +9,9 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
-import io.github.paexception.engelsburg.api.EngelsburgAPI;
 import io.github.paexception.engelsburg.api.endpoint.dto.NotificationDTO;
 import io.github.paexception.engelsburg.api.util.Environment;
+import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import java.io.FileInputStream;
@@ -19,24 +19,31 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
-public class FirebaseCloudMessagingImpl {
+public class FirebaseCloudMessagingImpl extends LoggingComponent {
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
+	public FirebaseCloudMessagingImpl() {
+		super(FirebaseCloudMessagingImpl.class);
+	}
+
 	/**
 	 * Initiates the firebase app to send notifications.
-	 *
-	 * @throws IOException if account credentials can't be read
 	 */
 	@Bean
-	public void init() throws IOException {
-		FileInputStream serviceAccount = new FileInputStream(Environment.GOOGLE_ACCOUNT_CREDENTIALS);
+	public void init() {
+		try {
+			FileInputStream serviceAccount = new FileInputStream(Environment.GOOGLE_ACCOUNT_CREDENTIALS);
 
-		FirebaseOptions options = FirebaseOptions.builder()
-				.setCredentials(GoogleCredentials.fromStream(serviceAccount))
-				.build();
+			FirebaseOptions options = FirebaseOptions.builder()
+					.setCredentials(GoogleCredentials.fromStream(serviceAccount))
+					.build();
 
-		FirebaseApp.initializeApp(options);
+			FirebaseApp.initializeApp(options);
+		} catch (IOException e) {
+			this.logError("Couldn't initialize firebase cloud messaging", e);
+		}
+
 	}
 
 	/**
@@ -63,7 +70,7 @@ public class FirebaseCloudMessagingImpl {
 							.replace("ü", "ue")
 							.toLowerCase()).build(), !Environment.PRODUCTION);
 		} catch (JsonProcessingException | FirebaseMessagingException e) {
-			EngelsburgAPI.getLOGGER().error("Couldn't send notification", e);
+			this.logError("Couldn't send notification", e);
 		}
 	}
 
@@ -85,7 +92,7 @@ public class FirebaseCloudMessagingImpl {
 					FirebaseMessaging.getInstance().sendMulticast(multicastMessage);
 				}
 			} catch (JsonProcessingException | FirebaseMessagingException e) {
-				EngelsburgAPI.getLOGGER().error("Couldn't send notification", e);
+				this.logError("Couldn't send notification", e);
 			}
 		});
 	}

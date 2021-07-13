@@ -1,6 +1,6 @@
-package io.github.paexception.engelsburg.api.endpoint;
+package io.github.paexception.engelsburg.api.endpoint.reserved;
 
-import io.github.paexception.engelsburg.api.controller.InformationController;
+import io.github.paexception.engelsburg.api.controller.reserved.InformationController;
 import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

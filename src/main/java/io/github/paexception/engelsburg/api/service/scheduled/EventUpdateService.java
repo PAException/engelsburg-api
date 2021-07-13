@@ -2,12 +2,11 @@ package io.github.paexception.engelsburg.api.service.scheduled;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import io.github.paexception.engelsburg.api.controller.EventController;
+import io.github.paexception.engelsburg.api.controller.shared.EventController;
 import io.github.paexception.engelsburg.api.endpoint.dto.EventDTO;
+import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -24,18 +23,21 @@ import java.util.List;
  * Service to update articles.
  */
 @Service
-public class EventUpdateService {
+public class EventUpdateService extends LoggingComponent {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(EventUpdateService.class.getSimpleName());
 	@Autowired
 	private EventController eventController;
+
+	public EventUpdateService() {
+		super(EventUpdateService.class);
+	}
 
 	/**
 	 * Scheduled function to update events every hour.
 	 */
 	@Scheduled(fixedRate = 60 * 60 * 1000)
 	public void updateEvents() {
-		LOGGER.debug("Starting fetching substitutes");
+		this.logger.debug("Starting to fetch events");
 		try {
 			DataInputStream input = new DataInputStream(
 					new URL("https://engelsburg.smmp.de/wp-json/wp/v2/pages/318")
@@ -52,9 +54,9 @@ public class EventUpdateService {
 
 			this.eventController.clearAllEvents();
 			dtos.forEach(dto -> this.eventController.createEvent(dto));
-			LOGGER.info("Fetched events");
+			this.logger.info("Updated events");
 		} catch (IOException e) {
-			LOGGER.error("Couldn't fetch events", e);
+			this.logError("Couldn't fetch events", e);
 		}
 	}
 

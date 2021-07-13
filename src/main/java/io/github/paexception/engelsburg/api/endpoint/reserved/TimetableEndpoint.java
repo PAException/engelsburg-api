@@ -1,7 +1,7 @@
-package io.github.paexception.engelsburg.api.endpoint;
+package io.github.paexception.engelsburg.api.endpoint.reserved;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import io.github.paexception.engelsburg.api.controller.TimetableController;
+import io.github.paexception.engelsburg.api.controller.reserved.TimetableController;
 import io.github.paexception.engelsburg.api.endpoint.dto.TimetableDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.DeleteTimetableEntryRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.GetTimetableEntriesRequestDTO;

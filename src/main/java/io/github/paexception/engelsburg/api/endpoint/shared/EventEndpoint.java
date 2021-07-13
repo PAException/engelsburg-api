@@ -1,6 +1,6 @@
-package io.github.paexception.engelsburg.api.endpoint;
+package io.github.paexception.engelsburg.api.endpoint.shared;
 
-import io.github.paexception.engelsburg.api.controller.EventController;
+import io.github.paexception.engelsburg.api.controller.shared.EventController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
