@@ -1,6 +1,8 @@
 package io.github.paexception.engelsburg.api.service.email;
 
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
@@ -10,14 +12,11 @@ import java.io.InputStream;
  * Service to send no-reply emails.
  */
 @Component
-public class EmailService extends LoggingComponent {
+public class EmailService implements LoggingComponent {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
 	@Autowired
 	private EmailServiceImpl emailService;
-
-	public EmailService() {
-		super(EmailService.class);
-	}
 
 	public boolean resetPassword(String email, String code) {
 		try {
@@ -26,7 +25,7 @@ public class EmailService extends LoggingComponent {
 				return this.emailService.sendHtmlEmail("Password zurücksetzen", email, new String(in.readAllBytes()).replace("${code}", code));
 			}
 		} catch (IOException e) {
-			this.logError("Couldn't load email preset", e);
+			this.logError("Couldn't load email preset", e, LOGGER);
 		}
 
 		return this.emailService.sendHtmlEmail(
@@ -42,7 +41,7 @@ public class EmailService extends LoggingComponent {
 				return this.emailService.sendHtmlEmail("Email verifizieren", email, new String(in.readAllBytes()).replace("${code}", code));
 			}
 		} catch (IOException e) {
-			this.logError("Couldn't load email preset", e);
+			this.logError("Couldn't load email preset", e, LOGGER);
 		}
 
 		return this.emailService.sendHtmlEmail(

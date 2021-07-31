@@ -9,6 +9,8 @@ import io.github.paexception.engelsburg.api.endpoint.dto.NotificationDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
@@ -17,57 +19,33 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class NotificationService extends LoggingComponent {
+public class NotificationService implements LoggingComponent {
 
 	private static final Calendar CALENDAR = Calendar.getInstance();
+	private static final Logger LOGGER = LoggerFactory.getLogger(NotificationService.class);
+	private static final FirebaseCloudMessagingImpl FCM = FirebaseCloudMessagingImpl.getInstance();
 	@Autowired
 	private TimetableController timetableController;
 	@Autowired
-	private FirebaseCloudMessagingImpl firebaseCloudMessaging;
-	@Autowired
 	private NotificationController notificationController;
 
-	public NotificationService() {
-		super(NotificationService.class);
-	}
-
 	/**
-	 * Processes SubstituteDTOs to send as notification.
+	 * Sends error notifications.
 	 *
-	 * @param dtos SubstituteDTOs
+	 * @param msg       error message
+	 * @param throwable exception
 	 */
-	public void sendSubstituteNotifications(List<SubstituteDTO> dtos) {
-		this.logger.debug("Starting to send substitute notifications");
-		dtos.forEach(dto -> {
-			this.firebaseCloudMessaging.sendNotificationToTopics("substitute", dto, this.splitClasses(dto.getClassName()));
-			this.firebaseCloudMessaging.sendNotificationToTopics("substitute", dto, "teacher." + dto.getSubstituteTeacher());
-		});
+	public static void sendErrorNotifications(String msg, Throwable throwable) {
+		ErrorNotificationDTO dto = new ErrorNotificationDTO();
+		dto.setMessage(msg);
+		dto.setErrorMessage(throwable.getMessage());
 
-		this.firebaseCloudMessaging.sendAdvancedNotifications("substitute", dtos.stream().map(dto -> {
-					CALENDAR.setTime(dto.getDate());
-					return Pair.of(this.timetableController.getAllByWeekDayAndLessonAndTeacherOrClassName(
-							CALENDAR.get(Calendar.DAY_OF_WEEK) - 2, //MON starts at 2
-							dto.getLesson(),
-							dto.getTeacher(),
-							dto.getClassName()
-					), dto);
-				}).filter(dtoPair -> !dtoPair.getLeft().isEmpty())
-						.map(dtoPair -> new NotificationDTO(
-								this.notificationController.getTimetableNotificationTokensOfUsers(dtoPair.getLeft().stream().map(TimetableModel::getUserId)),
-								dtoPair.getRight()
-						)).collect(Collectors.toList())
-		);
-		this.logger.info("Sent substitute notifications");
-	}
+		String[] stacktrace = new String[throwable.getStackTrace().length];
+		for (int i = 0; i < throwable.getStackTrace().length; i++)
+			stacktrace[i] = throwable.getStackTrace()[i].toString();
+		dto.setStacktrace(stacktrace);
 
-	/**
-	 * Sends article notifications.
-	 *
-	 * @param dto ArticleDTO
-	 */
-	public void sendArticleNotifications(ArticleDTO dto) {
-		this.logger.info("Sending article notifications");
-		this.firebaseCloudMessaging.sendNotificationToTopics("article", dto, "article");
+		FCM.sendNotificationToTopics("error", dto, "error");
 	}
 
 	/**
@@ -76,7 +54,7 @@ public class NotificationService extends LoggingComponent {
 	 * @param className to split
 	 * @return array of classNames
 	 */
-	private String[] splitClasses(String className) {
+	private static String[] splitClasses(String className) {
 		if (className.length() <= 2 || (Character.isDigit(className.charAt(1)) && className.length() == 3)) {
 			return new String[]{"class." + className};
 		} else { //5ab or 5ab6ab or E2Q2Q4
@@ -114,22 +92,42 @@ public class NotificationService extends LoggingComponent {
 	}
 
 	/**
-	 * Sends error notifications.
+	 * Processes SubstituteDTOs to send as notification.
 	 *
-	 * @param msg       error message
-	 * @param throwable exception
+	 * @param dtos SubstituteDTOs
 	 */
-	public void sendErrorNotifications(String msg, Throwable throwable) {
-		ErrorNotificationDTO dto = new ErrorNotificationDTO();
-		dto.setMessage(msg);
-		dto.setErrorMessage(throwable.getMessage());
+	public void sendSubstituteNotifications(List<SubstituteDTO> dtos) {
+		LOGGER.debug("Starting to send substitute notifications");
+		dtos.forEach(dto -> {
+			FCM.sendNotificationToTopics("substitute", dto, splitClasses(dto.getClassName()));
+			FCM.sendNotificationToTopics("substitute", dto, "teacher." + dto.getSubstituteTeacher());
+		});
 
-		String[] stacktrace = new String[throwable.getStackTrace().length];
-		for (int i = 0; i < throwable.getStackTrace().length; i++)
-			stacktrace[i] = throwable.getStackTrace()[i].toString();
-		dto.setStacktrace(stacktrace);
+		FCM.sendAdvancedNotifications("substitute", dtos.stream().map(dto -> {
+					CALENDAR.setTime(dto.getDate());
+					return Pair.of(this.timetableController.getAllByWeekDayAndLessonAndTeacherOrClassName(
+							CALENDAR.get(Calendar.DAY_OF_WEEK) - 2, //MON starts at 2
+							dto.getLesson(),
+							dto.getTeacher(),
+							dto.getClassName()
+					), dto);
+				}).filter(dtoPair -> !dtoPair.getLeft().isEmpty())
+						.map(dtoPair -> new NotificationDTO(
+								this.notificationController.getTimetableNotificationTokensOfUsers(dtoPair.getLeft().stream().map(TimetableModel::getUserId)),
+								dtoPair.getRight()
+						)).collect(Collectors.toList())
+		);
+		LOGGER.debug("Sent substitute notifications");
+	}
 
-		this.firebaseCloudMessaging.sendNotificationToTopics("error", dto, "error");
+	/**
+	 * Sends article notifications.
+	 *
+	 * @param dto ArticleDTO
+	 */
+	public void sendArticleNotifications(ArticleDTO dto) {
+		LOGGER.info("Sending article notifications");
+		FCM.sendNotificationToTopics("article", dto, "article");
 	}
 
 }

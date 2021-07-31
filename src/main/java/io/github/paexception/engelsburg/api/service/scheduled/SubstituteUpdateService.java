@@ -5,11 +5,13 @@ import io.github.paexception.engelsburg.api.controller.reserved.SubstituteContro
 import io.github.paexception.engelsburg.api.controller.reserved.SubstituteMessageController;
 import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateSubstituteMessageRequestDTO;
+import io.github.paexception.engelsburg.api.service.HtmlFetchingService;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -21,14 +23,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Service to update substitutes.
  */
 @Service
-public class SubstituteUpdateService extends LoggingComponent {
+public class SubstituteUpdateService extends HtmlFetchingService implements LoggingComponent {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(SubstituteUpdateService.class);
 	@Autowired
 	private SubstituteController substituteController;
 	@Autowired
@@ -38,39 +40,36 @@ public class SubstituteUpdateService extends LoggingComponent {
 	private Date currentDate;
 	private List<SubstituteDTO> substitutes;
 
-	public SubstituteUpdateService() {
-		super(SubstituteUpdateService.class);
-	}
-
 	/**
 	 * Scheduled function to update substitutes every 5 minutes.
 	 */
-	@Scheduled(fixedRate = 5 * 60 * 1000)
+	@Scheduled(fixedRate = 60 * 1000)
 	public void updateSubstitutes() {
-		this.logger.debug("Starting to fetch substitutes");
+		LOGGER.debug("Starting to fetch substitutes");
 		try {
-			Document navbar = Jsoup.connect("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/frames/navbar.htm").get();
+			int count = 0;
+			Document navbar = this.request("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/frames/navbar.htm");
 
 			Map<String, Integer> weeks = new HashMap<>(); //Week year
-			navbar.getElementsByAttributeValue("name", "week") //Get weeks necessary to get substitutes
-					.stream().filter(element -> element.hasClass("selectbox"))
-					.collect(Collectors.toList()).forEach(element -> element.children()
-					.forEach(element2 -> weeks.put(
-							element2.attr("value"),
-							Integer.parseInt(element2.text().substring(element2.text().lastIndexOf('.') + 1)))));
-
-			this.informationController.setCurrentClasses(//Update current classes
-					navbar.html().substring(navbar.html().indexOf("var classes = ["), navbar.html().indexOf("];"))
-							.trim()
-							.replace("var classes = [", "")
-							.replace("];", "")
-							.replaceAll("\"", "")
-							.split(",")
+			navbar.select("select[name=week].selectBox > option").forEach(element2 ->
+					weeks.put(element2.attr("value"),
+							Integer.parseInt(element2.text().substring(element2.text().lastIndexOf('.') + 1)))
 			);
 
+			String rawClasses = navbar.html().substring(navbar.html().indexOf("var classes = ["), navbar.html().indexOf("];"));
+			if (this.checkChanges(rawClasses, "classes")) {
+				this.informationController.setCurrentClasses(//Update current classes
+						rawClasses.trim()
+								.replace("var classes = [", "")
+								.replace("];", "")
+								.replaceAll("\"", "")
+								.split(",")
+				);
+			}
+
 			for (String week : weeks.keySet()) { //Iterate weeks
-				Element substitute = Jsoup.connect("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/" + week + "/w/w00000.htm").get().getElementById("vertretung");
-				if (substitute != null) {
+				Element substitute = this.request("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/" + week + "/w/w00000.htm").getElementById("vertretung");
+				if (substitute != null && this.checkChanges(substitute, "substitutes." + week)) {
 					this.currentDate = this.parseDate(substitute.child(2).text().substring(0, substitute.child(2).text().lastIndexOf('.')), weeks.get(week));
 
 					for (Element substituteContent : substitute.getAllElements().subList(8, substitute.getAllElements().size())) {
@@ -85,6 +84,7 @@ public class SubstituteUpdateService extends LoggingComponent {
 										else this.substitutes.add(this.createSubstituteDTO(row));
 
 								this.substituteController.updateSubstitutes(this.substitutes, this.currentDate);
+								count += this.substitutes.size();
 							} else {
 								CreateSubstituteMessageRequestDTO dto = new CreateSubstituteMessageRequestDTO();
 								dto.setDate(this.currentDate);
@@ -118,9 +118,10 @@ public class SubstituteUpdateService extends LoggingComponent {
 					}
 				}
 			}
-			this.logger.info("Updated substitutes");
+			if (count > 0) LOGGER.info("Updated " + count + " substitutes");
+			else LOGGER.debug("Substitutes have not changed");
 		} catch (IOException | ParseException e) {
-			this.logError("Couldn't fetch substitutes", e);
+			this.logError("Couldn't fetch substitutes", e, LOGGER);
 		}
 	}
 
