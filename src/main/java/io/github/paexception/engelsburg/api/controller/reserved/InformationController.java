@@ -9,6 +9,8 @@ import io.github.paexception.engelsburg.api.service.scheduled.SubstituteUpdateSe
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
@@ -44,15 +46,12 @@ import static io.github.paexception.engelsburg.api.util.Constants.Information.NA
  * Controller for all other information.
  */
 @Component
-public class InformationController extends LoggingComponent {
+public class InformationController implements LoggingComponent {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(InformationController.class);
 	private static String[] currentClasses;
 	@Autowired
 	private TeacherRepository teacherRepository;
-
-	public InformationController() {
-		super(InformationController.class);
-	}
 
 	/**
 	 * Get a teacher by its abbreviation.
@@ -73,7 +72,7 @@ public class InformationController extends LoggingComponent {
 	 */
 	@EventListener(ApplicationStartedEvent.class)
 	public void setTeacher() {
-		this.logger.debug("Starting to add teachers");
+		LOGGER.debug("Starting to add teachers");
 		this.teacherRepository.deleteAll();
 		List<TeacherModel> teachers = new ArrayList<>();
 
@@ -191,7 +190,7 @@ public class InformationController extends LoggingComponent {
 		//Some teachers aren't listed on the website
 
 		this.teacherRepository.saveAll(teachers);
-		this.logger.info("Added " + teachers.size() + " teachers");
+		LOGGER.info("Added " + teachers.size() + " teachers");
 	}
 
 	/**

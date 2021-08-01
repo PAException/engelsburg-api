@@ -12,20 +12,21 @@ import com.google.firebase.messaging.MulticastMessage;
 import io.github.paexception.engelsburg.api.endpoint.dto.NotificationDTO;
 import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
-@Component
-public class FirebaseCloudMessagingImpl extends LoggingComponent {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class FirebaseCloudMessagingImpl implements LoggingComponent {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(FirebaseCloudMessagingImpl.class);
+	private static FirebaseCloudMessagingImpl instance;
 	private final ObjectMapper objectMapper = new ObjectMapper();
-
-	public FirebaseCloudMessagingImpl() {
-		super(FirebaseCloudMessagingImpl.class);
-	}
 
 	/**
 	 * Initiates the firebase app to send notifications.
@@ -41,7 +42,7 @@ public class FirebaseCloudMessagingImpl extends LoggingComponent {
 
 			FirebaseApp.initializeApp(options);
 		} catch (IOException e) {
-			this.logError("Couldn't initialize firebase cloud messaging", e);
+			this.logError("Couldn't initialize firebase cloud messaging", e, LOGGER);
 		}
 
 	}
@@ -70,7 +71,7 @@ public class FirebaseCloudMessagingImpl extends LoggingComponent {
 							.replace("ü", "ue")
 							.toLowerCase()).build(), !Environment.PRODUCTION);
 		} catch (JsonProcessingException | FirebaseMessagingException e) {
-			this.logError("Couldn't send notification", e);
+			this.logError("Couldn't send notification", e, LOGGER);
 		}
 	}
 
@@ -92,9 +93,21 @@ public class FirebaseCloudMessagingImpl extends LoggingComponent {
 					FirebaseMessaging.getInstance().sendMulticast(multicastMessage);
 				}
 			} catch (JsonProcessingException | FirebaseMessagingException e) {
-				this.logError("Couldn't send notification", e);
+				this.logError("Couldn't send notification", e, LOGGER);
 			}
 		});
+	}
+
+	/**
+	 * Returns instance.
+	 * Creates new if instance is null.
+	 *
+	 * @return existing or created instance
+	 */
+	public static FirebaseCloudMessagingImpl getInstance() {
+		if (instance == null) instance = new FirebaseCloudMessagingImpl();
+
+		return instance;
 	}
 
 }
