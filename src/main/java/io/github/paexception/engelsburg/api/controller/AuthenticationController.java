@@ -40,6 +40,9 @@ import java.util.UUID;
 public class AuthenticationController implements UserDataHandler {
 
 	public static final List<String> DEFAULT_SCOPES = List.of(
+			"article.like.write.self",
+			"article.like.delete.self",
+
 			"substitute.message.read.current",
 			"substitute.read.current",
 

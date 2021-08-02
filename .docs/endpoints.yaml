@@ -370,6 +370,71 @@ paths:
             Hash:
               type: "string"
               description: "Hash of response body"
+  /article/like/{articleId}:
+    patch:
+      tags:
+        - "article"
+      summary: "Like specific article of homepage (PRIVATE)"
+      operationId: "likeArticle"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "path"
+          type: "number"
+          name: "articleId"
+          description: "ArticleId to identify article"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **article.like.write.self**"
+          required: true
+      responses:
+        "200":
+          description: "Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+    delete:
+      tags:
+        - "article"
+      summary: "Remove like of specific article of homepage (PRIVATE)"
+      operationId: "unlikeArticle"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "path"
+          type: "number"
+          name: "articleId"
+          description: "ArticleId to identify article"
+          required: true
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **article.like.delete.self**"
+          required: true
+      responses:
+        "200":
+          description: "Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
   /cafeteria:
     get:
       tags:
@@ -1556,6 +1621,10 @@ definitions:
         type: "string"
         example: "U8EVjC4:~q00~S4m4o4o9sRjXU?Gt7IU?bE1"
         description: "[*Nullable*]"
+      likes:
+        type: number
+        example: "412"
+        description: "Likes of article"
   Event:
     type: "object"
     properties:
