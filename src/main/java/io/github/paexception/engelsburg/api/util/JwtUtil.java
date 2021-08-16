@@ -75,8 +75,6 @@ public class JwtUtil {
 			return Pair.of(null, VerificationResult.UNKNOWN);
 		}
 
-		if (jwt.getClaim("nonce").isNull()) return Pair.of(jwt, VerificationResult.FAILED);
-
 		return Pair.of(jwt, VerificationResult.SUCCESS);
 	}
 

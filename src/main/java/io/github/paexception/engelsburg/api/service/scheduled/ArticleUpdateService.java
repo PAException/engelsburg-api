@@ -6,6 +6,7 @@ import io.github.paexception.engelsburg.api.controller.shared.ArticleController;
 import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
 import io.github.paexception.engelsburg.api.service.JsonFetchingService;
 import io.github.paexception.engelsburg.api.service.notification.NotificationService;
+import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.WordpressAPI;
 import org.jsoup.Jsoup;
@@ -64,11 +65,13 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 					String mediaUrl = WordpressAPI.getFeaturedMedia(article.getAsJsonObject().get("featured_media").getAsInt(), content);
 					String blurHash = null;
 
-					try {
-						content = WordpressAPI.applyBlurHashToAllImages(Jsoup.parse(content)).toString();
-						blurHash = mediaUrl != null ? WordpressAPI.getBlurHash(mediaUrl) : null;
-					} catch (IOException e) {
-						this.logError("Couldn't load blur hash of image", e, LOGGER);
+					if (Environment.PRODUCTION) {
+						try {
+							content = WordpressAPI.applyBlurHashToAllImages(Jsoup.parse(content)).toString();
+							blurHash = mediaUrl != null ? WordpressAPI.getBlurHash(mediaUrl) : null;
+						} catch (IOException e) {
+							this.logError("Couldn't load blur hash of image", e, LOGGER);
+						}
 					}
 
 					ArticleDTO dto = new ArticleDTO(//Form ArticleDTO from information crawled
@@ -78,7 +81,8 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 							article.getAsJsonObject().get("title").getAsJsonObject().get("rendered").getAsString(),
 							content,
 							mediaUrl,
-							blurHash
+							blurHash,
+							0
 					);
 					dtos.add(dto);
 				}
