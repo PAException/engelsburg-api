@@ -10,6 +10,9 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Retrieve paging information of request and pass to endpoint methods.
+ */
 public class PagingInterceptor extends HandlerInterceptorAdapter implements HandlerMethodArgumentResolver {
 
 	@Override

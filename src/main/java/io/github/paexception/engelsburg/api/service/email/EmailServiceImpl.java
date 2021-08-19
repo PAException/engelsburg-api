@@ -17,6 +17,14 @@ public class EmailServiceImpl implements LoggingComponent {
 	@Autowired
 	private JavaMailSender emailSender;
 
+	/**
+	 * Send an html email.
+	 *
+	 * @param subject   of email
+	 * @param recipient of email
+	 * @param html      to send
+	 * @return true if no error occurred
+	 */
 	public boolean sendHtmlEmail(String subject, String recipient, String html) {
 		MimeMessage mimeMessage = this.emailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");

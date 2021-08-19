@@ -6,6 +6,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Handles Authorization.
+ *
+ * <p>Usage without given value or scope enforces authorization via JWT.
+ * If value or scope is given, JWT has to include these scopes to proceed.</p>
+ *
+ * <p>Repeatable, so many scopes can be checked.</p>
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Repeatable(Authorization.class)

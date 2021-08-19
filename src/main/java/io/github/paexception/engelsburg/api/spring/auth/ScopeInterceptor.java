@@ -19,6 +19,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Handles auth via {@link AuthScope}.
+ */
 @AllArgsConstructor
 public class ScopeInterceptor extends HandlerInterceptorAdapter implements HandlerMethodArgumentResolver {
 
