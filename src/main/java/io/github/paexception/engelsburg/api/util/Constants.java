@@ -3,6 +3,9 @@ package io.github.paexception.engelsburg.api.util;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * Constants mostly used to name errors in controllers.
+ */
 public class Constants {
 
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)

@@ -1,5 +1,8 @@
 package io.github.paexception.engelsburg.api.util;
 
+/**
+ * Used environment variables.
+ */
 public class Environment {
 
 	public static final String JWT_SECRET = System.getenv("JWT_SECRET");

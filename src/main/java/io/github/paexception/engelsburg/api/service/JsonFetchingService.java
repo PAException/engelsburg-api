@@ -6,6 +6,9 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.URL;
 
+/**
+ * Fetching service implementation for JSON.
+ */
 public abstract class JsonFetchingService extends FetchingService {
 
 	@Override

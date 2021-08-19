@@ -18,6 +18,13 @@ public class EmailService implements LoggingComponent {
 	@Autowired
 	private EmailServiceImpl emailService;
 
+	/**
+	 * Send a request to reset the password.
+	 *
+	 * @param email to send the request to
+	 * @param code  to reset password
+	 * @return true if no error occurred
+	 */
 	public boolean resetPassword(String email, String code) {
 		try {
 			InputStream in = this.getClass().getClassLoader().getResourceAsStream("reset-password.html");
@@ -34,6 +41,13 @@ public class EmailService implements LoggingComponent {
 				"<body>\n<h1>Code um das Passwort zurückzusetzen: ${code}</h1>\n</body>".replace("${code}", code));
 	}
 
+	/**
+	 * Send a request to verify the account.
+	 *
+	 * @param email to send the request to
+	 * @param code  to verify account
+	 * @return true if no error occurred
+	 */
 	public boolean verify(String email, String code) {
 		try {
 			InputStream in = this.getClass().getClassLoader().getResourceAsStream("verify-email.html");

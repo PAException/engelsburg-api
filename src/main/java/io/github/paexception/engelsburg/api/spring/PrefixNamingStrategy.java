@@ -8,6 +8,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+/**
+ * Naming strategy of tables.
+ */
 public class PrefixNamingStrategy extends SpringPhysicalNamingStrategy {
 
 	private static final Pattern REPLACE_PATTERN = Pattern.compile("(Model)");
