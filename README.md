@@ -39,8 +39,9 @@ requests to the private part of the api.
 Login
 
 To login send a `GET` request with `email` and `password` parameter in the request body to `/auth/login`. If email and
-password are correct, the account is verified, the request will include an *Json-Web-Token* in the response body with
-the key `token`.
+password are correct, and the account is verified, the request will include a refresh token. To obtain the Access-Token
+(*Json-Web-Token*) send the refresh token as request parameter to `/auth/refresh`. The response body will contain the
+JWT as token and a new refresh as refreshToken. The refresh token is needed to obtain a new JWT if the current expires.
 
 ---
 
