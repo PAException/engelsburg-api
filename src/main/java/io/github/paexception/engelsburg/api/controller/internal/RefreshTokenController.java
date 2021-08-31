@@ -27,7 +27,7 @@ public class RefreshTokenController {
 		Optional<RefreshTokenModel> optionalRefreshToken = this.refreshTokenRepository.findByUserId(userId);
 		RefreshTokenModel refreshToken = optionalRefreshToken.orElseGet(() -> new RefreshTokenModel(userId));
 		refreshToken.setToken(RandomStringUtils.randomAlphanumeric(100));
-		refreshToken.setExpire(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 30);
+		refreshToken.setExpire(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 60);
 
 		return this.refreshTokenRepository.save(refreshToken).getToken();
 	}
@@ -42,7 +42,7 @@ public class RefreshTokenController {
 		Optional<RefreshTokenModel> optionalRefreshToken = this.refreshTokenRepository.findByToken(refreshToken);
 		if (optionalRefreshToken.isEmpty()) return null;
 
-		return optionalRefreshToken.get().getExpire() > System.currentTimeMillis() ? optionalRefreshToken.get().getUserId() : null;
+		return optionalRefreshToken.get().getExpire() >= System.currentTimeMillis() ? optionalRefreshToken.get().getUserId() : null;
 	}
 
 }
