@@ -254,47 +254,6 @@ paths:
             Hash:
               type: "string"
               description: "Hash of response body"
-  /auth/oauth/login/{service}:
-    get:
-      tags:
-        - "auth"
-      summary: "Login via oauth"
-      operationId: "loginOAuth"
-      consumes:
-        - "application/json"
-      produces:
-        - "application/json"
-      parameters:
-        - in: "path"
-          type: string
-          name: "service"
-          required: true
-          description: "Service name (currently only google)"
-        - in: "body"
-          name: "Body"
-          schema:
-            type: object
-            properties:
-              email:
-                type: string
-                example: "hello123@gmail.com"
-              token:
-                type: string
-                example: "fmb3PNtoAxzbLrS15F8FnrM2fXHDKfpYTnZehTQSp4ZlNLirsY"
-      responses:
-        "200":
-          description: "OK - Successful operation"
-          schema:
-            type: object
-            properties:
-              refreshToken:
-                type: string
-                example: "ro23WMPBOdb4Marb9PkxI1L2YOnV5VVdemR8YYBUtJ0ecw3mrcQBdma2hGu83aU8h7mZYNsrHQZj79kFRVaoDLsQ2tksId0maS9G"
-                description: "Refresh token to authorize with"
-          headers:
-            Hash:
-              type: "string"
-              description: "Hash of response body"
   /article:
     get:
       tags:

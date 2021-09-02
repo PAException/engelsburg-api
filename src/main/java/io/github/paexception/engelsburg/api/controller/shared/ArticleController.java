@@ -1,6 +1,7 @@
 package io.github.paexception.engelsburg.api.controller.shared;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import io.github.paexception.engelsburg.api.controller.userdata.UserDataHandler;
 import io.github.paexception.engelsburg.api.database.model.ArticleLikeModel;
 import io.github.paexception.engelsburg.api.database.model.ArticleModel;
 import io.github.paexception.engelsburg.api.database.repository.ArticleLikeRepository;
@@ -24,7 +25,7 @@ import static io.github.paexception.engelsburg.api.util.Constants.Article.NAME_K
  * Controller for articles.
  */
 @Component
-public class ArticleController extends AbstractPageable {
+public class ArticleController extends AbstractPageable implements UserDataHandler {
 
 	@Autowired
 	private ArticleRepository articleRepository;
@@ -134,6 +135,16 @@ public class ArticleController extends AbstractPageable {
 		}
 
 		return Result.empty();
+	}
+
+	@Override
+	public void deleteUserData(UUID userId) {
+		this.articleLikeRepository.deleteAllByUserId(userId);
+	}
+
+	@Override
+	public Object[] getUserData(UUID userId) {
+		return this.mapData(this.articleLikeRepository.findAllByUserId(userId));
 	}
 
 }
