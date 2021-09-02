@@ -25,10 +25,24 @@ public class SolarSystemController {
 	/**
 	 * Update current status of the solar system.
 	 *
-	 * @param dto with status.
+	 * @param date         to update
+	 * @param energy       to update
+	 * @param co2avoidance to update
+	 * @param payment      to update
 	 */
-	public void update(SolarSystemDTO dto) {
-		this.dto = dto;
+	public void update(String date, String energy, String co2avoidance, String payment) {
+		if (this.dto == null) this.dto = new SolarSystemDTO();
+
+		this.dto.updateData(date, energy, co2avoidance, payment);
+	}
+
+	/**
+	 * Update text of solar system data.
+	 *
+	 * @param text to update
+	 */
+	public void updateText(String text) {
+		this.dto.setText(text);
 	}
 
 }

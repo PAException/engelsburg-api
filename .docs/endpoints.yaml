@@ -937,6 +937,9 @@ paths:
               payment:
                 type: string
                 example: "36.564,69"
+              text:
+                type: string
+                example: "Die Solaranlage..."
           headers:
             Hash:
               type: "string"
