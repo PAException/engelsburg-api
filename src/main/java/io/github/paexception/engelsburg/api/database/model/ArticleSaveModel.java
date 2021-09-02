@@ -17,11 +17,11 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table
-public class ArticleLikeModel {
+public class ArticleSaveModel {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int articleLikeId;
+	private int articleSaveId;
 
 	@NotNull
 	@Column(length = 16)

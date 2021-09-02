@@ -42,25 +42,37 @@ public class ArticleEndpoint {
 	}
 
 	/**
-	 * Like specific article.
+	 * Save specific article.
 	 *
-	 * @see ArticleController#likeArticle(boolean, int, DecodedJWT)
+	 * @see ArticleController#saveArticle(boolean, int, DecodedJWT)
 	 */
-	@AuthScope("article.like.write.self")
-	@PatchMapping("/article/like/{articleId}")
+	@AuthScope("article.save.write.self")
+	@PatchMapping("/article/save/{articleId}")
 	public Object likeArticle(@PathVariable int articleId, DecodedJWT jwt) {
-		return this.articleController.likeArticle(true, articleId, jwt).getHttpResponse();
+		return this.articleController.saveArticle(true, articleId, jwt).getHttpResponse();
 	}
 
 	/**
-	 * Remove like of specific article.
+	 * Remove save of specific article.
 	 *
-	 * @see ArticleController#likeArticle(boolean, int, DecodedJWT)
+	 * @see ArticleController#saveArticle(boolean, int, DecodedJWT)
 	 */
-	@AuthScope("article.like.delete.self")
-	@DeleteMapping("/article/like/{articleId}")
-	public Object unlikeArticle(@PathVariable int articleId, DecodedJWT jwt) {
-		return this.articleController.likeArticle(false, articleId, jwt).getHttpResponse();
+	@AuthScope("article.save.delete.self")
+	@DeleteMapping("/article/save/{articleId}")
+	public Object unsaveArticle(@PathVariable int articleId, DecodedJWT jwt) {
+		return this.articleController.saveArticle(false, articleId, jwt).getHttpResponse();
 	}
+
+	/**
+	 * Get saved articles of user.
+	 *
+	 * @see ArticleController#getSavedArticles(DecodedJWT)
+	 */
+	@AuthScope("article.save.read.self")
+	@GetMapping("/article/save")
+	public Object getSavedArticles(DecodedJWT jwt) {
+		return this.articleController.getSavedArticles(jwt).getHttpResponse();
+	}
+
 
 }

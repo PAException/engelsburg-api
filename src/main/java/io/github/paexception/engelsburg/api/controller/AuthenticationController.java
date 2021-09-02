@@ -40,8 +40,9 @@ import java.util.UUID;
 public class AuthenticationController implements UserDataHandler {
 
 	public static final List<String> DEFAULT_SCOPES = List.of(
-			"article.like.write.self",
-			"article.like.delete.self",
+			"article.save.write.self",
+			"article.save.delete.self",
+			"article.save.read.self",
 
 			"substitute.message.read.current",
 			"substitute.read.current",
@@ -229,8 +230,8 @@ public class AuthenticationController implements UserDataHandler {
 	 */
 	@EventListener(ApplicationStartedEvent.class)
 	public void updateDefaultScopes() {
+		this.userRepository.findAll().forEach(user -> this.scopeController.updateScopes(user, DEFAULT_SCOPES));
 		this.userRepository.findAllByVerified(true).forEach(user -> this.scopeController.updateScopes(user, VERIFIED_SCOPES));
-		this.userRepository.findAllByVerified(false).forEach(user -> this.scopeController.updateScopes(user, DEFAULT_SCOPES));
 	}
 
 	/**

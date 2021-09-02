@@ -329,12 +329,12 @@ paths:
             Hash:
               type: "string"
               description: "Hash of response body"
-  /article/like/{articleId}:
+  /article/save/{articleId}:
     patch:
       tags:
         - "article"
-      summary: "Like specific article of homepage (PRIVATE)"
-      operationId: "likeArticle"
+      summary: "Save specific article of homepage (PRIVATE)"
+      operationId: "saveArticle"
       consumes:
         - "application/json"
       produces:
@@ -353,7 +353,7 @@ paths:
         - in: "header"
           type: "string"
           name: "Json-Web-Token"
-          description: "Required scopes: **article.like.write.self**"
+          description: "Required scopes: **article.save.write.self**"
           required: true
       responses:
         "200":
@@ -365,8 +365,8 @@ paths:
     delete:
       tags:
         - "article"
-      summary: "Remove like of specific article of homepage (PRIVATE)"
-      operationId: "unlikeArticle"
+      summary: "Remove save of specific article of homepage (PRIVATE)"
+      operationId: "unsaveArticle"
       consumes:
         - "application/json"
       produces:
@@ -385,11 +385,47 @@ paths:
         - in: "header"
           type: "string"
           name: "Json-Web-Token"
-          description: "Required scopes: **article.like.delete.self**"
+          description: "Required scopes: **article.save.delete.self**"
           required: true
       responses:
         "200":
           description: "Successful operation"
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
+    get:
+      tags:
+        - "article"
+      summary: "Get all saved articles of user (PRIVATE)"
+      operationId: "getSavedArticles"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: "header"
+          type: "string"
+          name: "Json-Web-Token"
+          description: "Required scopes: **article.save.read.self**"
+          required: true
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            type: object
+            properties:
+              savedArticles:
+                type: array
+                items:
+                  type: number
+                  example: 2134
+                  description: "article number"
           headers:
             Hash:
               type: "string"
@@ -1580,10 +1616,6 @@ definitions:
         type: "string"
         example: "U8EVjC4:~q00~S4m4o4o9sRjXU?Gt7IU?bE1"
         description: "[*Nullable*]"
-      likes:
-        type: number
-        example: "412"
-        description: "Likes of article"
   Event:
     type: "object"
     properties:
