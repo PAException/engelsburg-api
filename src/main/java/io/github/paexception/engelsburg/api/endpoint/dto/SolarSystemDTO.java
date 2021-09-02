@@ -13,5 +13,13 @@ public class SolarSystemDTO {
 	private String energy;
 	private String co2avoidance;
 	private String payment;
+	private String text;
+
+	public void updateData(String date, String energy, String co2avoidance, String payment) {
+		this.date = date;
+		this.energy = energy;
+		this.co2avoidance = co2avoidance;
+		this.payment = payment;
+	}
 
 }
