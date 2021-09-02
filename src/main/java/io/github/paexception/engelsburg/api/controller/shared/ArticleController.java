@@ -2,11 +2,12 @@ package io.github.paexception.engelsburg.api.controller.shared;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.controller.userdata.UserDataHandler;
-import io.github.paexception.engelsburg.api.database.model.ArticleLikeModel;
 import io.github.paexception.engelsburg.api.database.model.ArticleModel;
-import io.github.paexception.engelsburg.api.database.repository.ArticleLikeRepository;
+import io.github.paexception.engelsburg.api.database.model.ArticleSaveModel;
 import io.github.paexception.engelsburg.api.database.repository.ArticleRepository;
+import io.github.paexception.engelsburg.api.database.repository.ArticleSaveRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.response.GetAllSavedArticlesResponseDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetArticlesResponseDTO;
 import io.github.paexception.engelsburg.api.service.scheduled.ArticleUpdateService;
 import io.github.paexception.engelsburg.api.spring.paging.AbstractPageable;
@@ -19,6 +20,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import static io.github.paexception.engelsburg.api.util.Constants.Article.NAME_KEY;
 
 /**
@@ -30,7 +32,7 @@ public class ArticleController extends AbstractPageable implements UserDataHandl
 	@Autowired
 	private ArticleRepository articleRepository;
 	@Autowired
-	private ArticleLikeRepository articleLikeRepository;
+	private ArticleSaveRepository articleSaveRepository;
 
 	/**
 	 * Paging information.
@@ -70,9 +72,9 @@ public class ArticleController extends AbstractPageable implements UserDataHandl
 		if (date < 0) {
 			date = System.currentTimeMillis();
 			this.articleRepository.findAllByDateLessThanEqualOrderByDateDesc(date, this.toPage(paging))
-					.forEach(article -> responseDTOs.add(article.toResponseDTO(this.getLikes(article))));
+					.forEach(article -> responseDTOs.add(article.toResponseDTO()));
 		} else this.articleRepository.findAllByDateGreaterThanEqualOrderByDateAsc(date, this.toPage(paging))
-				.forEach(article -> responseDTOs.add(article.toResponseDTO(this.getLikes(article))));
+				.forEach(article -> responseDTOs.add(article.toResponseDTO()));
 		if (responseDTOs.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		return Result.of(new GetArticlesResponseDTO(responseDTOs));
@@ -95,18 +97,8 @@ public class ArticleController extends AbstractPageable implements UserDataHandl
 	 * @return article
 	 */
 	public Result<ArticleDTO> getArticle(int articleId) {
-		return this.articleRepository.findById(articleId).map(article -> Result.of(article.toResponseDTO(this.getLikes(article))))
+		return this.articleRepository.findById(articleId).map(article -> Result.of(article.toResponseDTO()))
 				.orElseGet(() -> Result.of(Error.NOT_FOUND, NAME_KEY));
-	}
-
-	/**
-	 * Private function to get likes of article.
-	 *
-	 * @param article to get articleId
-	 * @return likes
-	 */
-	private int getLikes(ArticleModel article) {
-		return this.articleLikeRepository.countAllByArticleId(article.getArticleId());
 	}
 
 	/**
@@ -118,33 +110,49 @@ public class ArticleController extends AbstractPageable implements UserDataHandl
 	 * @return error or empty result
 	 */
 	@Transactional
-	public Result<?> likeArticle(boolean value, int articleId, DecodedJWT jwt) {
+	public Result<?> saveArticle(boolean value, int articleId, DecodedJWT jwt) {
 		if (!this.articleRepository.existsById(articleId)) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		UUID userId = UUID.fromString(jwt.getSubject());
 		if (value) {
-			if (this.articleLikeRepository.existsByArticleIdAndUserId(articleId, userId))
+			if (this.articleSaveRepository.existsByArticleIdAndUserId(articleId, userId))
 				return Result.of(Error.ALREADY_EXISTS, "article_like");
 
-			this.articleLikeRepository.save(new ArticleLikeModel(-1, userId, articleId));
+			this.articleSaveRepository.save(new ArticleSaveModel(-1, userId, articleId));
 		} else {
-			if (!this.articleLikeRepository.existsByArticleIdAndUserId(articleId, userId))
+			if (!this.articleSaveRepository.existsByArticleIdAndUserId(articleId, userId))
 				return Result.of(Error.NOT_FOUND, "article_like");
 
-			this.articleLikeRepository.deleteByArticleIdAndUserId(articleId, userId);
+			this.articleSaveRepository.deleteByArticleIdAndUserId(articleId, userId);
 		}
 
 		return Result.empty();
 	}
 
+	/**
+	 * Return all saved articles of user.
+	 *
+	 * @param jwt to get userId
+	 * @return saved articles
+	 */
+	public Result<GetAllSavedArticlesResponseDTO> getSavedArticles(DecodedJWT jwt) {
+		UUID userId = UUID.fromString(jwt.getSubject());
+
+		List<Integer> savedArticles = this.articleSaveRepository
+				.findAllByUserId(userId).stream().map(ArticleSaveModel::getArticleId).collect(Collectors.toList());
+
+		if (savedArticles.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
+		else return Result.of(new GetAllSavedArticlesResponseDTO(savedArticles));
+	}
+
 	@Override
 	public void deleteUserData(UUID userId) {
-		this.articleLikeRepository.deleteAllByUserId(userId);
+		this.articleSaveRepository.deleteAllByUserId(userId);
 	}
 
 	@Override
 	public Object[] getUserData(UUID userId) {
-		return this.mapData(this.articleLikeRepository.findAllByUserId(userId));
+		return this.mapData(this.articleSaveRepository.findAllByUserId(userId));
 	}
 
 }

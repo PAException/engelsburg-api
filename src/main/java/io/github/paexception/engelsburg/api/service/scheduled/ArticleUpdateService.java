@@ -81,8 +81,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 							article.getAsJsonObject().get("title").getAsJsonObject().get("rendered").getAsString(),
 							content,
 							mediaUrl,
-							blurHash,
-							0
+							blurHash
 					);
 					dtos.add(dto);
 				}

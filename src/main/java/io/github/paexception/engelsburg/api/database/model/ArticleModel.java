@@ -35,7 +35,7 @@ public class ArticleModel {
 	private String mediaUrl;
 	private String blurHash;
 
-	public ArticleDTO toResponseDTO(int likes) {
+	public ArticleDTO toResponseDTO() {
 		return new ArticleDTO(
 				this.articleId,
 				this.date,
@@ -43,8 +43,7 @@ public class ArticleModel {
 				this.title,
 				this.content,
 				this.mediaUrl,
-				this.blurHash,
-				likes
+				this.blurHash
 		);
 	}
 
