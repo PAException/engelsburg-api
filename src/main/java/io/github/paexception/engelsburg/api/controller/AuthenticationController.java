@@ -13,7 +13,6 @@ import io.github.paexception.engelsburg.api.endpoint.dto.request.LoginRequestDTO
 import io.github.paexception.engelsburg.api.endpoint.dto.request.ResetPasswordRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.SignUpRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.AuthResponseDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.response.LoginResponseDTO;
 import io.github.paexception.engelsburg.api.service.email.EmailService;
 import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.Error;
@@ -118,7 +117,7 @@ public class AuthenticationController implements UserDataHandler {
 	 * @param dto email, password and schoolToken
 	 * @return empty response or error
 	 */
-	public Result<?> signUp(SignUpRequestDTO dto) {
+	public Result<AuthResponseDTO> signUp(SignUpRequestDTO dto) {
 		if (!dto.getSchoolToken().equals(Environment.SCHOOL_TOKEN))
 			return Result.of(Error.FORBIDDEN, "school_token");
 
@@ -136,7 +135,7 @@ public class AuthenticationController implements UserDataHandler {
 		} else return Result.of(Error.FAILED, "signup");
 
 
-		return Result.empty();
+		return Result.of(this.createAuthResponse(userId));
 	}
 
 	/**
@@ -145,7 +144,7 @@ public class AuthenticationController implements UserDataHandler {
 	 * @param dto email and password
 	 * @return valid jwt token
 	 */
-	public Result<LoginResponseDTO> login(LoginRequestDTO dto) {
+	public Result<AuthResponseDTO> login(LoginRequestDTO dto) {
 		Optional<UserModel> optionalUser = this.userRepository.findByEmail(dto.getEmail());
 		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, "user");
 
@@ -153,7 +152,7 @@ public class AuthenticationController implements UserDataHandler {
 		if (!user.getPassword().equals(hashPassword(dto.getPassword(), user.getSalt())))
 			return Result.of(Error.FORBIDDEN, "wrong_password");
 
-		return Result.of(new LoginResponseDTO(this.refreshTokenController.create(user.getUserId())));
+		return Result.of(this.createAuthResponse(user.getUserId()));
 	}
 
 	/**
@@ -166,7 +165,7 @@ public class AuthenticationController implements UserDataHandler {
 		UUID userId = this.refreshTokenController.verifyRefreshToken(refreshToken);
 		if (userId == null) return Result.of(Error.FAILED, "refresh_token");
 
-		return Result.of(new AuthResponseDTO(this.createJWT(userId), this.refreshTokenController.create(userId)));
+		return Result.of(this.createAuthResponse(userId));
 	}
 
 	/**
@@ -240,12 +239,13 @@ public class AuthenticationController implements UserDataHandler {
 	 * @param userId as subject of jwt
 	 * @return jwt token
 	 */
-	private String createJWT(UUID userId) {
+	public AuthResponseDTO createAuthResponse(UUID userId) {
 		JWTCreator.Builder builder = EngelsburgAPI.getJWT_UTIL()
 				.createBuilder(userId.toString(), 5, Calendar.MINUTE);
 		String[] scopes = this.scopeController.getScopes(userId);
 
-		return EngelsburgAPI.getJWT_UTIL().sign(builder.withArrayClaim("scopes", scopes));
+		return new AuthResponseDTO(EngelsburgAPI.getJWT_UTIL().sign(builder.withArrayClaim("scopes", scopes)),
+				this.refreshTokenController.create(userId));
 	}
 
 	@Override

@@ -64,6 +64,8 @@ paths:
       responses:
         "200":
           description: "OK - Successful operation"
+          schema:
+            $ref: '#/definitions/AuthResponse'
   /auth/login:
     get:
       tags:
@@ -92,12 +94,7 @@ paths:
         "200":
           description: "OK - Successful operation"
           schema:
-            type: object
-            properties:
-              refreshToken:
-                type: string
-                example: "TsXiRmvAk7rVwRBj8Xe2JT7AAK8NwzrleQCeZUzxZrEHlEIJRfAKS1GfxaRBa0XevmouJg6aKRvaBwHKjGthS3cfTDGFfVJIfmGH"
-                description: "Refresh token for authentication"
+            $ref: '#/definitions/AuthResponse'
           headers:
             Hash:
               type: "string"
@@ -121,12 +118,7 @@ paths:
         "200":
           description: "OK - Successful operation"
           schema:
-            type: object
-            properties:
-              token:
-                type: string
-                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-                description: "Json-Web-Token for authentication"
+            $ref: '#/definitions/AuthResponse'
           headers:
             Hash:
               type: "string"
@@ -242,14 +234,7 @@ paths:
         "200":
           description: "OK - Successful operation"
           schema:
-            type: object
-            properties:
-              service:
-                type: string
-                example: "google"
-              token:
-                type: string
-                example: "fmb3PNtoAxzbLrS15F8FnrM2fXHDKfpYTnZehTQSp4ZlNLirsY"
+            $ref: '#/definitions/AuthResponse'
           headers:
             Hash:
               type: "string"
@@ -1593,6 +1578,17 @@ paths:
               type: "string"
               description: "Hash of response body"
 definitions:
+  AuthResponse:
+    type: object
+    properties:
+      token:
+        type: string
+        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+        description: "Json-Web-Token for authentication"
+      refreshToken:
+        type: string
+        example: "vCsghY7twza6dpgMpGVNTqEDKNVq8jsNgceHtxfXNQrWBgd8mHoFk2YDKzOSCBwKrW1P5mlZPyFyCuLbI1uRmHddkNmnHlNf0nec"
+        description: "Refresh token to obtain new JWT"
   Article:
     type: "object"
     properties:
