@@ -1,11 +1,10 @@
 package io.github.paexception.engelsburg.api.controller;
 
-import io.github.paexception.engelsburg.api.controller.internal.RefreshTokenController;
 import io.github.paexception.engelsburg.api.controller.internal.ScopeController;
 import io.github.paexception.engelsburg.api.controller.oauth.OAuthHandler;
 import io.github.paexception.engelsburg.api.database.model.UserModel;
 import io.github.paexception.engelsburg.api.database.repository.UserRepository;
-import io.github.paexception.engelsburg.api.endpoint.dto.response.LoginResponseDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.response.AuthResponseDTO;
 import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
@@ -27,7 +26,7 @@ public class OAuthController {
 	@Autowired
 	private ScopeController scopeController;
 	@Autowired
-	private RefreshTokenController refreshTokenController;
+	private AuthenticationController authenticationController;
 
 	/**
 	 * Request a oauth login.
@@ -78,7 +77,7 @@ public class OAuthController {
 	 * @param email given by the oauth service implementation
 	 * @return refresh token
 	 */
-	private Result<LoginResponseDTO> signup(String email) {
+	private Result<AuthResponseDTO> signup(String email) {
 		if (email == null || email.isBlank()) return Result.of(Error.FAILED, "oauth"); //Check errors
 
 		Optional<UserModel> optionalUser = this.userRepository.findByEmail(email);
@@ -102,7 +101,7 @@ public class OAuthController {
 			}
 		}
 
-		return Result.of(new LoginResponseDTO(this.refreshTokenController.create(user.getUserId())));
+		return Result.of(this.authenticationController.createAuthResponse(user.getUserId()));
 	}
 
 }
