@@ -4,9 +4,11 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.controller.userdata.UserDataHandler;
 import io.github.paexception.engelsburg.api.database.model.ArticleModel;
 import io.github.paexception.engelsburg.api.database.model.ArticleSaveModel;
+import io.github.paexception.engelsburg.api.database.projections.ArticleIdAndContentHash;
 import io.github.paexception.engelsburg.api.database.repository.ArticleRepository;
 import io.github.paexception.engelsburg.api.database.repository.ArticleSaveRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.response.ArticlesUpdatedResponseDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetAllSavedArticlesResponseDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetArticlesResponseDTO;
 import io.github.paexception.engelsburg.api.service.scheduled.ArticleUpdateService;
@@ -19,6 +21,8 @@ import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import static io.github.paexception.engelsburg.api.util.Constants.Article.NAME_KEY;
@@ -50,14 +54,36 @@ public class ArticleController extends AbstractPageable implements UserDataHandl
 		if (!this.articleRepository.existsByDate(dto.getDate())) {
 			this.articleRepository.save(new ArticleModel(
 					-1,
+					dto.getArticleId(),
 					dto.getDate(),
 					dto.getLink(),
 					dto.getTitle(),
 					dto.getContent(),
+					dto.getContentHash(),
 					dto.getMediaUrl(),
 					dto.getBlurHash()
 			));
 		}
+	}
+
+	/**
+	 * Update a specific article.
+	 *
+	 * @param dto article info
+	 */
+	public void updateArticle(ArticleDTO dto) {
+		Optional<ArticleModel> optionalArticle = this.articleRepository.findByArticleId(dto.getArticleId());
+		if (optionalArticle.isEmpty()) this.createArticle(dto);
+		else this.articleRepository.save(optionalArticle.get().update(dto));
+	}
+
+	/**
+	 * Get all article ids with hashes to check for changes.
+	 *
+	 * @return ids and hashes
+	 */
+	public List<ArticleIdAndContentHash> prepareArticleToUpdate() {
+		return this.articleRepository.findAllIdsAndContentHashes();
 	}
 
 	/**
@@ -78,6 +104,24 @@ public class ArticleController extends AbstractPageable implements UserDataHandl
 		if (responseDTOs.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		return Result.of(new GetArticlesResponseDTO(responseDTOs));
+	}
+
+	/**
+	 * Check if any article was updated.
+	 *
+	 * @param idsAndHashes of articles
+	 * @return list of articles that were updated
+	 */
+	public Result<ArticlesUpdatedResponseDTO> checkArticlesUpdated(Map<String, String> idsAndHashes) {
+		List<Integer> idsToUpdate = new ArrayList<>();
+
+		idsAndHashes.forEach((id, hash) -> {
+			Optional<ArticleModel> optionalArticle = this.articleRepository.findByArticleId(Integer.parseInt(id));
+			if (optionalArticle.isPresent() && !optionalArticle.get().getContentHash().equals(hash))
+				idsToUpdate.add(Integer.parseInt(id));
+		});
+
+		return Result.of(new ArticlesUpdatedResponseDTO(idsToUpdate));
 	}
 
 	/**
@@ -116,12 +160,12 @@ public class ArticleController extends AbstractPageable implements UserDataHandl
 		UUID userId = UUID.fromString(jwt.getSubject());
 		if (value) {
 			if (this.articleSaveRepository.existsByArticleIdAndUserId(articleId, userId))
-				return Result.of(Error.ALREADY_EXISTS, "article_like");
+				return Result.of(Error.ALREADY_EXISTS, "article_save");
 
 			this.articleSaveRepository.save(new ArticleSaveModel(-1, userId, articleId));
 		} else {
 			if (!this.articleSaveRepository.existsByArticleIdAndUserId(articleId, userId))
-				return Result.of(Error.NOT_FOUND, "article_like");
+				return Result.of(Error.NOT_FOUND, "article_save");
 
 			this.articleSaveRepository.deleteByArticleIdAndUserId(articleId, userId);
 		}
