@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.io.DataInputStream;
-import java.io.IOException;
 import java.net.URL;
 
 /**
@@ -51,7 +50,7 @@ public class SolarSystemUpdateService extends HtmlFetchingService implements Log
 			String html = JsonParser.parseString(fetched).getAsJsonObject().get("content").getAsJsonObject().get("rendered").getAsString();
 
 			if (this.checkChanges(html, "text")) this.solarSystemController.updateText(html);
-		} catch (IOException e) {
+		} catch (Exception e) { //IO and NullPointer
 			this.logError("Couldn't fetch solar system information", e, LOGGER);
 		}
 	}

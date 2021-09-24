@@ -415,6 +415,48 @@ paths:
             Hash:
               type: "string"
               description: "Hash of response body"
+  /article/update:
+    get:
+      tags:
+        - "article"
+      summary: "Check if articles have updated"
+      operationId: "updateArticles"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "header"
+          type: "string"
+          name: "Hash"
+          description: "Hash of last request to check if response changed"
+          required: false
+        - in: body
+          name: "Body"
+          required: true
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+            example:
+              123: "e9284ac63c0958411d5138a966375fa41ae2e1da"
+              232: "d5c8f2be4da27a8224a8a41ec8b1055d23282a50"
+              234: "fc8161f14ce7f01b9887b31cf9d68efedf562b4a"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            type: object
+            properties:
+              articleIds:
+                type: array
+                items:
+                  type: integer
+                  example: 234
+          headers:
+            Hash:
+              type: "string"
+              description: "Hash of response body"
   /cafeteria:
     get:
       tags:
@@ -1594,7 +1636,7 @@ definitions:
     properties:
       articleId:
         type: "number"
-        example: 7126
+        example: 18
       date:
         type: "number"
         example: 1602194843562
@@ -1607,6 +1649,9 @@ definitions:
       content:
         type: "string"
         example: "<p>Liebe Eltern, liebe Interessierte an der Engelsburg,</p>\n\n\n\n<p>nun beginnt die Zeit, ..."
+      contentHash:
+        type: string
+        example: "e9284ac63c0958411d5138a966375fa41ae2e1da"
       mediaUrl:
         type: "string"
         example: "https://d1855q9qdxb6ev.cloudfront.net/files/2020/09/20190320-Postkarte-Schulpreis01-final1.jpg"
