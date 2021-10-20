@@ -39,26 +39,26 @@ import java.util.UUID;
 public class AuthenticationController implements UserDataHandler {
 
 	public static final List<String> DEFAULT_SCOPES = List.of(
-			"article.save.write.self",
-			"article.save.delete.self",
-			"article.save.read.self",
-
 			"substitute.message.read.current",
 			"substitute.read.current",
 
 			"info.teacher.read.all",
 			"info.classes.read.all",
 
+			"notification.settings.write.self",
+			"notification.settings.read.self",
+
 			"user.data.read.self",
 			"user.data.delete.self"
 	);
 	public static final List<String> VERIFIED_SCOPES = List.of(
+			"article.save.write.self",
+			"article.save.delete.self",
+			"article.save.read.self",
+
 			"grade.write.self",
 			"grade.read.self",
 			"grade.delete.self",
-
-			"notification.settings.write.self",
-			"notification.settings.read.self",
 
 			"task.delete.self",
 			"task.write.self",
@@ -181,7 +181,8 @@ public class AuthenticationController implements UserDataHandler {
 
 		if (this.emailService.resetPassword(
 				email,
-				this.tokenController.createRandomTemporaryToken(optionalUser.get().getUserId(), "reset_password", System.currentTimeMillis() + 1000 * 60 * 30)
+				this.tokenController.createRandomTemporaryToken(optionalUser.get().getUserId(), "reset_password",
+						System.currentTimeMillis() + 1000 * 60 * 30)
 		)) return Result.empty();
 		else return Result.of(Error.FAILED, "request_reset_password");
 	}
@@ -230,7 +231,8 @@ public class AuthenticationController implements UserDataHandler {
 	@EventListener(ApplicationStartedEvent.class)
 	public void updateDefaultScopes() {
 		this.userRepository.findAll().forEach(user -> this.scopeController.updateScopes(user, DEFAULT_SCOPES));
-		this.userRepository.findAllByVerified(true).forEach(user -> this.scopeController.updateScopes(user, VERIFIED_SCOPES));
+		this.userRepository.findAllByVerified(true).forEach(
+				user -> this.scopeController.updateScopes(user, VERIFIED_SCOPES));
 	}
 
 	/**
