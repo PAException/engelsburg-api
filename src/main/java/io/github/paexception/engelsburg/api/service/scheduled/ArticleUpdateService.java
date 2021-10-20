@@ -4,8 +4,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import io.github.paexception.engelsburg.api.controller.shared.ArticleController;
 import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.response.GetArticlesResponseDTO;
 import io.github.paexception.engelsburg.api.service.JsonFetchingService;
 import io.github.paexception.engelsburg.api.service.notification.NotificationService;
+import io.github.paexception.engelsburg.api.spring.paging.Paging;
 import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.Result;
@@ -21,6 +23,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -55,7 +58,8 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	public void checkIfArticlesChanged() {
 		this.articleController.prepareArticleToUpdate().forEach(idAndHash -> {
 			try {
-				JsonElement json = this.request("https://engelsburg.smmp.de/wp-json/wp/v2/posts/" + idAndHash.getArticleId());
+				JsonElement json = this.request(
+						"https://engelsburg.smmp.de/wp-json/wp/v2/posts/" + idAndHash.getArticleId());
 				String content = json.getAsJsonObject().get("content").getAsJsonObject().get("rendered").getAsString();
 				if (!idAndHash.getContentHash().equals(Result.hash(content))) {
 					this.articleController.updateArticle(this.createArticleDTO(idAndHash.getArticleId(), json));
@@ -75,7 +79,8 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	private List<ArticleDTO> updateArticles(String date, int page) {
 		List<ArticleDTO> dtos = new ArrayList<>();
 		try {
-			JsonElement json = this.request("https://engelsburg.smmp.de/wp-json/wp/v2/posts?per_page=100&after=" + date + "&page=" + page); //Parse in article array
+			JsonElement json = this.request(
+					"https://engelsburg.smmp.de/wp-json/wp/v2/posts?per_page=100&after=" + date + "&page=" + page); //Parse in article array
 
 			if (json.toString().length() > 2) {
 				JsonArray jsonArticles = json.getAsJsonArray();
@@ -104,8 +109,10 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	 * @throws ParseException if parsing the date threw an exception
 	 */
 	private ArticleDTO createArticleDTO(int articleId, JsonElement article) throws IOException, ParseException {
-		String content = article.getAsJsonObject().get("content").getAsJsonObject().get("rendered").getAsString(); //Get content
-		String mediaUrl = WordpressAPI.getFeaturedMedia(article.getAsJsonObject().get("featured_media").getAsInt(), content);
+		String content = article.getAsJsonObject().get("content").getAsJsonObject().get(
+				"rendered").getAsString(); //Get content
+		String mediaUrl = WordpressAPI.getFeaturedMedia(article.getAsJsonObject().get("featured_media").getAsInt(),
+				content);
 		String blurHash = null;
 
 		if (Environment.PRODUCTION) {
@@ -130,14 +137,19 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	}
 
 	/**
-	 * Load all articles on startup since 1/1/2020.
+	 * Load articles on start up.
 	 */
 	@EventListener(ApplicationStartedEvent.class)
 	public void loadPastArticles() {
 		LOGGER.debug("Starting fetching past articles");
-		this.articleController.clearAllArticles();
-		this.updateArticles("1970-01-01T00:00:01", 1).forEach(dto -> this.articleController.createArticle(dto));
-		LOGGER.info("Fetched " + counter + " articles!");
+		Result<GetArticlesResponseDTO> lastArticle = this.articleController.getArticlesAfter(-1, new Paging(0, 1));
+		if (lastArticle.isResultPresent()) { //Empty would be an error
+			this.updateArticles(DATE_FORMAT.format(lastArticle.getResult().getArticles().get(0).getDate()), 1)
+					.forEach(this.articleController::createArticle);
+		} else {
+			this.updateArticles(DATE_FORMAT.format(new Date(0)), 1).forEach(this.articleController::createArticle);
+		}
+		LOGGER.info("Fetched " + counter + " article" + (counter == 1 ? "" : "s") + "!");
 	}
 
 }
