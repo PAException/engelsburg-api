@@ -48,7 +48,7 @@ public class ArticleEndpoint {
 	 *
 	 * @see ArticleController#checkArticlesUpdated(Map)
 	 */
-	@GetMapping("/article/updated")
+	@PatchMapping("/article/updated")
 	public Object checkArticlesUpdated(@RequestBody Map<String, String> idsAndHashes) {
 		return this.articleController.checkArticlesUpdated(idsAndHashes).getHttpResponse();
 	}

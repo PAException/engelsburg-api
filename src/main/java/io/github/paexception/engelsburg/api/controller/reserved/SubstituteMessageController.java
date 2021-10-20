@@ -85,7 +85,7 @@ public class SubstituteMessageController {
 		if (date < 0) date = System.currentTimeMillis();
 		if (!pastTimeCheck(jwt, date)) return Result.of(Error.FORBIDDEN, Constants.Substitute.NAME_KEY);
 
-		List<SubstituteMessageModel> substitutes = this.substituteMessageRepository.findAllByDateGreaterThanEqual(new Date(System.currentTimeMillis()));
+		List<SubstituteMessageModel> substitutes = this.substituteMessageRepository.findAllByDateGreaterThanEqual(new Date(date));
 		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 		else return Result.of(new GetSubstituteMessagesResponseDTO(substitutes.stream()
 				.map(SubstituteMessageModel::toResponseDTO).collect(Collectors.toList())));

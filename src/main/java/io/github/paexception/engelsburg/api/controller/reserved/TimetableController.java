@@ -6,7 +6,6 @@ import io.github.paexception.engelsburg.api.database.model.TimetableModel;
 import io.github.paexception.engelsburg.api.database.repository.TimetableRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.TimetableDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.DeleteTimetableEntryRequestDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.GetTimetableEntriesRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetTimetableEntriesResponseDTO;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
@@ -79,22 +78,23 @@ public class TimetableController implements UserDataHandler {
 	 * All, by day or lesson or by day and lesson
 	 * </p>
 	 *
-	 * @param dto with day or/and lesson information
-	 * @param jwt with userId
+	 * @param day    filter by day
+	 * @param lesson filter by lesson
+	 * @param jwt    with userId
 	 * @return list of timetable entries
 	 */
 	@Transactional
-	public Result<GetTimetableEntriesResponseDTO> getTimetableEntries(GetTimetableEntriesRequestDTO dto, DecodedJWT jwt) {
+	public Result<GetTimetableEntriesResponseDTO> getTimetableEntries(int day, int lesson, DecodedJWT jwt) {
 		UUID userId = UUID.fromString(jwt.getSubject());
 		List<TimetableDTO> dtos;
-		if (dto.getDay() >= 0 && dto.getLesson() >= 0) {
-			dtos = this.timetableRepository.findAllByUserIdAndDayAndLesson(userId, dto.getDay(), dto.getLesson())
+		if (day >= 0 && lesson >= 0) {
+			dtos = this.timetableRepository.findAllByUserIdAndDayAndLesson(userId, day, lesson)
 					.map(TimetableModel::toResponseDTO).collect(Collectors.toList());
-		} else if (dto.getDay() >= 0) {
-			dtos = this.timetableRepository.findAllByUserIdAndDay(userId, dto.getDay())
+		} else if (day >= 0) {
+			dtos = this.timetableRepository.findAllByUserIdAndDay(userId, day)
 					.map(TimetableModel::toResponseDTO).collect(Collectors.toList());
-		} else if (dto.getLesson() >= 0) {
-			dtos = this.timetableRepository.findAllByUserIdAndLesson(userId, dto.getLesson())
+		} else if (lesson >= 0) {
+			dtos = this.timetableRepository.findAllByUserIdAndLesson(userId, lesson)
 					.map(TimetableModel::toResponseDTO).collect(Collectors.toList());
 		} else {
 			dtos = this.timetableRepository.findAllByUserId(userId).stream()
