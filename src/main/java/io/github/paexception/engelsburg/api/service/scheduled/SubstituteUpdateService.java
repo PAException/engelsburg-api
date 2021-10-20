@@ -39,6 +39,7 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 	private InformationController informationController;
 	private Date currentDate;
 	private List<SubstituteDTO> substitutes;
+	private int splitSubstitute = 0;
 
 	/**
 	 * Scheduled function to update substitutes every 5 minutes.
@@ -48,15 +49,20 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 		LOGGER.debug("Starting to fetch substitutes");
 		try {
 			int count = 0;
-			Document navbar = this.request("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/frames/navbar.htm");
+			Document navbar = this.request(
+					"https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/frames/navbar.htm");
 
 			Map<String, Integer> weeks = new HashMap<>(); //Week year
 			navbar.select("select[name=week].selectBox > option").forEach(element2 ->
 					weeks.put(element2.attr("value"),
-							Integer.parseInt(element2.text().substring(element2.text().lastIndexOf('.') + 1)))
+							Integer.parseInt(
+									element2.text().substring(
+											element2.text().lastIndexOf(
+													'.') + 1)))
 			);
 
-			String rawClasses = navbar.html().substring(navbar.html().indexOf("var classes = ["), navbar.html().indexOf("];"));
+			String rawClasses = navbar.html().substring(navbar.html().indexOf("var classes = ["),
+					navbar.html().indexOf("];"));
 			if (this.checkChanges(rawClasses, "classes")) {
 				this.informationController.setCurrentClasses(//Update current classes
 						rawClasses.trim()
@@ -68,20 +74,36 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 			}
 
 			for (String week : weeks.keySet()) { //Iterate weeks
-				Element substitute = this.request("https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/" + week + "/w/w00000.htm").getElementById("vertretung");
+				Element substitute = this.request(
+						"https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/" + week + "/w/w00000.htm").getElementById(
+						"vertretung");
 				if (substitute != null && this.checkChanges(substitute, "substitutes." + week)) {
-					this.currentDate = this.parseDate(substitute.child(2).text().substring(0, substitute.child(2).text().lastIndexOf('.')), weeks.get(week));
+					this.currentDate = this.parseDate(
+							substitute.child(2).text().substring(0, substitute.child(2).text().lastIndexOf('.')),
+							weeks.get(week));
 
-					for (Element substituteContent : substitute.getAllElements().subList(8, substitute.getAllElements().size())) {
+					for (Element substituteContent : substitute.getAllElements().subList(8,
+							substitute.getAllElements().size())) {
 						if (substituteContent.tagName().equals("table")) {
 							if (substituteContent.hasClass("subst")) {
 								this.substitutes = new ArrayList<>();
 
-								for (Element row : substituteContent.child(0).children())
-									if (row.hasClass("odd") || row.hasClass("even"))
-										if (this.substitutes.size() > 0 && !row.child(0).text().matches("(.*)[0-9](.*)"))
+								Elements children = substituteContent.child(0).children();
+								for (Element row : children) {
+									if (row.hasClass("odd") || row.hasClass("even")) {
+										if (this.substitutes.size() > 0 && !row.child(0).text().matches(
+												"(.*)[0-9](.*)")) {
 											this.appendTextOnLastSubstitute(row, this.substitutes);
-										else this.substitutes.add(this.createSubstituteDTO(row));
+											for (int j = 1; j <= this.splitSubstitute; j++) {
+												this.substitutes.get(this.substitutes.size() - 1 - j).setText(
+														this.substitutes.get(this.substitutes.size() - 1).getText());
+											}
+										} else {
+											this.splitSubstitute = 0;
+											this.substitutes.add(this.createSubstituteDTO(row));
+										}
+									}
+								}
 
 								this.substituteController.updateSubstitutes(this.substitutes, this.currentDate);
 								count += this.substitutes.size();
@@ -111,7 +133,8 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 						} else if (substituteContent.tagName().equals("p")) {
 							Elements days = substituteContent.getElementsByTag("b");
 							if (days.size() > 0) {
-								String dayAndMonth = days.get(0).text().substring(0, days.get(0).text().lastIndexOf('.'));
+								String dayAndMonth = days.get(0).text().substring(0,
+										days.get(0).text().lastIndexOf('.'));
 								this.currentDate = this.parseDate(dayAndMonth, weeks.get(week));
 							}
 						}
@@ -135,14 +158,19 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 		SubstituteDTO dto = new SubstituteDTO();
 		dto.setDate(this.currentDate);
 		dto.setClassName(row.child(0).text());
-		if (row.child(1).text().contains("-")) {
-			dto.setLesson(Integer.parseInt(row.child(1).text().replace(" ", "")
-					.substring(0, row.child(1).text().replace(" ", "").indexOf("-"))));
-			row.children().set(1,
-					row.child(1).text(
-							row.child(1).text().substring(
-									row.child(1).text().indexOf("-") + 1)));
-			this.substitutes.add(this.createSubstituteDTO(row));
+		if (row.child(1).text().contains("-")) { //5 - 6, //3 - 6
+			int low = Integer.parseInt(String.valueOf(row.child(1).text().charAt(row.child(1).text()
+					.replace(" ", "").indexOf("-") - 1))),
+					high = Integer.parseInt(String.valueOf(row.child(1).text().charAt(row.child(1).text()
+							.replace(" ", "").indexOf("-") + 3)));
+
+			for (int i = low; i < high; i++) {
+				row.children().set(1, row.child(1).text(String.valueOf(i)));
+				this.substitutes.add(this.createSubstituteDTO(row));
+				this.splitSubstitute++;
+			}
+
+			dto.setLesson(high);
 		} else dto.setLesson(Integer.parseInt(row.child(1).text()));
 		if (row.child(2).text().matches("(.*)[0-9](.*)")) dto.setSubject(row.child(2).text());
 		dto.setSubstituteTeacher(row.child(3).text());

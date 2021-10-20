@@ -4,9 +4,6 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.database.model.SubstituteModel;
 import io.github.paexception.engelsburg.api.database.repository.SubstituteRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.GetSubstitutesByClassNameRequestDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.GetSubstitutesBySubstituteTeacherRequestDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.GetSubstitutesByTeacherRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetSubstitutesResponseDTO;
 import io.github.paexception.engelsburg.api.service.notification.NotificationService;
 import io.github.paexception.engelsburg.api.service.scheduled.SubstituteUpdateService;
@@ -104,29 +101,32 @@ public class SubstituteController {
 	/**
 	 * Get all substitutes by Teacher.
 	 *
-	 * @param dto with information
-	 * @param jwt with userId
+	 * @param teacher   filter by teacher
+	 * @param lesson    filter by lesson
+	 * @param className filter by className
+	 * @param date      filter by date
+	 * @param jwt       with userId
 	 * @return all found substitutes
 	 */
-	public Result<GetSubstitutesResponseDTO> getSubstitutesByTeacher(GetSubstitutesByTeacherRequestDTO dto, DecodedJWT jwt) {
-		if (dto.getDate() < 0) dto.setDate(System.currentTimeMillis());
-		if (!pastTimeCheck(jwt, dto.getDate())) return Result.of(Error.FORBIDDEN, NAME_KEY);
+	public Result<GetSubstitutesResponseDTO> getSubstitutesByTeacher(String teacher, int lesson, String className, long date, DecodedJWT jwt) {
+		if (date < 0) date = System.currentTimeMillis();
+		if (!pastTimeCheck(jwt, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
 
 		List<SubstituteModel> substitutes;
-		if (dto.getLesson() != -1) {
-			if (notBlank(dto.getClassName())) {
+		if (lesson != -1) {
+			if (notBlank(className)) {
 				substitutes = this.substituteRepository.findAllByDateAndTeacherAndLessonAndClassName(
-						new Date(dto.getDate()), dto.getTeacher(), dto.getLesson(), dto.getClassName());
+						new Date(date), teacher, lesson, className);
 			} else {
 				substitutes = this.substituteRepository.findAllByDateAndTeacherAndLesson(
-						new Date(dto.getDate()), dto.getTeacher(), dto.getLesson());
+						new Date(date), teacher, lesson);
 			}
-		} else if (notBlank(dto.getClassName())) {
+		} else if (notBlank(className)) {
 			substitutes = this.substituteRepository.findAllByDateAndTeacherAndClassName(
-					new Date(dto.getDate()), dto.getTeacher(), dto.getClassName());
+					new Date(date), teacher, className);
 		} else {
 			substitutes = this.substituteRepository.findAllByDateAndTeacher(
-					new Date(dto.getDate()), dto.getTeacher());
+					new Date(date), teacher);
 		}
 		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
@@ -136,16 +136,17 @@ public class SubstituteController {
 	/**
 	 * Get all substitutes by the SubstituteTeacher.
 	 *
-	 * @param dto with information
-	 * @param jwt with userId
+	 * @param teacher filter by substitute teacher
+	 * @param date    filter by date
+	 * @param jwt     with userId
 	 * @return all found substitutes
 	 */
-	public Result<GetSubstitutesResponseDTO> getSubstitutesBySubstituteTeacher(GetSubstitutesBySubstituteTeacherRequestDTO dto, DecodedJWT jwt) {
-		if (dto.getDate() < 0) dto.setDate(System.currentTimeMillis());
-		if (!pastTimeCheck(jwt, dto.getDate())) return Result.of(Error.FORBIDDEN, NAME_KEY);
+	public Result<GetSubstitutesResponseDTO> getSubstitutesBySubstituteTeacher(String teacher, long date, DecodedJWT jwt) {
+		if (date < 0) date = System.currentTimeMillis();
+		if (!pastTimeCheck(jwt, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
 
 		List<SubstituteModel> substitutes = this.substituteRepository.findAllByDateAndSubstituteTeacher(
-				new Date(dto.getDate()), dto.getTeacher().toUpperCase());
+				new Date(date), teacher.toUpperCase());
 		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		return this.returnSubstitutes(substitutes);
@@ -154,20 +155,21 @@ public class SubstituteController {
 	/**
 	 * Get all substitutes by a class name.
 	 *
-	 * @param dto with information
-	 * @param jwt with userId
+	 * @param className filter by className
+	 * @param date      filter by date
+	 * @param jwt       with userId
 	 * @return all found substitutes
 	 */
-	public Result<GetSubstitutesResponseDTO> getSubstitutesByClassName(GetSubstitutesByClassNameRequestDTO dto, DecodedJWT jwt) {
-		if (dto.getDate() < 0) dto.setDate(System.currentTimeMillis());
-		if (!pastTimeCheck(jwt, dto.getDate())) return Result.of(Error.FORBIDDEN, NAME_KEY);
+	public Result<GetSubstitutesResponseDTO> getSubstitutesByClassName(String className, long date, DecodedJWT jwt) {
+		if (date < 0) date = System.currentTimeMillis();
+		if (!pastTimeCheck(jwt, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
 
 		List<SubstituteModel> substitutes;
-		if (Character.isDigit(dto.getClassName().charAt(0)))
+		if (Character.isDigit(className.charAt(0)))
 			substitutes = this.substituteRepository.findAllByDateGreaterThanEqualAndClassNameIsLike(
-					new Date(dto.getDate()), SubstituteRepository.likeClassName(dto.getClassName())); //Include like 5abcde
+					new Date(date), SubstituteRepository.likeClassName(className)); //Include like 5abcde
 		else substitutes = this.substituteRepository.findAllByDateAndClassName(
-				new Date(dto.getDate()), dto.getClassName());
+				new Date(date), className);
 		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		return this.returnSubstitutes(substitutes);

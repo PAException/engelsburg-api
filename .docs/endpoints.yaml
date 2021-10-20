@@ -67,7 +67,7 @@ paths:
           schema:
             $ref: '#/definitions/AuthResponse'
   /auth/login:
-    get:
+    post:
       tags:
         - "auth"
       summary: "Login and retrieve refresh token"
@@ -416,7 +416,7 @@ paths:
               type: "string"
               description: "Hash of response body"
   /article/update:
-    get:
+    patch:
       tags:
         - "article"
       summary: "Check if articles have updated"
@@ -1029,19 +1029,16 @@ paths:
           name: "Hash"
           description: "Hash of last request to check if response changed"
           required: false
-        - in: "body"
-          name: "Body"
-          schema:
-            type: "object"
-            properties:
-              className:
-                type: "string"
-                example: "8c"
-                description: "[*Required*]"
-              date:
-                type: "number"
-                example: 1600509466
-                description: "Timestamp (ms)"
+        - in: "query"
+          type: "string"
+          name: "className"
+          description: "To filter by"
+          required: true
+        - in: "query"
+          type: "number"
+          name: "date"
+          description: "Filter by date (Timestamp (ms))"
+          required: false
       responses:
         "200":
           description: "Successful operation"
@@ -1073,25 +1070,26 @@ paths:
           name: "Hash"
           description: "Hash of last request to check if response changed"
           required: false
-        - in: "body"
-          name: "Body"
-          schema:
-            type: "object"
-            properties:
-              teacher:
-                type: "string"
-                example: "KRÄ"
-                description: "[*Required*]"
-              lesson:
-                type: "string"
-                example: "6"
-              className:
-                type: "string"
-                example: "8c"
-              date:
-                type: "number"
-                example: 1600509466
-                description: "Timestamp (ms)"
+        - in: "query"
+          type: "string"
+          name: "className"
+          description: "Filter by className"
+          required: false
+        - in: "query"
+          type: "number"
+          name: "date"
+          description: "Filter by date (Timestamp (ms))"
+          required: false
+        - in: "query"
+          type: "string"
+          name: "teacher"
+          description: "Filter by teacher"
+          required: true
+        - in: "query"
+          type: "number"
+          name: "lesson"
+          description: "Filter by lesson"
+          required: false
       responses:
         "200":
           description: "Successful operation"
@@ -1323,19 +1321,16 @@ paths:
           name: "size"
           description: "Specify articles per page (min: 1, max: 20, default: 20)"
           required: false
-        - in: "body"
-          name: "Body"
-          schema:
-            type: object
-            properties:
-              onlyUndone:
-                type: boolean
-                example: true
-                description: "Only get tasks which aren't mark as done"
-              date:
-                type: number
-                example: 1624991306588
-                description: "All articles after timestamp (ms) will be listed (min: 0, default: current ms, so all articles will be listed from new to old. If date specified from old to new)"
+        - in: "query"
+          type: "number"
+          name: "date"
+          description: "All articles after timestamp (ms) will be listed (min: 0, default: current ms, so all articles will be listed from new to old. If date specified from old to new)"
+          required: false
+        - in: "query"
+          type: boolean
+          name: "onlyUndone"
+          description: "Only get tasks which aren't mark as done"
+          required: false
       responses:
         "200":
           description: "Successful operation"
@@ -1345,7 +1340,7 @@ paths:
               tasks:
                 type: array
                 items:
-                  $ref: "#/definitions/Grade"
+                  $ref: "#/definitions/Task"
           headers:
             Hash:
               type: "string"
@@ -1480,17 +1475,16 @@ paths:
           name: "Hash"
           description: "Hash of last request to check if response changed"
           required: false
-        - in: "body"
-          name: "Body"
-          schema:
-            type: object
-            properties:
-              day:
-                type: number
-                example: 2
-              lesson:
-                type: number
-                example: 6
+        - in: "query"
+          type: integer
+          name: "day"
+          description: "Filter by day"
+          required: false
+        - in: "query"
+          type: integer
+          name: "lesson"
+          description: "Filter by lesson"
+          required: false
       responses:
         "200":
           description: "Successful operation"
@@ -1751,8 +1745,8 @@ definitions:
               type: "string"
               example: "8c"
             lesson:
-              type: "string"
-              example: "6"
+              type: integer
+              example: 6
               description: "Can also be '8 - 9'"
             subject:
               type: "string"

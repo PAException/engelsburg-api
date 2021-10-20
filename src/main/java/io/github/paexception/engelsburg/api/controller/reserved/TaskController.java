@@ -6,7 +6,6 @@ import io.github.paexception.engelsburg.api.database.model.TaskModel;
 import io.github.paexception.engelsburg.api.database.repository.TaskRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.TaskDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateTaskRequestDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.GetTasksRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.MarkTaskAsDoneRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.UpdateTaskRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetTasksResponseDTO;
@@ -88,26 +87,27 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	 * Possible params are date after and only done tasks.
 	 * </p>
 	 *
-	 * @param dto    for params
-	 * @param jwt    with userId
-	 * @param paging paging options
+	 * @param onlyUndone filter by task that are not marked as done
+	 * @param date       date to filter by
+	 * @param jwt        with userId
+	 * @param paging     paging options
 	 * @return list of taskDTOs
 	 */
 	@Transactional
-	public Result<GetTasksResponseDTO> getTasks(GetTasksRequestDTO dto, DecodedJWT jwt, Paging paging) {
+	public Result<GetTasksResponseDTO> getTasks(boolean onlyUndone, long date, DecodedJWT jwt, Paging paging) {
 		UUID userId = UUID.fromString(jwt.getSubject());
 		Stream<TaskModel> taskStream;
-		if (dto.isOnlyUndone()) {
-			if (dto.getDate() < 0) {
+		if (onlyUndone) {
+			if (date < 0) {
 				taskStream = this.taskRepository.findAllByUserIdAndCreatedBeforeAndDoneOrderByCreatedDesc(userId, System.currentTimeMillis(), false, this.toPage(paging));
 			} else {
-				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterAndDoneOrderByCreatedAsc(userId, dto.getDate(), false, this.toPage(paging));
+				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterAndDoneOrderByCreatedAsc(userId, date, false, this.toPage(paging));
 			}
 		} else {
-			if (dto.getDate() < 0) {
+			if (date < 0) {
 				taskStream = this.taskRepository.findAllByUserIdAndCreatedBeforeOrderByCreatedDesc(userId, System.currentTimeMillis(), this.toPage(paging));
 			} else {
-				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterOrderByCreatedAsc(userId, dto.getDate(), this.toPage(paging));
+				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterOrderByCreatedAsc(userId, date, this.toPage(paging));
 			}
 		}
 

@@ -43,7 +43,7 @@ public class AuthenticationEndpoint {
 	 *
 	 * @see AuthenticationController#login(LoginRequestDTO)
 	 */
-	@GetMapping("/auth/login")
+	@PostMapping("/auth/login")
 	public Object login(@RequestBody @Valid LoginRequestDTO dto) {
 		return this.authenticationController.login(dto).getHttpResponse();
 	}

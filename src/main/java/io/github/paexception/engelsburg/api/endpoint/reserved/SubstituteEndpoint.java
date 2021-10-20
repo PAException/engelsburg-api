@@ -2,17 +2,14 @@ package io.github.paexception.engelsburg.api.endpoint.reserved;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.controller.reserved.SubstituteController;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.GetSubstitutesByClassNameRequestDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.GetSubstitutesBySubstituteTeacherRequestDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.GetSubstitutesByTeacherRequestDTO;
 import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 
 /**
  * RestController for substitute actions.
@@ -39,37 +36,41 @@ public class SubstituteEndpoint {
 	/**
 	 * <b>Just returns all substitutes of the day and future</b>.
 	 *
-	 * @param dto information and filters to get substitutes
-	 * @return found substitutes
+	 * @see SubstituteController#getSubstitutesByClassName(String, long, DecodedJWT)
 	 */
 	@AuthScope("substitute.read.current")
 	@GetMapping("/substitute/className")
-	public Object getSubstitutesByClassName(@RequestBody @Valid GetSubstitutesByClassNameRequestDTO dto, DecodedJWT jwt) {
-		return this.substituteController.getSubstitutesByClassName(dto, jwt).getHttpResponse();
+	public Object getSubstitutesByClassName(@RequestParam @NotBlank @Length(min = 2, max = 3) String className,
+											@RequestParam(required = false, defaultValue = "-1") long date,
+											DecodedJWT jwt) {
+		return this.substituteController.getSubstitutesByClassName(className, date, jwt).getHttpResponse();
 	}
 
 	/**
 	 * Get all substitutes based on the teacher.
 	 *
-	 * @param dto filter for substitutes
-	 * @return found substitutes
+	 * @see SubstituteController#getSubstitutesByTeacher(String, int, String, long, DecodedJWT)
 	 */
 	@AuthScope("substitute.read.current")
 	@GetMapping("/substitute/teacher")
-	public Object getSubstitutesByTeacher(@RequestBody @Valid GetSubstitutesByTeacherRequestDTO dto, DecodedJWT jwt) {
-		return this.substituteController.getSubstitutesByTeacher(dto, jwt).getHttpResponse();
+	public Object getSubstitutesByTeacher(@RequestParam @NotBlank String teacher,
+										  @RequestParam(required = false, defaultValue = "-1") int lesson,
+										  @RequestParam(required = false) String className,
+										  @RequestParam(required = false, defaultValue = "-1") long date, DecodedJWT jwt) {
+		return this.substituteController.getSubstitutesByTeacher(teacher, lesson, className, date, jwt).getHttpResponse();
 	}
 
 	/**
 	 * Get all substitutes based on the substitute teacher.
 	 *
-	 * @param dto filter for substitutes
-	 * @return found substitutes
+	 * @see SubstituteController#getSubstitutesBySubstituteTeacher(String, long, DecodedJWT)
 	 */
 	@AuthScope("substitute.read.current")
 	@GetMapping("/substitute/substituteTeacher")
-	public Object getSubstitutesBySubstituteTeacher(@RequestBody @Valid GetSubstitutesBySubstituteTeacherRequestDTO dto, DecodedJWT jwt) {
-		return this.substituteController.getSubstitutesBySubstituteTeacher(dto, jwt).getHttpResponse();
+	public Object getSubstitutesBySubstituteTeacher(@RequestParam @NotBlank String teacher,
+													@RequestParam(required = false, defaultValue = "-1") long date,
+													DecodedJWT jwt) {
+		return this.substituteController.getSubstitutesBySubstituteTeacher(teacher, date, jwt).getHttpResponse();
 	}
 
 }

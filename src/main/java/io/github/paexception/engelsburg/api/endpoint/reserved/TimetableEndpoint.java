@@ -4,13 +4,13 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.controller.reserved.TimetableController;
 import io.github.paexception.engelsburg.api.endpoint.dto.TimetableDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.DeleteTimetableEntryRequestDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.GetTimetableEntriesRequestDTO;
 import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
@@ -37,12 +37,13 @@ public class TimetableEndpoint {
 	/**
 	 * Get timetable entries.
 	 *
-	 * @see TimetableController#getTimetableEntries(GetTimetableEntriesRequestDTO, DecodedJWT)
+	 * @see TimetableController#getTimetableEntries(int, int, DecodedJWT)
 	 */
 	@AuthScope("timetable.read.self")
 	@GetMapping("/timetable")
-	public Object getTimetableEntries(@RequestBody GetTimetableEntriesRequestDTO dto, DecodedJWT jwt) {
-		return this.timetableController.getTimetableEntries(dto, jwt).getHttpResponse();
+	public Object getTimetableEntries(@RequestParam(required = false, defaultValue = "-1") int day,
+			@RequestParam(required = false, defaultValue = "-1") int lesson, DecodedJWT jwt) {
+		return this.timetableController.getTimetableEntries(day, lesson, jwt).getHttpResponse();
 	}
 
 	/**
