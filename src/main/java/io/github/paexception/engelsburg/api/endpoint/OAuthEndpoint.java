@@ -25,7 +25,9 @@ public class OAuthEndpoint {
 	 * @see OAuthController#request(String, String, HttpServletRequest, HttpServletResponse)
 	 */
 	@GetMapping("/auth/oauth/{service}")
-	public Object request(@PathVariable @NotBlank String service, @RequestParam @NotBlank String schoolToken, HttpServletRequest request, HttpServletResponse response) {
+	public Object request(@PathVariable @NotBlank String service,
+			@RequestParam(defaultValue = "", required = false) String schoolToken, HttpServletRequest request,
+			HttpServletResponse response) {
 		return this.oAuthController.request(schoolToken, service, request, response).getHttpResponse();
 	}
 
@@ -35,7 +37,8 @@ public class OAuthEndpoint {
 	 * @see OAuthController#redirect(String, HttpServletRequest, HttpServletResponse)
 	 */
 	@GetMapping("/auth/oauth_redirect/{service}")
-	public Object redirect(@PathVariable @NotBlank String service, HttpServletRequest request, HttpServletResponse response) {
+	public Object redirect(@PathVariable @NotBlank String service, HttpServletRequest request,
+			HttpServletResponse response) {
 		return this.oAuthController.redirect(service, request, response).getHttpResponse();
 	}
 

@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.gson.JsonParser;
 import io.github.paexception.engelsburg.api.util.Environment;
+import io.github.paexception.engelsburg.api.util.Pair;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -63,11 +64,12 @@ public class GoogleOAuth2Impl extends OAuthHandler {
 	 * @return email or null if any error.
 	 */
 	@Override
-	public String resolveOAuthResponse(HttpServletRequest request, HttpServletResponse response) {
+	public Pair<String, Boolean> resolveOAuthResponse(HttpServletRequest request, HttpServletResponse response) {
 		try {
-			if (this.verifyAndDeleteToken(request.getParameter("state"))) {
+			String state = request.getParameter("state");
+			if (this.verifyToken(state)) {
 				DecodedJWT jwt = JWT.decode(this.getJWT(request.getParameter("code")));
-				return jwt.getClaim("email").asString();
+				return Pair.of(jwt.getClaim("email").asString(), this.getSignUpAndDeleteToken(state));
 			}
 		} catch (Exception ignored) {
 		}
@@ -103,8 +105,9 @@ public class GoogleOAuth2Impl extends OAuthHandler {
 	}
 
 	@Override
-	public Result<?> resolveOAuthLoginRequest(HttpServletRequest request, HttpServletResponse response) {
-		return defaultRedirect(response, this.oauth2Request.replace("{token}", this.createToken()));
+	public Result<?> resolveOAuthLoginRequest(HttpServletRequest request, HttpServletResponse response,
+			boolean signUp) {
+		return defaultRedirect(response, this.oauth2Request.replace("{token}", this.createToken(signUp)));
 	}
 
 	@Override

@@ -1625,6 +1625,14 @@ definitions:
         type: string
         example: "vCsghY7twza6dpgMpGVNTqEDKNVq8jsNgceHtxfXNQrWBgd8mHoFk2YDKzOSCBwKrW1P5mlZPyFyCuLbI1uRmHddkNmnHlNf0nec"
         description: "Refresh token to obtain new JWT"
+      email:
+        type: string
+        example: "example.user@email.com"
+        description: "Email address of user"
+      verified:
+        type: boolean
+        example: "false"
+        description: "If user is verified"
   Article:
     type: "object"
     properties:
