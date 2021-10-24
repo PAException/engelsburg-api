@@ -1,14 +1,14 @@
 package io.github.paexception.engelsburg.api.endpoint;
 
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * RestController for other mappings like "*" for fallbacks.
+ * Controller for other mappings like "*" for fallbacks.
  */
-@RestController
+@Controller
 public class OtherEndpoint {
 
 	/**
@@ -20,6 +20,16 @@ public class OtherEndpoint {
 	@RequestMapping("*")
 	public void getFallback(HttpServletResponse response) throws IOException {
 		response.sendRedirect("https://github.com/engelsburg/engelsburg-api/tree/master#endpoint-documentation");
+	}
+
+	/**
+	 * Returns data policy.
+	 *
+	 * @return data policy as html page
+	 */
+	@RequestMapping("/data_policy")
+	public Object dataPolicy() {
+		return "data_policy";
 	}
 
 }

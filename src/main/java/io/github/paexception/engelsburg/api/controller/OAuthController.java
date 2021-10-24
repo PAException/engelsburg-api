@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,7 +22,6 @@ import java.util.UUID;
 @Component
 public class OAuthController {
 
-	private static final Map<String, Boolean> CURRENT_REQUESTS = new HashMap<>();
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
@@ -43,7 +40,10 @@ public class OAuthController {
 	 */
 	public Result<?> request(String schoolToken, String service, HttpServletRequest request,
 			HttpServletResponse response) {
-		boolean signUp = Environment.SCHOOL_TOKEN.equals(schoolToken); //Check school token
+		boolean signUp = schoolToken.isEmpty();
+		if (!signUp && !Environment.SCHOOL_TOKEN.equals(schoolToken)) { //Check school token
+			return Result.of(Error.FORBIDDEN, "school_token");
+		}
 
 		for (OAuthHandler oAuthHandler : OAuthHandler.getOAuthHandlers()) {
 			if (oAuthHandler.getName().equals(service))
@@ -88,7 +88,7 @@ public class OAuthController {
 		Optional<UserModel> optionalUser = this.userRepository.findByEmail(emailAndSignUp.getLeft());
 		UserModel user;
 		if (optionalUser.isEmpty() && !emailAndSignUp.getRight()) {
-			return Result.of(Error.FORBIDDEN, "school_token");
+			return Result.of(Error.NOT_FOUND, "user");
 		} else if (optionalUser.isEmpty()) { //Create new user
 			UUID userId = UUID.randomUUID();
 
