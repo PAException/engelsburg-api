@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class RateLimiter {
 
@@ -42,14 +41,4 @@ public class RateLimiter {
 			return bucket.tryConsumeAndReturnRemaining(1);
 		}
 	}
-
-	public <A> A challenge(String identifier, HttpServletResponse response, Supplier<A> onSuccess) throws IOException {
-		ConsumptionProbe consumption = this.advancedAcquire(identifier);
-		if (!consumption.isConsumed()) {
-			sendFailResponse(response, consumption.getNanosToWaitForRefill() / 1000000);
-		}
-
-		return onSuccess.get();
-	}
-
 }

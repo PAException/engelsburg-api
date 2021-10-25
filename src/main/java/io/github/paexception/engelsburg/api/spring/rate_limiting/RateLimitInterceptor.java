@@ -26,7 +26,7 @@ public class RateLimitInterceptor extends RateLimiter implements HandlerIntercep
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
 			Object handler) throws Exception {
 		HandlerMethod handlerMethod = (HandlerMethod) handler;
-		if (handlerMethod.hasMethodAnnotation(IgnoreRateLimit.class)) return true;
+		if (handlerMethod.hasMethodAnnotation(IgnoreGeneralRateLimit.class)) return true;
 
 		ConsumptionProbe consumption = this.advancedAcquire(request.getRemoteAddr());
 		if (!consumption.isConsumed()) {

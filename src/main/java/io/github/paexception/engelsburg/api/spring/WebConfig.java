@@ -28,7 +28,7 @@ public class WebConfig implements WebMvcConfigurer {
 
 	private final ScopeInterceptor scopeInterceptor = new ScopeInterceptor(EngelsburgAPI.getJWT_UTIL());
 	private final PagingInterceptor pagingInterceptor = new PagingInterceptor();
-	private final RateLimitInterceptor rateLimiter = new RateLimitInterceptor();
+	private final RateLimitInterceptor rateLimitInterceptor = new RateLimitInterceptor();
 	@Autowired
 	private ObjectMapper mapper;
 
@@ -55,7 +55,7 @@ public class WebConfig implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		List<HandlerInterceptor> handlerInterceptors = List.of(this.pagingInterceptor, this.scopeInterceptor,
-				this.rateLimiter);
+				this.rateLimitInterceptor);
 
 		for (HandlerInterceptor interceptors : handlerInterceptors)
 			registry.addInterceptor(interceptors).addPathPatterns("/**/*");
