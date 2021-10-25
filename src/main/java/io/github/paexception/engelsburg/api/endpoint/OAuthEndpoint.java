@@ -1,6 +1,7 @@
 package io.github.paexception.engelsburg.api.endpoint;
 
 import io.github.paexception.engelsburg.api.controller.OAuthController;
+import io.github.paexception.engelsburg.api.spring.rate_limiting.IgnoreRateLimit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,6 +37,7 @@ public class OAuthEndpoint {
 	 *
 	 * @see OAuthController#redirect(String, HttpServletRequest, HttpServletResponse)
 	 */
+	@IgnoreRateLimit
 	@GetMapping("/auth/oauth_redirect/{service}")
 	public Object redirect(@PathVariable @NotBlank String service, HttpServletRequest request,
 			HttpServletResponse response) {

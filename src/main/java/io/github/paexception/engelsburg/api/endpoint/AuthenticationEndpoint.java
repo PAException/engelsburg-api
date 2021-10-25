@@ -1,11 +1,16 @@
 package io.github.paexception.engelsburg.api.endpoint;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket4j;
+import io.github.bucket4j.Refill;
 import io.github.paexception.engelsburg.api.controller.AuthenticationController;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.LoginRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.ResetPasswordRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.SignUpRequestDTO;
 import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
+import io.github.paexception.engelsburg.api.spring.rate_limiting.RateLimit;
+import io.github.paexception.engelsburg.api.spring.rate_limiting.RateLimiter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,22 +22,28 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import java.time.Duration;
 
 /**
  * RestController for authentication actions.
  */
 @Validated
 @RestController
-public class AuthenticationEndpoint {
+public class AuthenticationEndpoint extends RateLimiter {
 
 	@Autowired
 	private AuthenticationController authenticationController;
+
+	public AuthenticationEndpoint() {
+		super(Bucket4j.builder().addLimit(Bandwidth.classic(5, Refill.intervally(5, Duration.ofMinutes(1)))));
+	}
 
 	/**
 	 * Signup a user.
 	 *
 	 * @see AuthenticationController#signUp(SignUpRequestDTO)
 	 */
+	@RateLimit
 	@PostMapping("/auth/signup")
 	public Object signup(@RequestBody @Valid SignUpRequestDTO dto) {
 		return this.authenticationController.signUp(dto).getHttpResponse();
@@ -63,6 +74,7 @@ public class AuthenticationEndpoint {
 	 *
 	 * @see AuthenticationController#requestResetPassword(String)
 	 */
+	@RateLimit
 	@PostMapping("/auth/request_reset_password")
 	public Object requestResetPassword(@RequestParam @NotBlank String email) {
 		return this.authenticationController.requestResetPassword(email).getHttpResponse();
@@ -83,6 +95,7 @@ public class AuthenticationEndpoint {
 	 *
 	 * @see AuthenticationController#verify(DecodedJWT, String)
 	 */
+	@RateLimit
 	@AuthScope
 	@PatchMapping("/auth/verify/{token}")
 	public Object verify(DecodedJWT jwt, @PathVariable @NotBlank String token) {

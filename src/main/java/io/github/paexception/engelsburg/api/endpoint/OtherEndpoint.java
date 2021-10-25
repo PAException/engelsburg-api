@@ -1,5 +1,6 @@
 package io.github.paexception.engelsburg.api.endpoint;
 
+import io.github.paexception.engelsburg.api.spring.rate_limiting.IgnoreRateLimit;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import javax.servlet.http.HttpServletResponse;
@@ -17,6 +18,7 @@ public class OtherEndpoint {
 	 * @param response Given by spring to redirect
 	 * @throws IOException is thrown of streams are already closed or else
 	 */
+	@IgnoreRateLimit
 	@RequestMapping("*")
 	public void getFallback(HttpServletResponse response) throws IOException {
 		response.sendRedirect("https://github.com/engelsburg/engelsburg-api/tree/master#endpoint-documentation");
@@ -27,6 +29,7 @@ public class OtherEndpoint {
 	 *
 	 * @return data policy as html page
 	 */
+	@IgnoreRateLimit
 	@RequestMapping("/data_policy")
 	public Object dataPolicy() {
 		return "data_policy";
