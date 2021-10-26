@@ -4,18 +4,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.paexception.engelsburg.api.EngelsburgAPI;
 import io.github.paexception.engelsburg.api.spring.auth.ScopeInterceptor;
 import io.github.paexception.engelsburg.api.spring.paging.PagingInterceptor;
+import io.github.paexception.engelsburg.api.spring.rate_limiting.RateLimitInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import java.util.List;
 
 /**
@@ -27,6 +28,7 @@ public class WebConfig implements WebMvcConfigurer {
 
 	private final ScopeInterceptor scopeInterceptor = new ScopeInterceptor(EngelsburgAPI.getJWT_UTIL());
 	private final PagingInterceptor pagingInterceptor = new PagingInterceptor();
+	private final RateLimitInterceptor rateLimitInterceptor = new RateLimitInterceptor();
 	@Autowired
 	private ObjectMapper mapper;
 
@@ -52,9 +54,10 @@ public class WebConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		List<HandlerInterceptorAdapter> handlerInterceptors = List.of(this.pagingInterceptor, this.scopeInterceptor);
+		List<HandlerInterceptor> handlerInterceptors = List.of(this.pagingInterceptor, this.scopeInterceptor,
+				this.rateLimitInterceptor);
 
-		for (HandlerInterceptorAdapter interceptors : handlerInterceptors)
+		for (HandlerInterceptor interceptors : handlerInterceptors)
 			registry.addInterceptor(interceptors).addPathPatterns("/**/*");
 	}
 

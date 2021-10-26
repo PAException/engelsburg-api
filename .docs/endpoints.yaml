@@ -1625,6 +1625,14 @@ definitions:
         type: string
         example: "vCsghY7twza6dpgMpGVNTqEDKNVq8jsNgceHtxfXNQrWBgd8mHoFk2YDKzOSCBwKrW1P5mlZPyFyCuLbI1uRmHddkNmnHlNf0nec"
         description: "Refresh token to obtain new JWT"
+      email:
+        type: string
+        example: "example.user@email.com"
+        description: "Email address of user"
+      verified:
+        type: boolean
+        example: "false"
+        description: "If user is verified"
   Article:
     type: "object"
     properties:
@@ -1979,6 +1987,18 @@ definitions:
       extra:
         type: "string"
         example: "token"
+  ErrorTooManyRequests:
+    type: "object"
+    description: "If you send too many requests in a specific time"
+    properties:
+      status:
+        type: "number"
+        example: 429
+      messageKey:
+        type: "string"
+        example: "TOO_MANY_REQUESTS"
+      extra:
+        type: "string"
   ErrorInternalServerError:
     type: "object"
     description: "An internal server error occurred"

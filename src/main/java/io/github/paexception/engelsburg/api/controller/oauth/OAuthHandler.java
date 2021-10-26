@@ -2,13 +2,16 @@ package io.github.paexception.engelsburg.api.controller.oauth;
 
 import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.Error;
+import io.github.paexception.engelsburg.api.util.Pair;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.apache.commons.lang3.RandomStringUtils;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -17,7 +20,7 @@ import java.util.Set;
 public abstract class OAuthHandler {
 
 	private static final Set<OAuthHandler> O_AUTH_HANDLERS = new HashSet<>();
-	private final Set<String> tokens = new HashSet<>();
+	private final Map<String, Boolean> tokens = new HashMap<>();
 
 	/**
 	 * Default function to redirect.
@@ -40,11 +43,12 @@ public abstract class OAuthHandler {
 	 * Creates a random alphanumeric to secure that the server sends the redirect.
 	 * Should be contained in the redirect or rather in the oauth request.
 	 *
+	 * @param signUp to save value if schoolToken was provided
 	 * @return random alphanumeric token
 	 */
-	protected final String createToken() {
+	protected final String createToken(boolean signUp) {
 		String token = RandomStringUtils.randomAlphanumeric(20);
-		this.tokens.add(token);
+		this.tokens.put(token, signUp);
 
 		return token;
 	}
@@ -53,9 +57,19 @@ public abstract class OAuthHandler {
 	 * Verifies alphanumeric token sent in request.
 	 *
 	 * @param token to verify
-	 * @return true if token existed
+	 * @return true if token exists
 	 */
-	protected final boolean verifyAndDeleteToken(String token) {
+	protected final boolean verifyToken(String token) {
+		return this.tokens.containsKey(token);
+	}
+
+	/**
+	 * Get signUp value for token and delete it.
+	 *
+	 * @param token for key
+	 * @return signUp value
+	 */
+	protected final Boolean getSignUpAndDeleteToken(String token) {
 		return this.tokens.remove(token);
 	}
 
@@ -72,18 +86,21 @@ public abstract class OAuthHandler {
 	 *
 	 * @param request  sent by the server
 	 * @param response given by spring
-	 * @return email
+	 * @return email and signUp
 	 */
-	abstract public String resolveOAuthResponse(HttpServletRequest request, HttpServletResponse response);
+	abstract public Pair<String, Boolean> resolveOAuthResponse(HttpServletRequest request,
+			HttpServletResponse response);
 
 	/**
 	 * Handle request to login with oauth.
 	 *
 	 * @param request  of user
 	 * @param response given by spring
+	 * @param signUp   store to know if schoolToken was provided
 	 * @return result
 	 */
-	abstract public Result<?> resolveOAuthLoginRequest(HttpServletRequest request, HttpServletResponse response);
+	abstract public Result<?> resolveOAuthLoginRequest(HttpServletRequest request, HttpServletResponse response,
+			boolean signUp);
 
 	/**
 	 * Getter of all oauth handlers.

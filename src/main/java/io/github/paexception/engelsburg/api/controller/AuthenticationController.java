@@ -125,17 +125,15 @@ public class AuthenticationController implements UserDataHandler {
 		if (optionalUser.isPresent()) return Result.of(Error.ALREADY_EXISTS, "user");
 
 		String salt = randomSalt();
-		String hashedPassword = hashPassword(null, salt);
+		String hashedPassword = hashPassword(dto.getPassword(), salt);
 
 		UUID userId = UUID.randomUUID();
 		DEFAULT_SCOPES.forEach(scope -> this.scopeController.addScope(userId, scope)); //Add default scopes
 		if (this.emailService.verify(
 				dto.getEmail(), this.tokenController.createRandomToken(userId, "verify"))) {
-			this.userRepository.save(new UserModel(-1, userId, dto.getEmail(), hashedPassword, salt, false));
+			return Result.of(this.createAuthResponse(
+					this.userRepository.save(new UserModel(-1, userId, dto.getEmail(), hashedPassword, salt, false))));
 		} else return Result.of(Error.FAILED, "signup");
-
-
-		return Result.of(this.createAuthResponse(userId));
 	}
 
 	/**
@@ -152,7 +150,7 @@ public class AuthenticationController implements UserDataHandler {
 		if (!user.getPassword().equals(hashPassword(dto.getPassword(), user.getSalt())))
 			return Result.of(Error.FORBIDDEN, "wrong_password");
 
-		return Result.of(this.createAuthResponse(user.getUserId()));
+		return Result.of(this.createAuthResponse(user));
 	}
 
 	/**
@@ -165,7 +163,7 @@ public class AuthenticationController implements UserDataHandler {
 		UUID userId = this.refreshTokenController.verifyRefreshToken(refreshToken);
 		if (userId == null) return Result.of(Error.FAILED, "refresh_token");
 
-		return Result.of(this.createAuthResponse(userId));
+		return Result.of(this.createAuthResponse(this.userRepository.findByUserId(userId)));
 	}
 
 	/**
@@ -238,16 +236,16 @@ public class AuthenticationController implements UserDataHandler {
 	/**
 	 * Create a valid jwt token.
 	 *
-	 * @param userId as subject of jwt
+	 * @param user uuid as subject of jwt and verified information
 	 * @return jwt token
 	 */
-	public AuthResponseDTO createAuthResponse(UUID userId) {
+	public AuthResponseDTO createAuthResponse(UserModel user) {
 		JWTCreator.Builder builder = EngelsburgAPI.getJWT_UTIL()
-				.createBuilder(userId.toString(), 5, Calendar.MINUTE);
-		String[] scopes = this.scopeController.getScopes(userId);
+				.createBuilder(user.getUserId().toString(), 5, Calendar.MINUTE);
+		String[] scopes = this.scopeController.getScopes(user.getUserId());
 
 		return new AuthResponseDTO(EngelsburgAPI.getJWT_UTIL().sign(builder.withArrayClaim("scopes", scopes)),
-				this.refreshTokenController.create(userId));
+				this.refreshTokenController.create(user.getUserId()), user.getEmail(), user.isVerified());
 	}
 
 	@Override
