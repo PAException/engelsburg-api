@@ -1987,6 +1987,18 @@ definitions:
       extra:
         type: "string"
         example: "token"
+  ErrorTooManyRequests:
+    type: "object"
+    description: "If you send too many requests in a specific time"
+    properties:
+      status:
+        type: "number"
+        example: 429
+      messageKey:
+        type: "string"
+        example: "TOO_MANY_REQUESTS"
+      extra:
+        type: "string"
   ErrorInternalServerError:
     type: "object"
     description: "An internal server error occurred"
