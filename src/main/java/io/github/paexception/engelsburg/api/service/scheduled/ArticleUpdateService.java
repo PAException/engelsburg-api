@@ -2,13 +2,16 @@ package io.github.paexception.engelsburg.api.service.scheduled;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import io.github.paexception.engelsburg.api.controller.ArticleController;
+import io.github.paexception.engelsburg.api.controller.shared.ArticleController;
 import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.response.GetArticlesResponseDTO;
+import io.github.paexception.engelsburg.api.service.JsonFetchingService;
 import io.github.paexception.engelsburg.api.service.notification.NotificationService;
-import org.jsoup.Jsoup;
-import org.jsoup.select.Elements;
+import io.github.paexception.engelsburg.api.spring.paging.Paging;
+import io.github.paexception.engelsburg.api.util.Environment;
+import io.github.paexception.engelsburg.api.util.LoggingComponent;
+import io.github.paexception.engelsburg.api.util.Result;
+import io.github.paexception.engelsburg.api.util.WordpressAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,98 +19,137 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
- * Service to update articles
+ * Service to update articles.
  */
 @Service
-public class ArticleUpdateService {
+public class ArticleUpdateService extends JsonFetchingService implements LoggingComponent {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ArticleUpdateService.class.getSimpleName());
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	private static final Logger LOGGER = LoggerFactory.getLogger(ArticleUpdateService.class);
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	private static int counter = 0;
 	@Autowired
 	private ArticleController articleController;
 	@Autowired
 	private NotificationService notificationService;
 
 	/**
-	 * Call {@link #updateArticles(String)} every 15 minutes and return all articles published in that passed 15 minutes
+	 * Call {@link #updateArticles(String, int)} every 15 minutes and return all articles published in that passed 1 minute.
 	 */
-	@Scheduled(fixedRate = 15 * 60 * 1000)
+	@Scheduled(fixedRate = 60 * 1000)
 	public void fetchNewArticles() {
-		this.updateArticles(dateFormat.format(System.currentTimeMillis() - 15 * 60 * 1000)).stream()
+		LOGGER.debug("Starting fetching new articles");
+		this.updateArticles(DATE_FORMAT.format(System.currentTimeMillis() - 60 * 1000), 1).stream()
 				.peek(dto -> this.notificationService.sendArticleNotifications(dto))
 				.forEach(dto -> this.articleController.createArticle(dto));
 	}
 
 	/**
-	 * Fetch all articles past a specific date/time
+	 * Checks for updates of articles every 30 minutes.
+	 */
+	@Scheduled(fixedRate = 30 * 60 * 1000, initialDelay = 30 * 60 * 1000)
+	public void checkIfArticlesChanged() {
+		this.articleController.prepareArticleToUpdate().forEach(idAndHash -> {
+			try {
+				JsonElement json = this.request(
+						"https://engelsburg.smmp.de/wp-json/wp/v2/posts/" + idAndHash.getArticleId());
+				String content = json.getAsJsonObject().get("content").getAsJsonObject().get("rendered").getAsString();
+				if (!idAndHash.getContentHash().equals(Result.hash(content))) {
+					this.articleController.updateArticle(this.createArticleDTO(idAndHash.getArticleId(), json));
+				}
+			} catch (Exception ignored) {
+			}
+		});
+	}
+
+	/**
+	 * Fetch all articles past a specific date/time.
 	 *
 	 * @param date to fetch articles past that date
+	 * @param page for recursive calls
+	 * @return fetched articles
 	 */
-	private List<ArticleDTO> updateArticles(String date) {
+	private List<ArticleDTO> updateArticles(String date, int page) {
 		List<ArticleDTO> dtos = new ArrayList<>();
 		try {
-			LOGGER.debug("Starting fetching articles");
+			JsonElement json = this.request(
+					"https://engelsburg.smmp.de/wp-json/wp/v2/posts?per_page=100&after=" + date + "&page=" + page); //Parse in article array
 
-			DataInputStream input = new DataInputStream(
-					new URL("https://engelsburg.smmp.de/wp-json/wp/v2/posts?per_page=100&after=" + date)
-							.openConnection().getInputStream()
-			);//Fetch all articles after date from the wordpress api of the engelsburg
-			String raw = new String(input.readAllBytes());
-			if (raw.length() == 2) {//Input equal to "{}" which represents an empty result
-				LOGGER.debug("No new articles found");
-				return dtos;
-			}
-
-			JsonArray json = JsonParser.parseString(raw).getAsJsonArray();//Parse in article array
-			for (JsonElement article : json) {//Cycle through all articles
-				String content = article.getAsJsonObject().get("content").getAsJsonObject().get("rendered").getAsString();//Get content
-				Elements elements;
-				String mediaUrl = null;
-				int featuredMedia;
-				if ((featuredMedia = article.getAsJsonObject().get("featured_media").getAsInt()) != 0) {//Featured media listed?
-					JsonObject mediaJson = JsonParser.parseReader(new InputStreamReader(
-							new URL("https://engelsburg.smmp.de/wp-json/wp/v2/media/" + featuredMedia)
-									.openConnection().getInputStream())).getAsJsonObject();//Then get img url via wordpress api
-					mediaUrl = mediaJson.get("source_url").getAsString();
-				} else if ((elements = Jsoup.parse(content).getElementsByClass("wp-block-image")).size() > 0) {//If not search for first image in article
-					mediaUrl = elements.get(0).getElementsByTag("img").get(0).attr("src");
+			if (json.toString().length() > 2) {
+				JsonArray jsonArticles = json.getAsJsonArray();
+				for (JsonElement article : jsonArticles) { //Cycle through all articles
+					dtos.add(this.createArticleDTO(article.getAsJsonObject().get("id").getAsInt(), article));
+					counter++;
 				}
-				ArticleDTO dto = new ArticleDTO(//Form ArticleDTO from information crawled
-						dateFormat.parse(article.getAsJsonObject().get("date").getAsString()).getTime(),
-						article.getAsJsonObject().get("link").getAsString(),
-						article.getAsJsonObject().get("title").getAsJsonObject().get("rendered").getAsString(),
-						content,
-						mediaUrl
-				);
-				dtos.add(dto);
-			}
 
-			LOGGER.info("Fetched articles");
-			if (json.size() == 100) this.updateArticles(json.get(99).getAsJsonObject().get("date").getAsString())
-					.forEach(dto -> this.articleController.createArticle(dto));
+				LOGGER.info("Fetched articles");
+				if (jsonArticles.size() == 100)
+					this.updateArticles(date, page + 1).forEach(dto -> this.articleController.createArticle(dto));
+			} else LOGGER.debug("No articles found");
 		} catch (IOException | ParseException e) {
-			LOGGER.error("Couldn't load articles from homepage", e);
+			this.logError("Couldn't fetch articles", e, LOGGER);
 		}
 		return dtos;
 	}
 
 	/**
-	 * Load all articles on startup since 1/1/2020
+	 * Creates an articles dto out of an articleId and a json element.
+	 *
+	 * @param articleId of dto
+	 * @param article   json element with article information
+	 * @return parsed ArticleDTO
+	 * @throws IOException    if media couldn't be fetched
+	 * @throws ParseException if parsing the date threw an exception
+	 */
+	private ArticleDTO createArticleDTO(int articleId, JsonElement article) throws IOException, ParseException {
+		String content = article.getAsJsonObject().get("content").getAsJsonObject().get(
+				"rendered").getAsString(); //Get content
+		String mediaUrl = WordpressAPI.getFeaturedMedia(article.getAsJsonObject().get("featured_media").getAsInt(),
+				content);
+		String blurHash = null;
+
+		if (Environment.PRODUCTION) {
+			try {
+				//content = WordpressAPI.applyBlurHashToAllImages(Jsoup.parse(content)).toString(); --> not needed
+				blurHash = mediaUrl != null ? WordpressAPI.getBlurHash(mediaUrl) : null;
+			} catch (IOException e) {
+				this.logError("Couldn't load blur hash of image", e, LOGGER);
+			}
+		}
+
+		return new ArticleDTO(//Form ArticleDTO from information crawled
+				articleId,
+				DATE_FORMAT.parse(article.getAsJsonObject().get("date").getAsString()).getTime(),
+				article.getAsJsonObject().get("link").getAsString(),
+				article.getAsJsonObject().get("title").getAsJsonObject().get("rendered").getAsString(),
+				content,
+				Result.hash(content),
+				mediaUrl,
+				blurHash
+		);
+	}
+
+	/**
+	 * Load articles on start up.
 	 */
 	@EventListener(ApplicationStartedEvent.class)
 	public void loadPastArticles() {
-		this.articleController.clearAllArticles();
-		this.updateArticles("2020-01-01T00:00:00").forEach(dto -> this.articleController.createArticle(dto));
+		LOGGER.debug("Starting fetching past articles");
+		Result<GetArticlesResponseDTO> lastArticle = this.articleController.getArticlesAfter(-1, new Paging(0, 1));
+		if (lastArticle.isResultPresent()) { //Empty would be an error
+			this.updateArticles(DATE_FORMAT.format(lastArticle.getResult().getArticles().get(0).getDate()), 1)
+					.forEach(this.articleController::createArticle);
+		} else {
+			this.updateArticles(DATE_FORMAT.format(new Date(0)), 1).forEach(this.articleController::createArticle);
+		}
+		LOGGER.info("Fetched " + counter + " article" + (counter == 1 ? "" : "s") + "!");
 	}
 
 }

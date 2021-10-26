@@ -11,7 +11,6 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -51,7 +50,6 @@ public class JwtUtil {
 	 * @param token the raw json web token
 	 * @return a pair including the decoded token and the result
 	 */
-	@SuppressWarnings("IllegalCatch")
 	public Pair<DecodedJWT, VerificationResult> verify(String token) {
 		if (token.toLowerCase().startsWith("bearer")) token = token.substring(7);
 
@@ -76,8 +74,6 @@ public class JwtUtil {
 		} catch (Exception ex) {
 			return Pair.of(null, VerificationResult.UNKNOWN);
 		}
-
-		if (jwt.getClaim("nonce").isNull()) return Pair.of(jwt, VerificationResult.FAILED);
 
 		return Pair.of(jwt, VerificationResult.SUCCESS);
 	}
@@ -151,15 +147,10 @@ public class JwtUtil {
 		List<String> audienceList = new ArrayList<>(Arrays.asList(audience));
 		audienceList.addAll(this.defaultAudience);
 
-		byte[] rawNonce = new byte[32];
-		RANDOM.nextBytes(rawNonce);
-		String nonce = Base64.getEncoder().encodeToString(rawNonce);
-
 		return JWT.create()
 				.withIssuer(this.issuer)
 				.withAudience(audienceList.toArray(String[]::new))
 				.withIssuedAt(today)
-				.withClaim("nonce", nonce)
 				.withExpiresAt(expirationDate.getTime());
 	}
 

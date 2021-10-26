@@ -3,6 +3,7 @@ package io.github.paexception.engelsburg.api.controller;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.EngelsburgAPI;
+import io.github.paexception.engelsburg.api.controller.internal.RefreshTokenController;
 import io.github.paexception.engelsburg.api.controller.internal.ScopeController;
 import io.github.paexception.engelsburg.api.controller.internal.TokenController;
 import io.github.paexception.engelsburg.api.controller.userdata.UserDataHandler;
@@ -11,7 +12,7 @@ import io.github.paexception.engelsburg.api.database.repository.UserRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.LoginRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.ResetPasswordRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.SignUpRequestDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.response.LoginResponseDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.response.AuthResponseDTO;
 import io.github.paexception.engelsburg.api.service.email.EmailService;
 import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.Error;
@@ -30,32 +31,34 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
-import static io.github.paexception.engelsburg.api.util.Constants.Authentication.NAME_KEY;
 
 /**
- * Controller for authentication
+ * Controller for authentication.
  */
 @Component
 public class AuthenticationController implements UserDataHandler {
 
-	private static final Random RANDOM = new SecureRandom();
-	private static final List<String> DEFAULT_SCOPES = List.of(
+	public static final List<String> DEFAULT_SCOPES = List.of(
 			"substitute.message.read.current",
 			"substitute.read.current",
 
 			"info.teacher.read.all",
 			"info.classes.read.all",
 
+			"notification.settings.write.self",
+			"notification.settings.read.self",
+
 			"user.data.read.self",
 			"user.data.delete.self"
 	);
-	private static final List<String> VERIFIED_SCOPES = List.of(
+	public static final List<String> VERIFIED_SCOPES = List.of(
+			"article.save.write.self",
+			"article.save.delete.self",
+			"article.save.read.self",
+
 			"grade.write.self",
 			"grade.read.self",
 			"grade.delete.self",
-
-			"notification.settings.write.self",
-			"notification.settings.read.self",
 
 			"task.delete.self",
 			"task.write.self",
@@ -65,6 +68,7 @@ public class AuthenticationController implements UserDataHandler {
 			"timetable.read.self",
 			"timetable.delete.self"
 	);
+	private static final Random RANDOM = new SecureRandom();
 	private static MessageDigest md;
 	@Autowired
 	private UserRepository userRepository;
@@ -74,49 +78,92 @@ public class AuthenticationController implements UserDataHandler {
 	private EmailService emailService;
 	@Autowired
 	private TokenController tokenController;
+	@Autowired
+	private RefreshTokenController refreshTokenController;
 
 	/**
-	 * Login with credentials
+	 * Hash a password.
 	 *
-	 * @param dto email and password
-	 * @return valid jwt token
+	 * @param password password
+	 * @param salt     and salt to hash
+	 * @return valid hash
 	 */
-	public Result<?> login(LoginRequestDTO dto) {
-		Optional<UserModel> optionalUser = this.userRepository.findByEmail(dto.getEmail());
-		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
+	public static String hashPassword(String password, String salt) {
+		try {
+			if (md == null) md = MessageDigest.getInstance("SHA-256");
 
-		UserModel user = optionalUser.get();
-		if (!user.getPassword().equals(this.hashPassword(dto.getPassword(), user.getSalt())))
-			return Result.of(Error.FORBIDDEN, NAME_KEY);
+			return new String(md.digest((password == null ? RandomStringUtils.randomAlphanumeric(16) : password + salt)
+					.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+		} catch (NoSuchAlgorithmException ignored) { //Won't ever happen
+		}
 
-		return Result.of(new LoginResponseDTO(this.createJWT(user)));
+		return RandomStringUtils.randomAlphanumeric(16);
 	}
 
 	/**
-	 * Sign up with credentials and schoolToken
+	 * Create a new random salt.
+	 *
+	 * @return salt
+	 */
+	public static String randomSalt() {
+		byte[] rawSalt = new byte[16];
+		RANDOM.nextBytes(rawSalt);
+		return new String(rawSalt, StandardCharsets.UTF_8);
+	}
+
+	/**
+	 * Sign up with credentials and schoolToken.
 	 *
 	 * @param dto email, password and schoolToken
 	 * @return empty response or error
 	 */
-	public Result<?> signUp(SignUpRequestDTO dto) {
+	public Result<AuthResponseDTO> signUp(SignUpRequestDTO dto) {
 		if (!dto.getSchoolToken().equals(Environment.SCHOOL_TOKEN))
-			return Result.of(Error.FORBIDDEN, NAME_KEY);
+			return Result.of(Error.FORBIDDEN, "school_token");
 
 		Optional<UserModel> optionalUser = this.userRepository.findByEmail(dto.getEmail());
-		if (optionalUser.isPresent()) return Result.of(Error.ALREADY_EXISTS, NAME_KEY);
-		byte[] rawSalt = new byte[16];
-		RANDOM.nextBytes(rawSalt);
-		String salt = new String(rawSalt, StandardCharsets.UTF_8);
-		String hashedPassword = this.hashPassword(dto.getPassword(), salt);
+		if (optionalUser.isPresent()) return Result.of(Error.ALREADY_EXISTS, "user");
+
+		String salt = randomSalt();
+		String hashedPassword = hashPassword(dto.getPassword(), salt);
 
 		UUID userId = UUID.randomUUID();
-		this.userRepository.save(new UserModel(-1, userId, dto.getEmail(), hashedPassword, salt, false));
-		DEFAULT_SCOPES.forEach(scope -> this.scopeController.addScope(userId, scope));//Add default scopes
+		DEFAULT_SCOPES.forEach(scope -> this.scopeController.addScope(userId, scope)); //Add default scopes
 		if (this.emailService.verify(
-				dto.getEmail(),
-				this.tokenController.createRandomToken(userId, "verify")
-		)) return Result.empty();
-		else return Result.of(Error.FAILED, NAME_KEY);
+				dto.getEmail(), this.tokenController.createRandomToken(userId, "verify"))) {
+			return Result.of(this.createAuthResponse(
+					this.userRepository.save(new UserModel(-1, userId, dto.getEmail(), hashedPassword, salt, false))));
+		} else return Result.of(Error.FAILED, "signup");
+	}
+
+	/**
+	 * Login with credentials.
+	 *
+	 * @param dto email and password
+	 * @return valid jwt token
+	 */
+	public Result<AuthResponseDTO> login(LoginRequestDTO dto) {
+		Optional<UserModel> optionalUser = this.userRepository.findByEmail(dto.getEmail());
+		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, "user");
+
+		UserModel user = optionalUser.get();
+		if (!user.getPassword().equals(hashPassword(dto.getPassword(), user.getSalt())))
+			return Result.of(Error.FORBIDDEN, "wrong_password");
+
+		return Result.of(this.createAuthResponse(user));
+	}
+
+	/**
+	 * Authenticate and request JWT via refresh token.
+	 *
+	 * @param refreshToken to get JWT
+	 * @return JWT
+	 */
+	public Result<AuthResponseDTO> auth(String refreshToken) {
+		UUID userId = this.refreshTokenController.verifyRefreshToken(refreshToken);
+		if (userId == null) return Result.of(Error.FAILED, "refresh_token");
+
+		return Result.of(this.createAuthResponse(this.userRepository.findByUserId(userId)));
 	}
 
 	/**
@@ -128,36 +175,37 @@ public class AuthenticationController implements UserDataHandler {
 	 */
 	public Result<?> requestResetPassword(String email) {
 		Optional<UserModel> optionalUser = this.userRepository.findByEmail(email);
-		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
+		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, "user");
 
 		if (this.emailService.resetPassword(
 				email,
-				this.tokenController.createRandomTemporaryToken(optionalUser.get().getUserId(), "reset_password", System.currentTimeMillis() + 1000 * 60 * 30)
+				this.tokenController.createRandomTemporaryToken(optionalUser.get().getUserId(), "reset_password",
+						System.currentTimeMillis() + 1000 * 60 * 30)
 		)) return Result.empty();
-		else return Result.of(Error.FAILED, NAME_KEY);
+		else return Result.of(Error.FAILED, "request_reset_password");
 	}
 
 	/**
-	 * Set the new password with password reset token
+	 * Set the new password with password reset token.
 	 *
 	 * @param dto with email, new password and password reset token
 	 * @return empty result or error
 	 */
 	public Result<?> resetPassword(ResetPasswordRequestDTO dto) {
 		Optional<UserModel> optionalUser = this.userRepository.findByEmail(dto.getEmail());
-		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
+		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, "user");
 
 		UserModel user = optionalUser.get();
 		if (this.tokenController.checkToken(user.getUserId(), "reset_password", dto.getToken())) {
-			user.setPassword(this.hashPassword(dto.getPassword(), user.getSalt()));
+			user.setPassword(hashPassword(dto.getPassword(), user.getSalt()));
 			this.userRepository.save(user);
 			this.tokenController.deleteToken(user.getUserId(), "reset_password", dto.getToken());
 			return Result.empty();
-		} else return Result.of(Error.FAILED, NAME_KEY);
+		} else return Result.of(Error.FAILED, "reset_password");
 	}
 
 	/**
-	 * Verifies a user
+	 * Verifies a user.
 	 *
 	 * @param jwt   with userId
 	 * @param token to verify
@@ -172,47 +220,32 @@ public class AuthenticationController implements UserDataHandler {
 			this.tokenController.deleteToken(userId, "verify", token);
 			VERIFIED_SCOPES.forEach(scope -> this.scopeController.addScope(userId, scope));
 			return Result.empty();
-		} else return Result.of(Error.FAILED, NAME_KEY);
+		} else return Result.of(Error.FAILED, "verify");
 	}
 
 	/**
-	 * Update default scopes of all current users
+	 * Update default scopes of all current users.
 	 */
 	@EventListener(ApplicationStartedEvent.class)
 	public void updateDefaultScopes() {
 		this.userRepository.findAll().forEach(user -> this.scopeController.updateScopes(user, DEFAULT_SCOPES));
+		this.userRepository.findAllByVerified(true).forEach(
+				user -> this.scopeController.updateScopes(user, VERIFIED_SCOPES));
 	}
 
 	/**
-	 * Create a valid jwt token
+	 * Create a valid jwt token.
 	 *
-	 * @param user with userId as subject of jwt
+	 * @param user uuid as subject of jwt and verified information
 	 * @return jwt token
 	 */
-	private String createJWT(UserModel user) {
-		JWTCreator.Builder builder = EngelsburgAPI.getJwtUtil()
-				.createBuilder(user.getUserId().toString(), 30, Calendar.MINUTE);
+	public AuthResponseDTO createAuthResponse(UserModel user) {
+		JWTCreator.Builder builder = EngelsburgAPI.getJWT_UTIL()
+				.createBuilder(user.getUserId().toString(), 5, Calendar.MINUTE);
 		String[] scopes = this.scopeController.getScopes(user.getUserId());
 
-		return EngelsburgAPI.getJwtUtil().sign(builder.withArrayClaim("scopes", scopes));
-	}
-
-	/**
-	 * Hash a password
-	 *
-	 * @param password password
-	 * @param salt     and salt to hash
-	 * @return valid hash
-	 */
-	private String hashPassword(String password, String salt) {
-		try {
-			if (md == null) md = MessageDigest.getInstance("SHA-256");
-
-			return new String(md.digest((password + salt).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-		} catch (NoSuchAlgorithmException ignored) {//Won't ever happen
-		}
-
-		return RandomStringUtils.randomAlphanumeric(6);
+		return new AuthResponseDTO(EngelsburgAPI.getJWT_UTIL().sign(builder.withArrayClaim("scopes", scopes)),
+				this.refreshTokenController.create(user.getUserId()), user.getEmail(), user.isVerified());
 	}
 
 	@Override

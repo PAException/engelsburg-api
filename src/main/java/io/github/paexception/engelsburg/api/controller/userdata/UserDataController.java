@@ -21,7 +21,7 @@ public class UserDataController {
 	private static final String[] PREFIXES_AND_SUFFIXES = new String[]{"Controller", "Endpoint", "DTO", "Model", "Response", "Request", "Service"};
 
 	/**
-	 * All user handlers have to be registered with this method
+	 * All user handlers have to be registered with this method.
 	 *
 	 * @param userHandler instance of the user handler
 	 */
@@ -30,7 +30,7 @@ public class UserDataController {
 	}
 
 	/**
-	 * Return all data of a user
+	 * Return all data of a user.
 	 *
 	 * @param jwt with userId
 	 * @return all user data
@@ -51,7 +51,7 @@ public class UserDataController {
 	}
 
 	/**
-	 * Delete all data of or referring to user
+	 * Delete all data of or referring to user.
 	 *
 	 * @param jwt with userId
 	 * @return empty result
@@ -64,7 +64,7 @@ public class UserDataController {
 	}
 
 	/**
-	 * Parse nameKey of a userHandler by the className
+	 * Parse nameKey of a userHandler by the className.
 	 *
 	 * @param userHandler to parse
 	 * @return parsed nameKey

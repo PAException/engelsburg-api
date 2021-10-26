@@ -22,7 +22,9 @@ public class ArticleModel {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int articleId;
+	private int id;
+	@Min(0)
+	private int articleId; //Article id of WP-API
 	@Min(0)
 	private long date;
 	@NotBlank
@@ -32,10 +34,33 @@ public class ArticleModel {
 	@NotBlank
 	@Lob
 	private String content;
+	@NotBlank
+	private String contentHash;
 	private String mediaUrl;
+	private String blurHash;
 
 	public ArticleDTO toResponseDTO() {
-		return new ArticleDTO(this.date, this.link, this.title, this.content, this.mediaUrl);
+		return new ArticleDTO(
+				this.articleId,
+				this.date,
+				this.link,
+				this.title,
+				this.content,
+				this.contentHash,
+				this.mediaUrl,
+				this.blurHash
+		);
 	}
 
+	public ArticleModel update(ArticleDTO dto) {
+		this.date = dto.getDate();
+		this.link = dto.getLink();
+		this.title = dto.getTitle();
+		this.content = dto.getContent();
+		this.contentHash = dto.getContentHash();
+		this.mediaUrl = dto.getMediaUrl();
+		this.blurHash = dto.getBlurHash();
+
+		return this;
+	}
 }

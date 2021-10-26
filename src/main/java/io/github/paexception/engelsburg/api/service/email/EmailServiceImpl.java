@@ -1,5 +1,8 @@
 package io.github.paexception.engelsburg.api.service.email;
 
+import io.github.paexception.engelsburg.api.util.LoggingComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -8,11 +11,20 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 @Component
-public class EmailServiceImpl {
+public class EmailServiceImpl implements LoggingComponent {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(EmailServiceImpl.class);
 	@Autowired
 	private JavaMailSender emailSender;
 
+	/**
+	 * Send an html email.
+	 *
+	 * @param subject   of email
+	 * @param recipient of email
+	 * @param html      to send
+	 * @return true if no error occurred
+	 */
 	public boolean sendHtmlEmail(String subject, String recipient, String html) {
 		MimeMessage mimeMessage = this.emailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
@@ -22,7 +34,7 @@ public class EmailServiceImpl {
 			helper.setSubject(subject);
 			this.emailSender.send(mimeMessage);
 		} catch (MessagingException e) {
-			e.printStackTrace();
+			this.logError("An error occurred sending an email", e, LOGGER);
 			return false;
 		}
 

@@ -9,38 +9,46 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
-import io.github.paexception.engelsburg.api.EngelsburgAPI;
 import io.github.paexception.engelsburg.api.endpoint.dto.NotificationDTO;
 import io.github.paexception.engelsburg.api.util.Environment;
+import io.github.paexception.engelsburg.api.util.LoggingComponent;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
-@Component
-public class FirebaseCloudMessagingImpl {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class FirebaseCloudMessagingImpl implements LoggingComponent {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(FirebaseCloudMessagingImpl.class);
+	private static FirebaseCloudMessagingImpl instance;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	/**
-	 * Initiates the firebase app to send notifications
-	 *
-	 * @throws IOException if account credentials can't be read
+	 * Initiates the firebase app to send notifications.
 	 */
 	@Bean
-	public void init() throws IOException {
-		FileInputStream serviceAccount = new FileInputStream(Environment.GOOGLE_ACCOUNT_CREDENTIALS);
+	public void init() {
+		try {
+			FileInputStream serviceAccount = new FileInputStream(Environment.GOOGLE_ACCOUNT_CREDENTIALS);
 
-		FirebaseOptions options = FirebaseOptions.builder()
-				.setCredentials(GoogleCredentials.fromStream(serviceAccount))
-				.build();
+			FirebaseOptions options = FirebaseOptions.builder()
+					.setCredentials(GoogleCredentials.fromStream(serviceAccount))
+					.build();
 
-		FirebaseApp.initializeApp(options);
+			FirebaseApp.initializeApp(options);
+		} catch (IOException e) {
+			this.logError("Couldn't initialize firebase cloud messaging", e, LOGGER);
+		}
+
 	}
 
 	/**
-	 * Sends notification to topics
+	 * Sends notification to topics.
 	 *
 	 * @param type    of notification
 	 * @param payload with information
@@ -52,18 +60,23 @@ public class FirebaseCloudMessagingImpl {
 					.putData("type", type)
 					.putData("data", this.objectMapper.writeValueAsString(payload));
 
-			for (String topic : topics) {
-				topic = topic.replace("Ä", "AE").replace("Ö", "OE").replace("Ü", "UE").toLowerCase();
-				if (!topic.contains("+"))
-					FirebaseMessaging.getInstance().send(messageBuilder.setTopic(topic).build(), !Environment.PRODUCTION);
-			}
+			for (String topic : topics)
+				if (topic.matches("[A-ZÄÖÜa-zäöü]"))
+					FirebaseMessaging.getInstance().send(messageBuilder.setTopic(topic
+							.replace("Ä", "AE")
+							.replace("Ö", "OE")
+							.replace("Ü", "UE")
+							.replace("ä", "ae")
+							.replace("ö", "oe")
+							.replace("ü", "ue")
+							.toLowerCase()).build(), !Environment.PRODUCTION);
 		} catch (JsonProcessingException | FirebaseMessagingException e) {
-			EngelsburgAPI.getLOGGER().error("Couldn't send notification", e);
+			this.logError("Couldn't send notification", e, LOGGER);
 		}
 	}
 
 	/**
-	 * Send advanced notifications to many
+	 * Send advanced notifications to many.
 	 *
 	 * @param type of notification
 	 * @param dtos with notification tokens and info
@@ -80,9 +93,21 @@ public class FirebaseCloudMessagingImpl {
 					FirebaseMessaging.getInstance().sendMulticast(multicastMessage);
 				}
 			} catch (JsonProcessingException | FirebaseMessagingException e) {
-				EngelsburgAPI.getLOGGER().error("Couldn't send notification", e);
+				this.logError("Couldn't send notification", e, LOGGER);
 			}
 		});
+	}
+
+	/**
+	 * Returns instance.
+	 * Creates new if instance is null.
+	 *
+	 * @return existing or created instance
+	 */
+	public static FirebaseCloudMessagingImpl getInstance() {
+		if (instance == null) instance = new FirebaseCloudMessagingImpl();
+
+		return instance;
 	}
 
 }

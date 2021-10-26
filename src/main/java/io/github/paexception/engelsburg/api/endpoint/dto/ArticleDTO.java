@@ -9,10 +9,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ArticleDTO {
 
+	private int articleId;
 	private long date;
 	private String link;
 	private String title;
 	private String content;
+	private String contentHash;
 	private String mediaUrl;
+	private String blurHash;
 
 }

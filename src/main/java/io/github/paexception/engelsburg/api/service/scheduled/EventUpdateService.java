@@ -1,9 +1,11 @@
 package io.github.paexception.engelsburg.api.service.scheduled;
 
-import io.github.paexception.engelsburg.api.controller.EventController;
+import com.google.gson.JsonElement;
+import io.github.paexception.engelsburg.api.controller.shared.EventController;
 import io.github.paexception.engelsburg.api.endpoint.dto.EventDTO;
+import io.github.paexception.engelsburg.api.service.JsonFetchingService;
+import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,40 +20,43 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Service to update articles
+ * Service to update articles.
  */
 @Service
-public class EventUpdateService {
+public class EventUpdateService extends JsonFetchingService implements LoggingComponent {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(EventUpdateService.class.getSimpleName());
+	private static final Logger LOGGER = LoggerFactory.getLogger(EventUpdateService.class);
 	@Autowired
 	private EventController eventController;
 
 	/**
-	 * Scheduled function to update events every hour
+	 * Scheduled function to update events every hour.
 	 */
-	@Scheduled(fixedRate = 60 * 60 * 1000)
+	@Scheduled(fixedRate = 5 * 60 * 1000)
 	public void updateEvents() {
-		LOGGER.debug("Starting fetching substitutes");
+		LOGGER.debug("Starting to fetch events");
 		try {
-			Document doc = Jsoup.connect("https://engelsburg.smmp.de/organisation/termine/").get();
+			JsonElement content = this.request("https://engelsburg.smmp.de/wp-json/wp/v2/pages/318").getAsJsonObject().get("content").getAsJsonObject().get("rendered");
 
-			List<EventDTO> dtos = new ArrayList<>();
-			Element list = doc.select("#genesis-content > article > div.entry-content > ul.navlist").first();//Select event container
-			list.getElementsByTag("li").forEach(element -> {//iterate through events
-				dtos.add(new EventDTO(this.parseDate(element.text()), element.getElementsByTag("a").first().text()));
-			});
+			if (this.checkChanges(content)) {
+				List<EventDTO> dtos = new ArrayList<>();
+				Element list = Jsoup.parse(content.getAsString()).getElementsByTag("ul").first(); //Select event container
+				list.children().forEach(element -> { //iterate through events
+					if (element.getElementsByTag("a").first() != null)
+						dtos.add(new EventDTO(this.parseDate(element.text()), element.getElementsByTag("a").first().text()));
+				});
 
-			this.eventController.clearAllEvents();
-			dtos.forEach(dto -> this.eventController.createEvent(dto));
-			LOGGER.info("Fetched events");
+				this.eventController.clearAllEvents();
+				dtos.forEach(dto -> this.eventController.createEvent(dto));
+				LOGGER.info("Updated events");
+			} else LOGGER.debug("Events have not changed");
 		} catch (IOException e) {
-			LOGGER.error("Couldn't fetch events", e);
+			this.logError("Couldn't fetch events", e, LOGGER);
 		}
 	}
 
 	/**
-	 * Parse dates of the engelsburg website properly
+	 * Parse dates of the engelsburg website properly.
 	 *
 	 * @param toParse String to parse
 	 * @return parsed Date
