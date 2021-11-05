@@ -53,7 +53,7 @@ public class GoogleOAuth2Impl extends OAuthHandler {
 	}
 
 	/**
-	 * Resolve the response of the google auth server.
+	 * Resolve the response of the Google auth server.
 	 *
 	 * <b>State</b> is to verify the request.
 	 * Email of user is in jwt.

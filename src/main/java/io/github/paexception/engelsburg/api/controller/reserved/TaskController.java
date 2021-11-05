@@ -1,10 +1,11 @@
 package io.github.paexception.engelsburg.api.controller.reserved;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.controller.userdata.UserDataHandler;
 import io.github.paexception.engelsburg.api.database.model.TaskModel;
+import io.github.paexception.engelsburg.api.database.model.UserModel;
 import io.github.paexception.engelsburg.api.database.repository.TaskRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.TaskDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateTaskRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.MarkTaskAsDoneRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.UpdateTaskRequestDTO;
@@ -13,12 +14,10 @@ import io.github.paexception.engelsburg.api.spring.paging.AbstractPageable;
 import io.github.paexception.engelsburg.api.spring.paging.Paging;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import static io.github.paexception.engelsburg.api.util.Constants.Task.NAME_KEY;
@@ -29,25 +28,25 @@ import static io.github.paexception.engelsburg.api.util.Constants.Task.NAME_KEY;
 @Component
 public class TaskController extends AbstractPageable implements UserDataHandler {
 
-	@Autowired
-	private TaskRepository taskRepository;
+	private final TaskRepository taskRepository;
 
-	public TaskController() {
+	public TaskController(TaskRepository taskRepository) {
 		super(1, 50);
+		this.taskRepository = taskRepository;
 	}
 
 	/**
 	 * Create a new task.
 	 *
-	 * @param dto with task information
-	 * @param jwt with userId
+	 * @param dto     with task information
+	 * @param userDTO user information
 	 * @return created task
 	 */
-	public Result<TaskDTO> createTask(CreateTaskRequestDTO dto, DecodedJWT jwt) {
+	public Result<TaskDTO> createTask(CreateTaskRequestDTO dto, UserDTO userDTO) {
 		return Result.of(this.taskRepository.save(
 				new TaskModel(
 						-1,
-						UUID.fromString(jwt.getSubject()),
+						userDTO.user,
 						dto.getTitle(),
 						dto.getCreated() < 0 ? System.currentTimeMillis() : dto.getCreated(),
 						dto.getDue(),
@@ -61,16 +60,15 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	/**
 	 * Update a specific task (taskId needed).
 	 *
-	 * @param dto with task information
-	 * @param jwt with userId
+	 * @param dto     with task information
+	 * @param userDTO user information
 	 * @return updated task
 	 */
-	public Result<TaskDTO> updateTask(UpdateTaskRequestDTO dto, DecodedJWT jwt) {
-		UUID userId = UUID.fromString(jwt.getSubject());
+	public Result<TaskDTO> updateTask(UpdateTaskRequestDTO dto, UserDTO userDTO) {
 		if (dto.getTaskId() < 0) return Result.of(Error.INVALID_PARAM, NAME_KEY);
 		Optional<TaskModel> optionalTask = this.taskRepository.findById(dto.getTaskId());
 		if (optionalTask.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
-		if (!optionalTask.get().getUserId().equals(userId)) Result.of(Error.FORBIDDEN, NAME_KEY);
+		if (!optionalTask.get().getUser().is(userDTO)) Result.of(Error.FORBIDDEN, NAME_KEY);
 
 		TaskModel task = optionalTask.get();
 		if (dto.getTitle() != null && !dto.getTitle().isBlank()) task.setTitle(dto.getTitle());
@@ -89,25 +87,32 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	 *
 	 * @param onlyUndone filter by task that are not marked as done
 	 * @param date       date to filter by
-	 * @param jwt        with userId
+	 * @param userDTO    user information
 	 * @param paging     paging options
 	 * @return list of taskDTOs
 	 */
 	@Transactional
-	public Result<GetTasksResponseDTO> getTasks(boolean onlyUndone, long date, DecodedJWT jwt, Paging paging) {
-		UUID userId = UUID.fromString(jwt.getSubject());
+	public Result<GetTasksResponseDTO> getTasks(boolean onlyUndone, long date, UserDTO userDTO, Paging paging) {
 		Stream<TaskModel> taskStream;
 		if (onlyUndone) {
 			if (date < 0) {
-				taskStream = this.taskRepository.findAllByUserIdAndCreatedBeforeAndDoneOrderByCreatedDesc(userId, System.currentTimeMillis(), false, this.toPage(paging));
+				taskStream = this.taskRepository.findAllByUserAndCreatedBeforeAndDoneOrderByCreatedDesc(
+						userDTO.user,
+						System.currentTimeMillis(), false, this.toPage(paging));
 			} else {
-				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterAndDoneOrderByCreatedAsc(userId, date, false, this.toPage(paging));
+				taskStream = this.taskRepository.findAllByUserAndCreatedAfterAndDoneOrderByCreatedAsc(
+						userDTO.user, date,
+						false, this.toPage(paging));
 			}
 		} else {
 			if (date < 0) {
-				taskStream = this.taskRepository.findAllByUserIdAndCreatedBeforeOrderByCreatedDesc(userId, System.currentTimeMillis(), this.toPage(paging));
+				taskStream = this.taskRepository.findAllByUserAndCreatedBeforeOrderByCreatedDesc(
+						userDTO.user,
+						System.currentTimeMillis(), this.toPage(paging));
 			} else {
-				taskStream = this.taskRepository.findAllByUserIdAndCreatedAfterOrderByCreatedAsc(userId, date, this.toPage(paging));
+				taskStream = this.taskRepository.findAllByUserAndCreatedAfterOrderByCreatedAsc(
+						userDTO.user, date,
+						this.toPage(paging));
 			}
 		}
 
@@ -119,15 +124,14 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	/**
 	 * Mark a task as done or undone.
 	 *
-	 * @param dto with taskId and value to be set for done (default = true)
-	 * @param jwt with userId
+	 * @param dto     with taskId and value to be set for done (default = true)
+	 * @param userDTO user information
 	 * @return empty result
 	 */
-	public Result<?> markAsDone(MarkTaskAsDoneRequestDTO dto, DecodedJWT jwt) {
-		UUID userId = UUID.fromString(jwt.getSubject());
+	public Result<?> markAsDone(MarkTaskAsDoneRequestDTO dto, UserDTO userDTO) {
 		Optional<TaskModel> optionalTask = this.taskRepository.findById(dto.getTaskId());
 		if (optionalTask.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
-		if (!optionalTask.get().getUserId().equals(userId)) Result.of(Error.FORBIDDEN, NAME_KEY);
+		if (!optionalTask.get().getUser().is(userDTO)) Result.of(Error.FORBIDDEN, NAME_KEY);
 
 		this.taskRepository.save(optionalTask.get().markAsDone(dto.isDone()));
 
@@ -137,18 +141,17 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	/**
 	 * Delete a task.
 	 *
-	 * @param taskId of task to delete
-	 * @param jwt    with userId
+	 * @param taskId  of task to delete
+	 * @param userDTO user information
 	 * @return empty result
 	 */
 	@Transactional
-	public Result<?> deleteTask(int taskId, DecodedJWT jwt) {
-		UUID userId = UUID.fromString(jwt.getSubject());
+	public Result<?> deleteTask(int taskId, UserDTO userDTO) {
 		Optional<TaskModel> optionalTask = this.taskRepository.findById(taskId);
 		if (optionalTask.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		TaskModel task = optionalTask.get();
-		if (!task.getUserId().equals(userId)) return Result.of(Error.FORBIDDEN, NAME_KEY);
+		if (!task.getUser().is(userDTO)) return Result.of(Error.FORBIDDEN, NAME_KEY);
 		else {
 			this.taskRepository.delete(task);
 			return Result.empty();
@@ -157,13 +160,13 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 
 
 	@Override
-	public void deleteUserData(UUID userId) {
-		this.taskRepository.deleteAllByUserId(userId);
+	public void deleteUserData(UserModel user) {
+		this.taskRepository.deleteAllByUser(user);
 	}
 
 	@Override
-	public Object[] getUserData(UUID userId) {
-		return this.mapData(this.taskRepository.findAllByUserId(userId));
+	public Object[] getUserData(UserModel user) {
+		return this.mapData(this.taskRepository.findAllByUser(user));
 	}
 
 }

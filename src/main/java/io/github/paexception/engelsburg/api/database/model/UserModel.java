@@ -2,8 +2,9 @@ package io.github.paexception.engelsburg.api.database.model;
 
 import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -15,7 +16,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -33,20 +35,15 @@ public class UserModel {
 	@Column(unique = true)
 	@NotBlank
 	private String email;
-	@NotBlank
-	private String password;
+	@NotNull
+	@Column(length = 32)
+	private byte[] password;
 	@NotBlank
 	private String salt;
 	private boolean verified;
 
-	public UserDTO toResponseDTO() {
-		return new UserDTO(
-				this.userId,
-				this.email,
-				this.password,
-				this.salt,
-				this.verified
-		);
+	public boolean is(UserDTO userDTO) {
+		return this.equals(userDTO.user);
 	}
 
 }

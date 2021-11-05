@@ -11,10 +11,9 @@ import io.github.paexception.engelsburg.api.spring.paging.Paging;
 import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.Result;
-import io.github.paexception.engelsburg.api.util.WordpressAPI;
+import io.github.paexception.engelsburg.api.util.WordPressAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,10 +34,14 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	private static final Logger LOGGER = LoggerFactory.getLogger(ArticleUpdateService.class);
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	private static int counter = 0;
-	@Autowired
-	private ArticleController articleController;
-	@Autowired
-	private NotificationService notificationService;
+	private final ArticleController articleController;
+	private final NotificationService notificationService;
+
+	public ArticleUpdateService(ArticleController articleController,
+			NotificationService notificationService) {
+		this.articleController = articleController;
+		this.notificationService = notificationService;
+	}
 
 	/**
 	 * Call {@link #updateArticles(String, int)} every 15 minutes and return all articles published in that passed 1 minute.
@@ -47,8 +50,8 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	public void fetchNewArticles() {
 		LOGGER.debug("Starting fetching new articles");
 		this.updateArticles(DATE_FORMAT.format(System.currentTimeMillis() - 60 * 1000), 1).stream()
-				.peek(dto -> this.notificationService.sendArticleNotifications(dto))
-				.forEach(dto -> this.articleController.createArticle(dto));
+				.peek(this.notificationService::sendArticleNotifications)
+				.forEach(this.articleController::createArticle);
 	}
 
 	/**
@@ -91,7 +94,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 
 				LOGGER.info("Fetched articles");
 				if (jsonArticles.size() == 100)
-					this.updateArticles(date, page + 1).forEach(dto -> this.articleController.createArticle(dto));
+					this.updateArticles(date, page + 1).forEach(this.articleController::createArticle);
 			} else LOGGER.debug("No articles found");
 		} catch (IOException | ParseException e) {
 			this.logError("Couldn't fetch articles", e, LOGGER);
@@ -111,14 +114,14 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	private ArticleDTO createArticleDTO(int articleId, JsonElement article) throws IOException, ParseException {
 		String content = article.getAsJsonObject().get("content").getAsJsonObject().get(
 				"rendered").getAsString(); //Get content
-		String mediaUrl = WordpressAPI.getFeaturedMedia(article.getAsJsonObject().get("featured_media").getAsInt(),
+		String mediaUrl = WordPressAPI.getFeaturedMedia(article.getAsJsonObject().get("featured_media").getAsInt(),
 				content);
 		String blurHash = null;
 
 		if (Environment.PRODUCTION) {
 			try {
 				//content = WordpressAPI.applyBlurHashToAllImages(Jsoup.parse(content)).toString(); --> not needed
-				blurHash = mediaUrl != null ? WordpressAPI.getBlurHash(mediaUrl) : null;
+				blurHash = mediaUrl != null ? WordPressAPI.getBlurHash(mediaUrl) : null;
 			} catch (IOException e) {
 				this.logError("Couldn't load blur hash of image", e, LOGGER);
 			}

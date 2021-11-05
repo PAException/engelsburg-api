@@ -11,7 +11,6 @@ import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -24,10 +23,14 @@ public class NotificationService implements LoggingComponent {
 	private static final Calendar CALENDAR = Calendar.getInstance();
 	private static final Logger LOGGER = LoggerFactory.getLogger(NotificationService.class);
 	private static final FirebaseCloudMessagingImpl FCM = FirebaseCloudMessagingImpl.getInstance();
-	@Autowired
-	private TimetableController timetableController;
-	@Autowired
-	private NotificationController notificationController;
+	private final TimetableController timetableController;
+	private final NotificationController notificationController;
+
+	public NotificationService(
+			TimetableController timetableController, NotificationController notificationController) {
+		this.timetableController = timetableController;
+		this.notificationController = notificationController;
+	}
 
 	/**
 	 * Sends error notifications.
@@ -104,16 +107,17 @@ public class NotificationService implements LoggingComponent {
 		});
 
 		FCM.sendAdvancedNotifications("substitute", dtos.stream().map(dto -> {
-					CALENDAR.setTime(dto.getDate());
-					return Pair.of(this.timetableController.getAllByWeekDayAndLessonAndTeacherOrClassName(
-							CALENDAR.get(Calendar.DAY_OF_WEEK) - 2, //MON starts at 2
-							dto.getLesson(),
-							dto.getTeacher(),
-							dto.getClassName()
-					), dto);
-				}).filter(dtoPair -> !dtoPair.getLeft().isEmpty())
+							CALENDAR.setTime(dto.getDate());
+							return Pair.of(this.timetableController.getAllByWeekDayAndLessonAndTeacherOrClassName(
+									CALENDAR.get(Calendar.DAY_OF_WEEK) - 2, //MON starts at 2
+									dto.getLesson(),
+									dto.getTeacher(),
+									dto.getClassName()
+							), dto);
+						}).filter(dtoPair -> !dtoPair.getLeft().isEmpty())
 						.map(dtoPair -> new NotificationDTO(
-								this.notificationController.getTimetableNotificationTokensOfUsers(dtoPair.getLeft().stream().map(TimetableModel::getUserId)),
+								this.notificationController.getTimetableNotificationTokensOfUsers(
+										dtoPair.getLeft().stream().map(TimetableModel::getUser)),
 								dtoPair.getRight()
 						)).collect(Collectors.toList())
 		);

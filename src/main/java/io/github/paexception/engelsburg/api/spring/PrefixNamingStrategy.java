@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 /**
  * Naming strategy of tables.
+ * Main purpose is to replace all model suffixes.
  */
 public class PrefixNamingStrategy extends SpringPhysicalNamingStrategy {
 

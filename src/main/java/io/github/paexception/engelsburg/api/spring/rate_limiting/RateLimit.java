@@ -6,7 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to mark method to be checked for custom rate limiting if containing class extends {@link RateLimiter}.
+ * Annotation to mark method to be checked for custom
+ * rate limiting if containing class extends {@link RateLimiter}.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

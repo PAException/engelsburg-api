@@ -1,6 +1,7 @@
 package io.github.paexception.engelsburg.api.spring;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,19 +13,24 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 import java.util.List;
 
 /**
- * Interceptor to compare send hash and hash of response to check if content has changed.
+ * ControllerAdvice to compare sent hash and hash of response to check if content has changed.
+ * Return NOT_MODIFIED if content hasn't changed.
  */
 @ControllerAdvice
 @NoArgsConstructor
 public class HashVerifier implements ResponseBodyAdvice<Object> {
 
 	@Override
-	public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
+	public boolean supports(@NonNull MethodParameter returnType,
+			@NonNull Class<? extends HttpMessageConverter<?>> converterType) {
 		return true;
 	}
 
 	@Override
-	public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
+	public Object beforeBodyWrite(Object body, @NonNull MethodParameter returnType,
+			@NonNull MediaType selectedContentType,
+			@NonNull Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request,
+			ServerHttpResponse response) {
 		List<String> oldHash = request.getHeaders().get("Hash");
 		List<String> newHash = response.getHeaders().get("Hash");
 

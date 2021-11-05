@@ -1,13 +1,12 @@
 package io.github.paexception.engelsburg.api.endpoint.reserved;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.controller.reserved.TaskController;
+import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateTaskRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.MarkTaskAsDoneRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.UpdateTaskRequestDTO;
 import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
 import io.github.paexception.engelsburg.api.spring.paging.Paging;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -24,63 +23,66 @@ import javax.validation.Valid;
 @RestController
 public class TaskEndpoint {
 
-	@Autowired
-	private TaskController taskController;
+	private final TaskController taskController;
+
+	public TaskEndpoint(TaskController taskController) {
+		this.taskController = taskController;
+	}
 
 	/**
 	 * Create a new task.
 	 *
-	 * @see TaskController#createTask(CreateTaskRequestDTO, DecodedJWT)
+	 * @see TaskController#createTask(CreateTaskRequestDTO, UserDTO)
 	 */
 	@AuthScope("task.write.self")
 	@PostMapping("/task")
-	public Object createTask(@RequestBody @Valid CreateTaskRequestDTO dto, DecodedJWT jwt) {
-		return this.taskController.createTask(dto, jwt).getHttpResponse();
+	public Object createTask(@RequestBody @Valid CreateTaskRequestDTO dto, UserDTO userDTO) {
+		return this.taskController.createTask(dto, userDTO).getHttpResponse();
 	}
 
 	/**
 	 * Update a task.
 	 *
-	 * @see TaskController#updateTask(UpdateTaskRequestDTO, DecodedJWT)
+	 * @see TaskController#updateTask(UpdateTaskRequestDTO, UserDTO)
 	 */
 	@AuthScope("task.write.self")
 	@PatchMapping("/task")
-	public Object updateTask(@RequestBody @Valid UpdateTaskRequestDTO dto, DecodedJWT jwt) {
-		return this.taskController.updateTask(dto, jwt).getHttpResponse();
+	public Object updateTask(@RequestBody @Valid UpdateTaskRequestDTO dto, UserDTO userDTO) {
+		return this.taskController.updateTask(dto, userDTO).getHttpResponse();
 	}
 
 	/**
 	 * Get tasks by specific parameters.
 	 *
-	 * @see TaskController#getTasks(boolean, long, DecodedJWT, Paging)
+	 * @see TaskController#getTasks(boolean, long, UserDTO, Paging)
 	 */
 	@AuthScope("task.read.self")
 	@GetMapping("/task")
 	public Object getTasks(@RequestParam(required = false, defaultValue = "false") boolean onlyUndone,
-			@RequestParam(required = false, defaultValue = "-1") long date, DecodedJWT jwt, Paging paging) {
-		return this.taskController.getTasks(onlyUndone, date, jwt, paging).getHttpResponse();
+			@RequestParam(required = false, defaultValue = "-1") long date, UserDTO userDTO, Paging paging) {
+		return this.taskController.getTasks(onlyUndone, date, userDTO, paging).getHttpResponse();
 	}
 
 	/**
 	 * Mark a task as done.
 	 *
-	 * @see TaskController#markAsDone(MarkTaskAsDoneRequestDTO, DecodedJWT)
+	 * @see TaskController#markAsDone(MarkTaskAsDoneRequestDTO, UserDTO)
 	 */
 	@AuthScope("task.write.self")
 	@PatchMapping("/task/done")
-	public Object markTaskAsDone(@RequestBody @Valid MarkTaskAsDoneRequestDTO dto, DecodedJWT jwt) {
-		return this.taskController.markAsDone(dto, jwt).getHttpResponse();
+	public Object markTaskAsDone(@RequestBody @Valid MarkTaskAsDoneRequestDTO dto, UserDTO userDTO) {
+		return this.taskController.markAsDone(dto, userDTO).getHttpResponse();
 	}
 
 	/**
 	 * Delete a task by taskId.
 	 *
-	 * @see TaskController#deleteTask(int, DecodedJWT)
+	 * @see TaskController#deleteTask(int, UserDTO)
 	 */
 	@AuthScope("task.delete.self")
 	@DeleteMapping("/task/{taskId}")
-	public Object deleteTask(@PathVariable int taskId, DecodedJWT jwt) {
-		return this.taskController.deleteTask(taskId, jwt).getHttpResponse();
+	public Object deleteTask(@PathVariable int taskId, UserDTO userDTO) {
+		return this.taskController.deleteTask(taskId, userDTO).getHttpResponse();
 	}
 
 }

@@ -2,7 +2,6 @@ package io.github.paexception.engelsburg.api.endpoint;
 
 import io.github.paexception.engelsburg.api.controller.OAuthController;
 import io.github.paexception.engelsburg.api.spring.rate_limiting.IgnoreGeneralRateLimit;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,8 +16,11 @@ import javax.validation.constraints.NotBlank;
 @RestController
 public class OAuthEndpoint {
 
-	@Autowired
-	private OAuthController oAuthController;
+	private final OAuthController oAuthController;
+
+	public OAuthEndpoint(OAuthController oAuthController) {
+		this.oAuthController = oAuthController;
+	}
 
 	/**
 	 * Request oauth signup.

@@ -16,13 +16,6 @@ public class Constants {
 	}
 
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class Authentication {
-
-		public static final String NAME_KEY = "authentication";
-
-	}
-
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class Event {
 
 		public static final String NAME_KEY = "event";

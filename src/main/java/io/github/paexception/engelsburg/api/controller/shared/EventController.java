@@ -7,7 +7,6 @@ import io.github.paexception.engelsburg.api.endpoint.dto.response.GetEventsRespo
 import io.github.paexception.engelsburg.api.service.scheduled.EventUpdateService;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
@@ -20,8 +19,11 @@ import static io.github.paexception.engelsburg.api.util.Constants.Event.NAME_KEY
 @Component
 public class EventController {
 
-	@Autowired
-	private EventRepository eventRepository;
+	private final EventRepository eventRepository;
+
+	public EventController(EventRepository eventRepository) {
+		this.eventRepository = eventRepository;
+	}
 
 	/**
 	 * Create a new event.

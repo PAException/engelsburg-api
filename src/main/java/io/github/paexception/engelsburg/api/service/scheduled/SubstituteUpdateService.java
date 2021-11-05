@@ -12,7 +12,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
@@ -31,15 +30,21 @@ import java.util.Map;
 public class SubstituteUpdateService extends HtmlFetchingService implements LoggingComponent {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SubstituteUpdateService.class);
-	@Autowired
-	private SubstituteController substituteController;
-	@Autowired
-	private SubstituteMessageController substituteMessageController;
-	@Autowired
-	private InformationController informationController;
+	private final SubstituteController substituteController;
+	private final SubstituteMessageController substituteMessageController;
+	private final InformationController informationController;
 	private Date currentDate;
 	private List<SubstituteDTO> substitutes;
 	private int splitSubstitute = 0;
+
+	public SubstituteUpdateService(
+			SubstituteController substituteController,
+			SubstituteMessageController substituteMessageController,
+			InformationController informationController) {
+		this.substituteController = substituteController;
+		this.substituteMessageController = substituteMessageController;
+		this.informationController = informationController;
+	}
 
 	/**
 	 * Scheduled function to update substitutes every 5 minutes.
@@ -50,7 +55,7 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 		try {
 			int count = 0;
 			Document navbar = this.request(
-					"https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/frames/navbar.htm");
+					"https://engelsburg.smmp.de/vertretungsplaene/eng/Stp_Upload/frames/navbar.htm");
 
 			Map<String, Integer> weeks = new HashMap<>(); //Week year
 			navbar.select("select[name=week].selectBox > option").forEach(element2 ->
@@ -75,7 +80,7 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 
 			for (String week : weeks.keySet()) { //Iterate weeks
 				Element substitute = this.request(
-						"https://engelsburg.smmp.de/vertretungsplaene/ebg/Stp_Upload/" + week + "/w/w00000.htm").getElementById(
+						"https://engelsburg.smmp.de/vertretungsplaene/eng/Stp_Upload/" + week + "/w/w00000.htm").getElementById(
 						"vertretung");
 				if (substitute != null && this.checkChanges(substitute, "substitutes." + week)) {
 					this.currentDate = this.parseDate(

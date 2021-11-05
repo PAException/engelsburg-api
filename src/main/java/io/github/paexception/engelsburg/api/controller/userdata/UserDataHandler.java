@@ -1,7 +1,7 @@
 package io.github.paexception.engelsburg.api.controller.userdata;
 
+import io.github.paexception.engelsburg.api.database.model.UserModel;
 import javax.annotation.PostConstruct;
-import java.util.UUID;
 
 /**
  * This interface has to be implemented by all classes which save userIds.
@@ -11,20 +11,20 @@ public interface UserDataHandler {
 	/**
 	 * Deletes or masks the given userId everywhere.
 	 *
-	 * @param userId the userId which has to deleted or masked everywhere
+	 * @param user which has to deleted or masked everywhere
 	 */
-	void deleteUserData(UUID userId);
+	void deleteUserData(UserModel user);
 
 	/**
 	 * Collects all data where the userId is used and returns it in json format.
 	 *
-	 * @param userId the userId after what the data is collected
+	 * @param user after what the data is collected
 	 * @return a String of collected data in json format
 	 */
-	Object[] getUserData(UUID userId);
+	Object[] getUserData(UserModel user);
 
 	/**
-	 * Help to map data for {@link UserDataHandler#getUserData(UUID)}.
+	 * Help to map data for {@link UserDataHandler#getUserData(UserModel)}.
 	 *
 	 * @param data to map
 	 * @return mapped Object[]

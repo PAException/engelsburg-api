@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotBlank;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class NotificationDeviceDTO {
 
 	@NotBlank //Because of endpoint use

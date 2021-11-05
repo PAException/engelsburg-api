@@ -9,7 +9,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
@@ -26,8 +25,11 @@ import java.util.List;
 public class EventUpdateService extends JsonFetchingService implements LoggingComponent {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(EventUpdateService.class);
-	@Autowired
-	private EventController eventController;
+	private final EventController eventController;
+
+	public EventUpdateService(EventController eventController) {
+		this.eventController = eventController;
+	}
 
 	/**
 	 * Scheduled function to update events every hour.
@@ -36,18 +38,22 @@ public class EventUpdateService extends JsonFetchingService implements LoggingCo
 	public void updateEvents() {
 		LOGGER.debug("Starting to fetch events");
 		try {
-			JsonElement content = this.request("https://engelsburg.smmp.de/wp-json/wp/v2/pages/318").getAsJsonObject().get("content").getAsJsonObject().get("rendered");
+			JsonElement content = this.request(
+					"https://engelsburg.smmp.de/wp-json/wp/v2/pages/318").getAsJsonObject().get(
+					"content").getAsJsonObject().get("rendered");
 
 			if (this.checkChanges(content)) {
 				List<EventDTO> dtos = new ArrayList<>();
-				Element list = Jsoup.parse(content.getAsString()).getElementsByTag("ul").first(); //Select event container
+				Element list = Jsoup.parse(content.getAsString()).getElementsByTag(
+						"ul").first(); //Select event container
 				list.children().forEach(element -> { //iterate through events
 					if (element.getElementsByTag("a").first() != null)
-						dtos.add(new EventDTO(this.parseDate(element.text()), element.getElementsByTag("a").first().text()));
+						dtos.add(new EventDTO(this.parseDate(element.text()),
+								element.getElementsByTag("a").first().text()));
 				});
 
 				this.eventController.clearAllEvents();
-				dtos.forEach(dto -> this.eventController.createEvent(dto));
+				dtos.forEach(this.eventController::createEvent);
 				LOGGER.info("Updated events");
 			} else LOGGER.debug("Events have not changed");
 		} catch (IOException e) {

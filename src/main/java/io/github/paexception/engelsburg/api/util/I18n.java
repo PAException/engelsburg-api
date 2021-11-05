@@ -3,6 +3,10 @@ package io.github.paexception.engelsburg.api.util;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * Internationalization of error messages.
+ * Used for slightly customized errors.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class I18n {
 

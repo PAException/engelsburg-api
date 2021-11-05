@@ -14,8 +14,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
+/**
+ * Util class for WordPress-API operations.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class WordpressAPI {
+public class WordPressAPI {
 
 	/**
 	 * Apply blur hashes to all images in html attributes.
@@ -45,7 +48,7 @@ public class WordpressAPI {
 	}
 
 	/**
-	 * Parse the mediaUrl from an wordpress entity.
+	 * Parse the mediaUrl from a WordPress entity.
 	 *
 	 * @param featuredMedia id if listed
 	 * @param content       to search for an alternative img
@@ -59,7 +62,8 @@ public class WordpressAPI {
 					new URL("https://engelsburg.smmp.de/wp-json/wp/v2/media/" + featuredMedia)
 							.openConnection().getInputStream())).getAsJsonObject(); //Then get img url via wordpress api
 			return mediaJson.get("source_url").getAsString();
-		} else if ((elements = Jsoup.parse(content).getElementsByClass("wp-block-image")).size() > 0) { //If not search for first image in article
+		} else if ((elements = Jsoup.parse(content).getElementsByClass(
+				"wp-block-image")).size() > 0) { //If not search for first image in article
 			return elements.get(0).getElementsByTag("img").get(0).attr("src");
 		}
 

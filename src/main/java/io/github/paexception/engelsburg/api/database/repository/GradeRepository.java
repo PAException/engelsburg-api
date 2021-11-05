@@ -1,20 +1,19 @@
 package io.github.paexception.engelsburg.api.database.repository;
 
-
 import io.github.paexception.engelsburg.api.database.model.GradeModel;
+import io.github.paexception.engelsburg.api.database.model.UserModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 @Repository
 public interface GradeRepository extends JpaRepository<GradeModel, Integer> {
 
-	void deleteAllByUserId(UUID userId);
+	void deleteAllByUser(UserModel user);
 
-	List<GradeModel> findAllByUserId(UUID userId);
+	List<GradeModel> findAllByUser(UserModel user);
 
-	Stream<GradeModel> findAllByUserIdAndSubject(UUID userId, String subject);
+	Stream<GradeModel> findAllByUserAndSubject(UserModel user, String subject);
 
 }

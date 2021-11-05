@@ -1,9 +1,8 @@
 package io.github.paexception.engelsburg.api.endpoint.reserved;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.controller.reserved.SubstituteMessageController;
+import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,8 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class SubstituteMessageEndpoint {
 
-	@Autowired
-	private SubstituteMessageController substituteMessageController;
+	private final SubstituteMessageController substituteMessageController;
+
+	public SubstituteMessageEndpoint(
+			SubstituteMessageController substituteMessageController) {
+		this.substituteMessageController = substituteMessageController;
+	}
 
 	/**
 	 * Get all substitute messages since date.
@@ -27,8 +30,9 @@ public class SubstituteMessageEndpoint {
 	 */
 	@AuthScope("substitute.message.read.current")
 	@GetMapping("/substitute/message")
-	public Object getAllSubstituteMessages(@RequestParam(required = false, defaultValue = "-1") long date, DecodedJWT jwt) {
-		return this.substituteMessageController.getAllSubstituteMessages(date, jwt).getHttpResponse();
+	public Object getAllSubstituteMessages(@RequestParam(required = false, defaultValue = "-1") long date,
+			UserDTO userDTO) {
+		return this.substituteMessageController.getAllSubstituteMessages(date, userDTO).getHttpResponse();
 	}
 
 }
