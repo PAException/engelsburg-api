@@ -47,12 +47,15 @@ public class ArticleController extends AbstractPageable implements UserDataHandl
 	}
 
 	/**
-	 * Create a new Article.
+	 * Create or update an article.
 	 *
 	 * @param dto which has article information
 	 */
-	public void createArticle(ArticleDTO dto) {
-		if (!this.articleRepository.existsByDate(dto.getDate())) {
+	public void createOrUpdateArticle(ArticleDTO dto) {
+		Optional<ArticleModel> optionalArticle = this.articleRepository.findByArticleId(dto.getArticleId());
+		if (optionalArticle.isPresent()) {
+			this.articleRepository.save(optionalArticle.get().update(dto));
+		} else {
 			this.articleRepository.save(new ArticleModel(
 					-1,
 					dto.getArticleId(),
@@ -65,17 +68,6 @@ public class ArticleController extends AbstractPageable implements UserDataHandl
 					dto.getBlurHash()
 			));
 		}
-	}
-
-	/**
-	 * Update a specific article.
-	 *
-	 * @param dto article info
-	 */
-	public void updateArticle(ArticleDTO dto) {
-		Optional<ArticleModel> optionalArticle = this.articleRepository.findByArticleId(dto.getArticleId());
-		if (optionalArticle.isEmpty()) this.createArticle(dto);
-		else this.articleRepository.save(optionalArticle.get().update(dto));
 	}
 
 	/**
@@ -132,7 +124,7 @@ public class ArticleController extends AbstractPageable implements UserDataHandl
 	 * @return article
 	 */
 	public Result<ArticleDTO> getArticle(int articleId) {
-		return this.articleRepository.findById(articleId).map(article -> Result.of(article.toResponseDTO()))
+		return this.articleRepository.findByArticleId(articleId).map(article -> Result.of(article.toResponseDTO()))
 				.orElseGet(() -> Result.of(Error.NOT_FOUND, NAME_KEY));
 	}
 

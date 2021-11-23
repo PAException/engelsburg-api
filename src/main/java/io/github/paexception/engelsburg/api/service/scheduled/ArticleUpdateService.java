@@ -14,7 +14,7 @@ import io.github.paexception.engelsburg.api.util.Result;
 import io.github.paexception.engelsburg.api.util.WordPressAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -46,12 +46,13 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	/**
 	 * Call {@link #updateArticles(String, int)} every 15 minutes and return all articles published in that passed 1 minute.
 	 */
-	@Scheduled(fixedRate = 60 * 1000)
+	@Scheduled(fixedRate = 60 * 1000, initialDelay = 60 * 1000)
+	@EventListener(ApplicationReadyEvent.class)
 	public void fetchNewArticles() {
 		LOGGER.debug("Starting fetching new articles");
 		this.updateArticles(DATE_FORMAT.format(System.currentTimeMillis() - 60 * 1000), 1).stream()
 				.peek(this.notificationService::sendArticleNotifications)
-				.forEach(this.articleController::createArticle);
+				.forEach(this.articleController::createOrUpdateArticle);
 	}
 
 	/**
@@ -65,7 +66,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 						"https://engelsburg.smmp.de/wp-json/wp/v2/posts/" + idAndHash.getArticleId());
 				String content = json.getAsJsonObject().get("content").getAsJsonObject().get("rendered").getAsString();
 				if (!idAndHash.getContentHash().equals(Result.hash(content))) {
-					this.articleController.updateArticle(this.createArticleDTO(idAndHash.getArticleId(), json));
+					this.articleController.createOrUpdateArticle(this.createArticleDTO(idAndHash.getArticleId(), json));
 				}
 			} catch (Exception ignored) {
 			}
@@ -94,7 +95,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 
 				LOGGER.info("Fetched articles");
 				if (jsonArticles.size() == 100)
-					this.updateArticles(date, page + 1).forEach(this.articleController::createArticle);
+					this.updateArticles(date, page + 1).forEach(this.articleController::createOrUpdateArticle);
 			} else LOGGER.debug("No articles found");
 		} catch (IOException | ParseException e) {
 			this.logError("Couldn't fetch articles", e, LOGGER);
@@ -142,15 +143,16 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	/**
 	 * Load articles on start up.
 	 */
-	@EventListener(ApplicationStartedEvent.class)
+	@EventListener(ApplicationReadyEvent.class)
 	public void loadPastArticles() {
 		LOGGER.debug("Starting fetching past articles");
 		Result<GetArticlesResponseDTO> lastArticle = this.articleController.getArticlesAfter(-1, new Paging(0, 1));
 		if (lastArticle.isResultPresent()) { //Empty would be an error
 			this.updateArticles(DATE_FORMAT.format(lastArticle.getResult().getArticles().get(0).getDate()), 1)
-					.forEach(this.articleController::createArticle);
+					.forEach(this.articleController::createOrUpdateArticle);
 		} else {
-			this.updateArticles(DATE_FORMAT.format(new Date(0)), 1).forEach(this.articleController::createArticle);
+			this.updateArticles(DATE_FORMAT.format(new Date(0)), 1).forEach(
+					this.articleController::createOrUpdateArticle);
 		}
 		LOGGER.info("Fetched " + counter + " article" + (counter == 1 ? "" : "s") + "!");
 	}

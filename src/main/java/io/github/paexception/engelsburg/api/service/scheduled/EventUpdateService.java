@@ -9,6 +9,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
@@ -34,7 +36,8 @@ public class EventUpdateService extends JsonFetchingService implements LoggingCo
 	/**
 	 * Scheduled function to update events every hour.
 	 */
-	@Scheduled(fixedRate = 5 * 60 * 1000)
+	@Scheduled(fixedRate = 5 * 60 * 1000, initialDelay = 5 * 60 * 1000)
+	@EventListener(ApplicationReadyEvent.class)
 	public void updateEvents() {
 		LOGGER.debug("Starting to fetch events");
 		try {
