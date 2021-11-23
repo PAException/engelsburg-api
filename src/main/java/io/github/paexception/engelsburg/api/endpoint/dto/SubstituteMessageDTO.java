@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 import java.sql.Date;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class SubstituteMessageDTO {
 
 	private Date date;

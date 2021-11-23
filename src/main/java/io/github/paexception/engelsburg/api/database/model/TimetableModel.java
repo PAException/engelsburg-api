@@ -2,19 +2,19 @@ package io.github.paexception.engelsburg.api.database.model;
 
 import io.github.paexception.engelsburg.api.endpoint.dto.TimetableDTO;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -25,9 +25,8 @@ public class TimetableModel {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int timetableId;
 
-	@NotNull
-	@Column(length = 16)
-	private UUID userId;
+	@ManyToOne
+	private UserModel user;
 	@Range(min = 0, max = 4)//MON to FRI
 	private int day;
 	@Range(min = 0, max = 10)//1 to 11 lesson

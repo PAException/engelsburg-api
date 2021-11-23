@@ -43,7 +43,7 @@ public class Error extends ResponseEntity<Object> {
 	}
 
 	public static Error fromHttpStatus(HttpStatus status) {
-		return new Error(status, status.getReasonPhrase().toUpperCase().replace(" ", "_"), null);
+		return fromHttpStatus(status, null);
 	}
 
 	public static Error fromHttpStatus(HttpStatus status, String extra) {

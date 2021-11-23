@@ -1,19 +1,19 @@
 package io.github.paexception.engelsburg.api.database.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import javax.persistence.Column;
+import lombok.Setter;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -24,9 +24,9 @@ public class ScopeModel {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int scopeId;
 
-	@NotNull
-	@Column(length = 16)
-	private UUID userId;
+	@ManyToOne
+	private UserModel user;
+
 	@NotBlank
 	private String scope;
 

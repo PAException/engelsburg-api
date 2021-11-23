@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Simple paging data containing page and size of page info.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

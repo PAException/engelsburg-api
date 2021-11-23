@@ -1,7 +1,6 @@
 package io.github.paexception.engelsburg.api.endpoint.shared;
 
 import io.github.paexception.engelsburg.api.controller.shared.SolarSystemController;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,8 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class SolarSystemEndpoint {
 
-	@Autowired
-	private SolarSystemController solarSystemController;
+	private final SolarSystemController solarSystemController;
+
+	public SolarSystemEndpoint(
+			SolarSystemController solarSystemController) {
+		this.solarSystemController = solarSystemController;
+	}
 
 	/**
 	 * Get current status of solar system.

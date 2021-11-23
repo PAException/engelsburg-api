@@ -1,18 +1,18 @@
 package io.github.paexception.engelsburg.api.database.repository;
 
 import io.github.paexception.engelsburg.api.database.model.NotificationSettingsModel;
+import io.github.paexception.engelsburg.api.database.model.UserModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public interface NotificationSettingsRepository extends JpaRepository<NotificationSettingsModel, Integer> {
 
-	Optional<NotificationSettingsModel> findByUserId(UUID userId);
+	Optional<NotificationSettingsModel> findByUser(UserModel user);
 
-	void deleteByUserId(UUID userId);
+	void deleteByUser(UserModel user);
 
-	boolean existsByUserIdAndEnabledAndByTimetable(UUID userId, boolean enabled, boolean byTimetable);
+	boolean existsByUserAndEnabledAndByTimetable(UserModel user, boolean enabled, boolean byTimetable);
 
 }

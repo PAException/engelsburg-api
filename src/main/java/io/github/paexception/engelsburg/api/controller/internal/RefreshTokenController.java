@@ -1,12 +1,11 @@
 package io.github.paexception.engelsburg.api.controller.internal;
 
 import io.github.paexception.engelsburg.api.database.model.RefreshTokenModel;
+import io.github.paexception.engelsburg.api.database.model.UserModel;
 import io.github.paexception.engelsburg.api.database.repository.RefreshTokenRepository;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Controller for refresh tokens.
@@ -14,18 +13,22 @@ import java.util.UUID;
 @Component
 public class RefreshTokenController {
 
-	@Autowired
-	private RefreshTokenRepository refreshTokenRepository;
+	private final RefreshTokenRepository refreshTokenRepository;
+
+	public RefreshTokenController(
+			RefreshTokenRepository refreshTokenRepository) {
+		this.refreshTokenRepository = refreshTokenRepository;
+	}
 
 	/**
-	 * Create an refresh token by userId which lasts 30 days.
+	 * Create a refresh token by userId which lasts 30 days.
 	 *
-	 * @param userId to create to
+	 * @param user to create to
 	 * @return created token
 	 */
-	public String create(UUID userId) {
-		Optional<RefreshTokenModel> optionalRefreshToken = this.refreshTokenRepository.findByUserId(userId);
-		RefreshTokenModel refreshToken = optionalRefreshToken.orElseGet(() -> new RefreshTokenModel(userId));
+	public String create(UserModel user) {
+		Optional<RefreshTokenModel> optionalRefreshToken = this.refreshTokenRepository.findByUser(user);
+		RefreshTokenModel refreshToken = optionalRefreshToken.orElseGet(() -> new RefreshTokenModel(user));
 		refreshToken.setToken(RandomStringUtils.randomAlphanumeric(100));
 		refreshToken.setExpire(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 60);
 
@@ -36,13 +39,13 @@ public class RefreshTokenController {
 	 * Verify the refresh token.
 	 *
 	 * @param refreshToken to verify
-	 * @return null if not found or expired, userId if not
+	 * @return null if not found or expired, user if not
 	 */
-	public UUID verifyRefreshToken(String refreshToken) {
+	public UserModel verifyRefreshToken(String refreshToken) {
 		Optional<RefreshTokenModel> optionalRefreshToken = this.refreshTokenRepository.findByToken(refreshToken);
 		if (optionalRefreshToken.isEmpty()) return null;
 
-		return optionalRefreshToken.get().getExpire() >= System.currentTimeMillis() ? optionalRefreshToken.get().getUserId() : null;
+		return optionalRefreshToken.get().getExpire() >= System.currentTimeMillis() ? optionalRefreshToken.get().getUser() : null;
 	}
 
 }

@@ -9,7 +9,6 @@ import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Pair;
 import io.github.paexception.engelsburg.api.util.Result;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,12 +21,16 @@ import java.util.UUID;
 @Component
 public class OAuthController {
 
-	@Autowired
-	private UserRepository userRepository;
-	@Autowired
-	private ScopeController scopeController;
-	@Autowired
-	private AuthenticationController authenticationController;
+	private final UserRepository userRepository;
+	private final ScopeController scopeController;
+	private final AuthenticationController authenticationController;
+
+	public OAuthController(UserRepository userRepository,
+			ScopeController scopeController, AuthenticationController authenticationController) {
+		this.userRepository = userRepository;
+		this.scopeController = scopeController;
+		this.authenticationController = authenticationController;
+	}
 
 	/**
 	 * Request a oauth login.
@@ -91,22 +94,22 @@ public class OAuthController {
 			return Result.of(Error.NOT_FOUND, "user");
 		} else if (optionalUser.isEmpty()) { //Create new user
 			UUID userId = UUID.randomUUID();
-
-			AuthenticationController.DEFAULT_SCOPES.forEach(
-					scope -> this.scopeController.addScope(userId, scope)); //Add default scopes
-			AuthenticationController.VERIFIED_SCOPES.forEach(
-					scope -> this.scopeController.addScope(userId, scope)); //Add verified scopes
-
 			String salt = AuthenticationController.randomSalt(); //Assign random password
-			String hashedPassword = AuthenticationController.hashPassword(null, salt);
+			byte[] hashedPassword = AuthenticationController.hashPassword(null, salt);
 
 			user = this.userRepository.save(
 					new UserModel(-1, userId, emailAndSignUp.getLeft(), hashedPassword, salt, true));
+
+			AuthenticationController.DEFAULT_SCOPES.forEach(
+					scope -> this.scopeController.addScope(user, scope)); //Add default scopes
+			AuthenticationController.VERIFIED_SCOPES.forEach(
+					scope -> this.scopeController.addScope(user, scope)); //Add verified scopes
+
 		} else {
 			user = optionalUser.get();
 			if (!user.isVerified()) {
 				AuthenticationController.VERIFIED_SCOPES.forEach(
-						scope -> this.scopeController.addScope(user.getUserId(), scope)); //Add verified scopes
+						scope -> this.scopeController.addScope(user, scope)); //Add verified scopes
 				user.setVerified(true);
 				this.userRepository.save(user);
 			}

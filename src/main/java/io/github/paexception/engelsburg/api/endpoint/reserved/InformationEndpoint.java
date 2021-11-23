@@ -2,7 +2,6 @@ package io.github.paexception.engelsburg.api.endpoint.reserved;
 
 import io.github.paexception.engelsburg.api.controller.reserved.InformationController;
 import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,8 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class InformationEndpoint {
 
-	@Autowired
-	private InformationController informationController;
+	private final InformationController informationController;
+
+	public InformationEndpoint(
+			InformationController informationController) {
+		this.informationController = informationController;
+	}
 
 	/**
 	 * Get information about a specific teacher.
