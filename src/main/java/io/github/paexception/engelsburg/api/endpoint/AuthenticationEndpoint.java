@@ -1,17 +1,16 @@
 package io.github.paexception.engelsburg.api.endpoint;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket4j;
 import io.github.bucket4j.Refill;
 import io.github.paexception.engelsburg.api.controller.AuthenticationController;
+import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.LoginRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.ResetPasswordRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.SignUpRequestDTO;
 import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
 import io.github.paexception.engelsburg.api.spring.rate_limiting.RateLimit;
 import io.github.paexception.engelsburg.api.spring.rate_limiting.RateLimiter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -31,11 +30,11 @@ import java.time.Duration;
 @RestController
 public class AuthenticationEndpoint extends RateLimiter {
 
-	@Autowired
-	private AuthenticationController authenticationController;
+	private final AuthenticationController authenticationController;
 
-	public AuthenticationEndpoint() {
+	public AuthenticationEndpoint(AuthenticationController authenticationController) {
 		super(Bucket4j.builder().addLimit(Bandwidth.classic(5, Refill.intervally(5, Duration.ofMinutes(1)))));
+		this.authenticationController = authenticationController;
 	}
 
 	/**
@@ -93,13 +92,13 @@ public class AuthenticationEndpoint extends RateLimiter {
 	/**
 	 * Verify a user.
 	 *
-	 * @see AuthenticationController#verify(DecodedJWT, String)
+	 * @see AuthenticationController#verify(UserDTO, String)
 	 */
 	@RateLimit
 	@AuthScope
 	@PatchMapping("/auth/verify/{token}")
-	public Object verify(DecodedJWT jwt, @PathVariable @NotBlank String token) {
-		return this.authenticationController.verify(jwt, token).getHttpResponse();
+	public Object verify(UserDTO dto, @PathVariable @NotBlank String token) {
+		return this.authenticationController.verify(dto, token).getHttpResponse();
 	}
 
 }

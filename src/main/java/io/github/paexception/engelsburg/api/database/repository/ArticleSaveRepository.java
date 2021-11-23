@@ -1,22 +1,20 @@
 package io.github.paexception.engelsburg.api.database.repository;
 
 import io.github.paexception.engelsburg.api.database.model.ArticleSaveModel;
+import io.github.paexception.engelsburg.api.database.model.UserModel;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
-import java.util.UUID;
 
 @Repository
 public interface ArticleSaveRepository extends PagingAndSortingRepository<ArticleSaveModel, Integer> {
 
-	int countAllByArticleId(int articleId);
+	boolean existsByArticleIdAndUser(int articleId, UserModel user);
 
-	boolean existsByArticleIdAndUserId(int articleId, UUID userId);
+	void deleteByArticleIdAndUser(int articleId, UserModel user);
 
-	void deleteByArticleIdAndUserId(int articleId, UUID userId);
+	void deleteAllByUser(UserModel user);
 
-	void deleteAllByUserId(UUID userId);
-
-	List<ArticleSaveModel> findAllByUserId(UUID userId);
+	List<ArticleSaveModel> findAllByUser(UserModel user);
 
 }

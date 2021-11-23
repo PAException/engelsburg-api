@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +57,7 @@ public class Result<T> {
 	}
 
 	/**
-	 * Maps the the given instance to an instance with other generics.
+	 * Maps the given instance to an instance with other generics.
 	 *
 	 * @param <T>      The new generics
 	 * @param instance The instance to map
@@ -75,13 +74,7 @@ public class Result<T> {
 	 * @return hash of o
 	 */
 	public static String hash(Object o) {
-		try {
-			if (digest == null) digest = MessageDigest.getInstance("SHA-1");
-		} catch (NoSuchAlgorithmException ignored) {
-		}
-		if (o == null) return null;
-
-		return bytesToHex(digest.digest(o.toString().getBytes()));
+		return bytesToHex(Hash.sha1(o));
 	}
 
 	/**
@@ -112,7 +105,8 @@ public class Result<T> {
 		response.setStatus(responseEntity.getStatusCodeValue());
 		for (Map.Entry<String, List<String>> header : responseEntity.getHeaders().entrySet())
 			for (String valor : header.getValue()) response.addHeader(header.getKey(), valor);
-		response.getWriter().write(OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(responseEntity.getBody()));
+		response.getWriter().write(
+				OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(responseEntity.getBody()));
 		response.getWriter().flush();
 	}
 
@@ -122,7 +116,8 @@ public class Result<T> {
 	 * @return ResponseEntity for spring
 	 */
 	public ResponseEntity<Object> getHttpResponse() {
-		Object response = this.isErrorPresent() ? this.getError().copyWithExtra(this.getExtra()).getBody() : this.getResult();
+		Object response = this.isErrorPresent() ? this.getError().copyWithExtra(
+				this.getExtra()).getBody() : this.getResult();
 
 		return ResponseEntity.status(this.isErrorPresent() ? this.error.getStatus() : HttpStatus.OK.value())
 				.header("Hash", hash(response)).body(response);

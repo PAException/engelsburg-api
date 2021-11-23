@@ -1,18 +1,18 @@
 package io.github.paexception.engelsburg.api.database.repository;
 
 import io.github.paexception.engelsburg.api.database.model.ScopeModel;
+import io.github.paexception.engelsburg.api.database.model.UserModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
-import java.util.UUID;
 
 @Repository
 public interface ScopeRepository extends JpaRepository<ScopeModel, Integer> {
 
-	List<ScopeModel> findAllByUserId(UUID userId);
+	List<ScopeModel> findAllByUser(UserModel user);
 
-	void deleteAllByUserId(UUID userId);
+	void deleteAllByUser(UserModel user);
 
-	boolean existsByUserIdAndScope(UUID userId, String scope);
+	boolean existsByUserAndScope(UserModel user, String scope);
 
 }

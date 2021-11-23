@@ -1,7 +1,6 @@
 package io.github.paexception.engelsburg.api.endpoint.shared;
 
 import io.github.paexception.engelsburg.api.controller.shared.EventController;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,8 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class EventEndpoint {
 
-	@Autowired
-	private EventController eventController;
+	private final EventController eventController;
+
+	public EventEndpoint(EventController eventController) {
+		this.eventController = eventController;
+	}
 
 	/**
 	 * Return all events.

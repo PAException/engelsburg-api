@@ -3,7 +3,6 @@ package io.github.paexception.engelsburg.api.service.email;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
@@ -14,11 +13,14 @@ import javax.mail.internet.MimeMessage;
 public class EmailServiceImpl implements LoggingComponent {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(EmailServiceImpl.class);
-	@Autowired
-	private JavaMailSender emailSender;
+	private final JavaMailSender emailSender;
+
+	public EmailServiceImpl(JavaMailSender emailSender) {
+		this.emailSender = emailSender;
+	}
 
 	/**
-	 * Send an html email.
+	 * Send a html email.
 	 *
 	 * @param subject   of email
 	 * @param recipient of email

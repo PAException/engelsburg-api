@@ -7,22 +7,24 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+/**
+ * Class to create and handle JWT's.
+ * Contains a singleton implementation.
+ */
 public class JwtUtil {
 
-	private static final SecureRandom RANDOM = new SecureRandom();
-
+	private static JwtUtil instance;
 	private final String issuer;
 	private final List<String> defaultAudience;
-
 	private final Algorithm algorithm;
 	private final JWTVerifier verifier;
 
@@ -120,7 +122,8 @@ public class JwtUtil {
 	 * @param audience           the audience the token is meant for
 	 * @return a {@link com.auth0.jwt.JWTCreator.Builder} instance containing default values
 	 */
-	public JWTCreator.Builder createBuilder(String subject, int expirationTime, int expirationTimeUnit, String... audience) {
+	public JWTCreator.Builder createBuilder(String subject, int expirationTime, int expirationTimeUnit,
+			String... audience) {
 		return this.createBuilder(expirationTime, expirationTimeUnit, audience).withSubject(subject);
 	}
 
@@ -160,6 +163,19 @@ public class JwtUtil {
 		INVALID,
 		EXPIRED,
 		UNKNOWN
+	}
+
+	/**
+	 * Singleton implementation.
+	 *
+	 * @return jwtUtil instance
+	 */
+	public static JwtUtil getInstance() {
+		if (instance == null) {
+			instance = new JwtUtil("engelsburg-api", Collections.emptyList(), Environment.JWT_SECRET);
+		}
+
+		return instance;
 	}
 
 }

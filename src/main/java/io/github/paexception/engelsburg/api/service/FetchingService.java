@@ -1,7 +1,7 @@
 package io.github.paexception.engelsburg.api.service;
 
+import io.github.paexception.engelsburg.api.util.Hash;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,22 +13,6 @@ public abstract class FetchingService {
 
 	private static MessageDigest digest;
 	private final Map<String, byte[]> currentHash = new HashMap<>();
-
-	/**
-	 * Hash an object.
-	 *
-	 * @param o to hash
-	 * @return hash
-	 */
-	private static byte[] hash(Object o) {
-		if (o == null) return null;
-		try {
-			if (digest == null) digest = MessageDigest.getInstance("SHA-1");
-		} catch (NoSuchAlgorithmException ignored) {
-		}
-
-		return digest.digest(o.toString().getBytes());
-	}
 
 	/**
 	 * Inherited to unify requests of different types of services.
@@ -46,12 +30,12 @@ public abstract class FetchingService {
 	/**
 	 * Check for changes of something.
 	 *
-	 * @param o   to check for changes
+	 * @param obj to check for changes
 	 * @param key if many objects are checked for changes
 	 * @return true of changes occurred, false otherwise
 	 */
-	protected final boolean checkChanges(Object o, String key) {
-		byte[] hash = hash(o);
+	protected final boolean checkChanges(Object obj, String key) {
+		byte[] hash = Hash.sha1(obj);
 
 		if (Arrays.equals(hash, this.currentHash.get(key)) || hash == null) return false;
 		else {

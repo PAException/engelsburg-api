@@ -1,7 +1,7 @@
 package io.github.paexception.engelsburg.api.util;
 
 /**
- * Used environment variables.
+ * Class to get any environment variable.
  */
 public class Environment {
 

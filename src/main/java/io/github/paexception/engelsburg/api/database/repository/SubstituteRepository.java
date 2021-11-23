@@ -25,7 +25,8 @@ public interface SubstituteRepository extends JpaRepository<SubstituteModel, Int
 
 	List<SubstituteModel> findAllByDateAndTeacherAndClassName(Date date, String teacher, String className);
 
-	List<SubstituteModel> findAllByDateAndTeacherAndLessonAndClassName(Date date, String teacher, int lesson, String className);
+	List<SubstituteModel> findAllByDateAndTeacherAndLessonAndClassName(Date date, String teacher, int lesson,
+			String className);
 
 	List<SubstituteModel> findAllByDateAndSubstituteTeacher(Date date, String substituteTeacher);
 
@@ -39,4 +40,5 @@ public interface SubstituteRepository extends JpaRepository<SubstituteModel, Int
 
 	Optional<SubstituteModel> findByDateAndLessonAndSubject(Date date, int lesson, String subject);
 
+	List<SubstituteModel> findAllByDateLessThanEqual(Date date);
 }

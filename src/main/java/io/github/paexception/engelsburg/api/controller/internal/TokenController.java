@@ -2,13 +2,12 @@ package io.github.paexception.engelsburg.api.controller.internal;
 
 import io.github.paexception.engelsburg.api.controller.userdata.UserDataHandler;
 import io.github.paexception.engelsburg.api.database.model.TokenModel;
+import io.github.paexception.engelsburg.api.database.model.UserModel;
 import io.github.paexception.engelsburg.api.database.repository.TokenRepository;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Controller for tokens like verify or reset password tokens.
@@ -16,30 +15,33 @@ import java.util.UUID;
 @Component
 public class TokenController implements UserDataHandler {
 
-	@Autowired
-	private TokenRepository tokenRepository;
+	private final TokenRepository tokenRepository;
+
+	public TokenController(TokenRepository tokenRepository) {
+		this.tokenRepository = tokenRepository;
+	}
 
 	/**
 	 * Creates a new token.
 	 *
-	 * @param userId of token
-	 * @param type   of token
-	 * @param token  itself
+	 * @param user  of token
+	 * @param type  of token
+	 * @param token itself
 	 */
-	public void createToken(UUID userId, String type, String token) {
-		this.tokenRepository.save(new TokenModel(-1, userId, type, token, -1));
+	public void createToken(UserModel user, String type, String token) {
+		this.tokenRepository.save(new TokenModel(-1, user, type, token, -1));
 	}
 
 	/**
 	 * Creates a random alphanumeric token with a length of 8.
 	 *
-	 * @param userId of token
-	 * @param type   of token
+	 * @param user of token
+	 * @param type of token
 	 * @return the random generated token
 	 */
-	public String createRandomToken(UUID userId, String type) {
+	public String createRandomToken(UserModel user, String type) {
 		String random = RandomStringUtils.randomAlphanumeric(8);
-		this.createToken(userId, type, random);
+		this.createToken(user, type, random);
 
 		return random;
 	}
@@ -47,26 +49,26 @@ public class TokenController implements UserDataHandler {
 	/**
 	 * Creates a new temporary token.
 	 *
-	 * @param userId of token
-	 * @param type   of token
-	 * @param token  itself
-	 * @param exp    millis
+	 * @param user  of token
+	 * @param type  of token
+	 * @param token itself
+	 * @param exp   millis
 	 */
-	public void createTemporaryToken(UUID userId, String type, String token, long exp) {
-		this.tokenRepository.save(new TokenModel(-1, userId, type, token, exp));
+	public void createTemporaryToken(UserModel user, String type, String token, long exp) {
+		this.tokenRepository.save(new TokenModel(-1, user, type, token, exp));
 	}
 
 	/**
 	 * Creates a temporary random alphanumeric token with a length of 8.
 	 *
-	 * @param userId of token
-	 * @param type   of token
-	 * @param exp    millis
+	 * @param user of token
+	 * @param type of token
+	 * @param exp  millis
 	 * @return the random generated token
 	 */
-	public String createRandomTemporaryToken(UUID userId, String type, long exp) {
+	public String createRandomTemporaryToken(UserModel user, String type, long exp) {
 		String random = RandomStringUtils.randomAlphanumeric(8);
-		this.createTemporaryToken(userId, type, random, exp);
+		this.createTemporaryToken(user, type, random, exp);
 
 		return random;
 	}
@@ -75,13 +77,13 @@ public class TokenController implements UserDataHandler {
 	 * Checks if a token exists and is not expired.
 	 * If expired deletes the token.
 	 *
-	 * @param userId of token
-	 * @param type   of token
-	 * @param token  itself
+	 * @param user  of token
+	 * @param type  of token
+	 * @param token itself
 	 * @return if token exists
 	 */
-	public boolean checkToken(UUID userId, String type, String token) {
-		Optional<TokenModel> optionalToken = this.tokenRepository.findByUserIdAndTypeAndToken(userId, type, token);
+	public boolean checkToken(UserModel user, String type, String token) {
+		Optional<TokenModel> optionalToken = this.tokenRepository.findByUserAndTypeAndToken(user, type, token);
 		if (optionalToken.isPresent()) {
 			long exp = optionalToken.get().getExp();
 			if (exp < 0) return true;
@@ -96,23 +98,23 @@ public class TokenController implements UserDataHandler {
 	/**
 	 * Deletes a token.
 	 *
-	 * @param userId of token
-	 * @param type   of token
-	 * @param token  itself
+	 * @param user  of token
+	 * @param type  of token
+	 * @param token itself
 	 */
 	@Transactional
-	public void deleteToken(UUID userId, String type, String token) {
-		this.tokenRepository.deleteByUserIdAndTypeAndToken(userId, type, token);
+	public void deleteToken(UserModel user, String type, String token) {
+		this.tokenRepository.deleteByUserAndTypeAndToken(user, type, token);
 	}
 
 	@Override
-	public void deleteUserData(UUID userId) {
-		this.tokenRepository.deleteByUserId(userId);
+	public void deleteUserData(UserModel user) {
+		this.tokenRepository.deleteByUser(user);
 	}
 
 	@Override
-	public Object[] getUserData(UUID userId) {
-		return this.mapData(this.tokenRepository.findAllByUserId(userId));
+	public Object[] getUserData(UserModel user) {
+		return this.mapData(this.tokenRepository.findAllByUser(user));
 	}
 
 }

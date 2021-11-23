@@ -4,7 +4,6 @@ import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.InputStream;
@@ -93,8 +92,11 @@ public class EmailService implements LoggingComponent {
 			"</html>";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
-	@Autowired
-	private EmailServiceImpl emailService;
+	private final EmailServiceImpl emailService;
+
+	public EmailService(EmailServiceImpl emailService) {
+		this.emailService = emailService;
+	}
 
 	/**
 	 * Replace important and dynamic parts of email.
@@ -118,7 +120,7 @@ public class EmailService implements LoggingComponent {
 	 */
 	public boolean resetPassword(String email, String code) {
 		String link = Environment.PASSWORD_RESET_LINK;
-		if (link == null) link = "---";
+		if (link == null) link = "";
 		try {
 			InputStream in = this.getClass().getClassLoader().getResourceAsStream("reset-password.html");
 			if (in != null) {
@@ -144,7 +146,7 @@ public class EmailService implements LoggingComponent {
 	 */
 	public boolean verify(String email, String code) {
 		String link = Environment.VERIFY_EMAIL_LINK;
-		if (link == null) link = "---";
+		if (link == null) link = "";
 		try {
 			InputStream in = this.getClass().getClassLoader().getResourceAsStream("verify-email.html");
 			if (in != null) {

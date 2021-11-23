@@ -1,16 +1,15 @@
 package io.github.paexception.engelsburg.api.controller.reserved;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.paexception.engelsburg.api.database.model.SubstituteModel;
 import io.github.paexception.engelsburg.api.database.repository.SubstituteRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetSubstitutesResponseDTO;
 import io.github.paexception.engelsburg.api.service.notification.NotificationService;
 import io.github.paexception.engelsburg.api.service.scheduled.SubstituteUpdateService;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.apache.commons.lang3.time.DateUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 import java.sql.Date;
@@ -25,21 +24,26 @@ import static io.github.paexception.engelsburg.api.util.Constants.Substitute.NAM
 @Component
 public class SubstituteController {
 
-	@Autowired
-	private SubstituteRepository substituteRepository;
-	@Autowired
-	private NotificationService notificationService;
+	private final SubstituteRepository substituteRepository;
+	private final NotificationService notificationService;
+
+	public SubstituteController(
+			SubstituteRepository substituteRepository, NotificationService notificationService) {
+		this.substituteRepository = substituteRepository;
+		this.notificationService = notificationService;
+	}
 
 	/**
 	 * Checks if sender has permission to get past substitutes.
 	 *
-	 * @param jwt  with scopes
-	 * @param date specified
+	 * @param userDTO user information
+	 * @param date    specified
 	 * @return true if permitted, false if not
 	 */
-	private static boolean pastTimeCheck(DecodedJWT jwt, long date) {
-		if (!jwt.getClaim("scopes").asList(String.class).contains("substitute.read.all")) {
-			return DateUtils.isSameDay(new Date(System.currentTimeMillis()), new Date(date)) || System.currentTimeMillis() <= date; //Same day or in the future
+	private static boolean pastTimeCheck(UserDTO userDTO, long date) {
+		if (!userDTO.hasScope("substitute.read.all")) {
+			return DateUtils.isSameDay(new Date(System.currentTimeMillis()),
+					new Date(date)) || System.currentTimeMillis() <= date; //Same day or in the future
 		} else return true;
 	}
 
@@ -64,13 +68,15 @@ public class SubstituteController {
 	@Transactional
 	public void updateSubstitutes(List<SubstituteDTO> fetchedDTOs, Date date) {
 		this.substituteRepository.findAllByDate(date).stream().map(SubstituteModel::toResponseDTO)
-				.forEach(dto -> fetchedDTOs.removeIf(fetchedDTO -> fetchedDTO.equals(dto))); //Filter new or changed substitutes
+				.forEach(dto -> fetchedDTOs.removeIf(
+						fetchedDTO -> fetchedDTO.equals(dto))); //Filter new or changed substitutes
 		fetchedDTOs.removeIf(dto -> {
 			if (Character.isDigit(dto.getClassName().charAt(0))) { //5a-10e
 				Optional<SubstituteModel> optionalSubstitute = this.substituteRepository.findByDateAndLessonAndClassNameIsLike(
 						date, dto.getLesson(), SubstituteRepository.likeClassName(dto.getClassName()));
 				if (optionalSubstitute.isPresent()) {
-					this.substituteRepository.save(this.createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
+					this.substituteRepository.save(
+							this.createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
 					return true;
 				}
 			} else { //E1-Q4
@@ -78,14 +84,16 @@ public class SubstituteController {
 					Optional<SubstituteModel> optionalSubstitute = this.substituteRepository.findByDateAndLessonAndSubject(
 							date, dto.getLesson(), dto.getSubject());
 					if (optionalSubstitute.isPresent()) {
-						this.substituteRepository.save(this.createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
+						this.substituteRepository.save(
+								this.createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
 						return true;
 					}
 				} else {
 					Optional<SubstituteModel> optionalSubstitute = this.substituteRepository.findByDateAndLessonAndTeacher(
 							date, dto.getLesson(), dto.getTeacher());
 					if (optionalSubstitute.isPresent()) {
-						this.substituteRepository.save(this.createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
+						this.substituteRepository.save(
+								this.createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
 						return true;
 					}
 				}
@@ -105,12 +113,13 @@ public class SubstituteController {
 	 * @param lesson    filter by lesson
 	 * @param className filter by className
 	 * @param date      filter by date
-	 * @param jwt       with userId
+	 * @param userDTO   user information
 	 * @return all found substitutes
 	 */
-	public Result<GetSubstitutesResponseDTO> getSubstitutesByTeacher(String teacher, int lesson, String className, long date, DecodedJWT jwt) {
+	public Result<GetSubstitutesResponseDTO> getSubstitutesByTeacher(String teacher, int lesson, String className,
+			long date, UserDTO userDTO) {
 		if (date < 0) date = System.currentTimeMillis();
-		if (!pastTimeCheck(jwt, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
+		if (!pastTimeCheck(userDTO, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
 
 		List<SubstituteModel> substitutes;
 		if (lesson != -1) {
@@ -138,12 +147,13 @@ public class SubstituteController {
 	 *
 	 * @param teacher filter by substitute teacher
 	 * @param date    filter by date
-	 * @param jwt     with userId
+	 * @param userDTO user information
 	 * @return all found substitutes
 	 */
-	public Result<GetSubstitutesResponseDTO> getSubstitutesBySubstituteTeacher(String teacher, long date, DecodedJWT jwt) {
+	public Result<GetSubstitutesResponseDTO> getSubstitutesBySubstituteTeacher(String teacher, long date,
+			UserDTO userDTO) {
 		if (date < 0) date = System.currentTimeMillis();
-		if (!pastTimeCheck(jwt, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
+		if (!pastTimeCheck(userDTO, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
 
 		List<SubstituteModel> substitutes = this.substituteRepository.findAllByDateAndSubstituteTeacher(
 				new Date(date), teacher.toUpperCase());
@@ -157,12 +167,12 @@ public class SubstituteController {
 	 *
 	 * @param className filter by className
 	 * @param date      filter by date
-	 * @param jwt       with userId
+	 * @param userDTO   user information
 	 * @return all found substitutes
 	 */
-	public Result<GetSubstitutesResponseDTO> getSubstitutesByClassName(String className, long date, DecodedJWT jwt) {
+	public Result<GetSubstitutesResponseDTO> getSubstitutesByClassName(String className, long date, UserDTO userDTO) {
 		if (date < 0) date = System.currentTimeMillis();
-		if (!pastTimeCheck(jwt, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
+		if (!pastTimeCheck(userDTO, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
 
 		List<SubstituteModel> substitutes;
 		if (Character.isDigit(className.charAt(0)))
@@ -178,15 +188,19 @@ public class SubstituteController {
 	/**
 	 * Get all substitutes since date.
 	 *
-	 * @param date can't be in the past
-	 * @param jwt  with userId
+	 * @param date    can't be in the past
+	 * @param userDTO user information
 	 * @return all found substitutes
 	 */
-	public Result<GetSubstitutesResponseDTO> getAllSubstitutes(long date, DecodedJWT jwt) {
-		if (date < 0) date = System.currentTimeMillis();
-		if (!pastTimeCheck(jwt, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
+	public Result<GetSubstitutesResponseDTO> getAllSubstitutes(long date, UserDTO userDTO) {
+		List<SubstituteModel> substitutes;
+		if (date < 0) {
+			substitutes = this.substituteRepository.findAllByDateLessThanEqual(new Date(System.currentTimeMillis()));
+		} else {
+			if (!pastTimeCheck(userDTO, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
+			substitutes = this.substituteRepository.findAllByDateGreaterThanEqual(new Date(date));
+		}
 
-		List<SubstituteModel> substitutes = this.substituteRepository.findAllByDateGreaterThanEqual(new Date(date));
 		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		return this.returnSubstitutes(substitutes);

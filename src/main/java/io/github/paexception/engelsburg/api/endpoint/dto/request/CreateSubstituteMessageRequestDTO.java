@@ -7,8 +7,8 @@ import javax.validation.constraints.NotNull;
 import java.sql.Date;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class CreateSubstituteMessageRequestDTO {
 
 	@NotNull

@@ -1,7 +1,9 @@
 package io.github.paexception.engelsburg.api.spring;
 
 import io.github.paexception.engelsburg.api.util.Error;
+import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.Result;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -18,10 +20,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 /**
  * Handles thrown exceptions in RestControllers and represent them in a solid http response.
- * Also a way to catch exceptions which are supposed to be thrown or can be ignored
+ * A way to catch exceptions which are supposed to be thrown or can be ignored.
  */
 @RestControllerAdvice
-public class RestControllerExceptionHandler extends ResponseEntityExceptionHandler {
+public class RestControllerExceptionHandler extends ResponseEntityExceptionHandler implements LoggingComponent {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RestControllerExceptionHandler.class.getSimpleName());
 
@@ -33,7 +35,7 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
 	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Object> exception(Exception exception) {
-		LOGGER.error("Caught unhandled error reaching the end of the endpoint pipeline", exception);
+		this.logError("Caught unhandled error reaching the end of the endpoint pipeline", exception, LOGGER);
 
 		return Result.of(Error.INTERNAL_SERVER_ERROR, "An internal server error occurred!").getHttpResponse();
 	}
@@ -42,10 +44,13 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
 	 * Override method to handle exception already processed by {@link ResponseEntityExceptionHandler}.
 	 * where {@link ExceptionHandler} would throw an error, because exception is already handled
 	 */
+	@NonNull
 	@Override
-	protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
+	protected ResponseEntity<Object> handleExceptionInternal(@NonNull Exception ex, Object body,
+			@NonNull HttpHeaders headers, @NonNull HttpStatus status, @NonNull WebRequest request) {
 		if (ex instanceof MethodArgumentNotValidException) {
 			BindingResult result = ((MethodArgumentNotValidException) ex).getBindingResult();
+			headers.add("Content-Type", "application/json");
 
 			StringBuilder stringBuilder = new StringBuilder();
 			result.getFieldErrors().forEach(field -> stringBuilder.append(field.getField()).append(", "));

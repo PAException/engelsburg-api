@@ -1,6 +1,6 @@
 package io.github.paexception.engelsburg.api.controller.userdata;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
+import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetUserDataResponseDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetUserDataResponseDTOModel;
 import io.github.paexception.engelsburg.api.util.Error;
@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -32,33 +31,33 @@ public class UserDataController {
 	/**
 	 * Return all data of a user.
 	 *
-	 * @param jwt with userId
+	 * @param userDTO user information
 	 * @return all user data
 	 */
-	public Result<GetUserDataResponseDTO> getUserData(DecodedJWT jwt) {
-		UUID userId = UUID.fromString(jwt.getSubject());
+	public Result<GetUserDataResponseDTO> getUserData(UserDTO userDTO) {
 		List<GetUserDataResponseDTOModel> responseDTOs = new ArrayList<>();
 		for (UserDataHandler userHandler : USER_HANDLERS) {
-			Object[] data = userHandler.getUserData(userId);
-			data = Arrays.stream(data).filter(o -> o != null && ((o instanceof Collection) && !((Collection<?>) o).isEmpty()))//Drop if object null or empty
+			Object[] data = userHandler.getUserData(userDTO.user);
+			data = Arrays.stream(data).filter(
+							o -> o != null && ((o instanceof Collection) && !((Collection<?>) o).isEmpty()))//Drop if object null or empty
 					.collect(Collectors.toList()).toArray(Object[]::new);
 
 			if (data.length > 0) responseDTOs.add(new GetUserDataResponseDTOModel(this.getNameKey(userHandler), data));
 		}
 
 		if (responseDTOs.isEmpty()) return Result.of(Error.NOT_FOUND, "user_data");
-		else return Result.of(new GetUserDataResponseDTO(userId, responseDTOs));
+		else return Result.of(new GetUserDataResponseDTO(userDTO.user.getUserId(), responseDTOs));
 	}
 
 	/**
 	 * Delete all data of or referring to user.
 	 *
-	 * @param jwt with userId
+	 * @param userDTO with userId
 	 * @return empty result
 	 */
 	@Transactional
-	public Result<?> deleteUserData(DecodedJWT jwt) {
-		USER_HANDLERS.forEach(userHandler -> userHandler.deleteUserData(UUID.fromString(jwt.getSubject())));
+	public Result<?> deleteUserData(UserDTO userDTO) {
+		USER_HANDLERS.forEach(userHandler -> userHandler.deleteUserData(userDTO.user));
 
 		return Result.empty();
 	}

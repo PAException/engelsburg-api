@@ -5,11 +5,12 @@ import io.github.paexception.engelsburg.api.controller.shared.CafeteriaControlle
 import io.github.paexception.engelsburg.api.endpoint.dto.CafeteriaInformationDTO;
 import io.github.paexception.engelsburg.api.service.JsonFetchingService;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
-import io.github.paexception.engelsburg.api.util.WordpressAPI;
+import io.github.paexception.engelsburg.api.util.WordPressAPI;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
@@ -18,13 +19,18 @@ import java.io.IOException;
 public class CafeteriaUpdateService extends JsonFetchingService implements LoggingComponent {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CafeteriaUpdateService.class);
-	@Autowired
-	private CafeteriaController cafeteriaController;
+	private final CafeteriaController cafeteriaController;
+
+	public CafeteriaUpdateService(
+			CafeteriaController cafeteriaController) {
+		this.cafeteriaController = cafeteriaController;
+	}
 
 	/**
 	 * Scheduled function to update cafeteria information.
 	 */
-	@Scheduled(fixedRate = 2 * 60 * 1000)
+	@Scheduled(fixedRate = 2 * 60 * 1000, initialDelay = 2 * 60 * 1000)
+	@EventListener(ApplicationReadyEvent.class)
 	public void updateCafeteriaInformation() {
 		LOGGER.debug("Starting to fetch cafeteria information");
 		try {
@@ -34,12 +40,12 @@ public class CafeteriaUpdateService extends JsonFetchingService implements Loggi
 			if (this.checkChanges(json)) {
 				String link = json.get("link").getAsString();
 				String content = json.get("content").getAsJsonObject().get("rendered").getAsString();
-				String mediaUrl = WordpressAPI.getFeaturedMedia(json.get("featured_media").getAsInt(), content);
+				String mediaUrl = WordPressAPI.getFeaturedMedia(json.get("featured_media").getAsInt(), content);
 				String blurHash = null;
 
 				try {
-					content = WordpressAPI.applyBlurHashToAllImages(Jsoup.parse(content)).toString();
-					blurHash = mediaUrl != null ? WordpressAPI.getBlurHash(mediaUrl) : null;
+					content = WordPressAPI.applyBlurHashToAllImages(Jsoup.parse(content)).toString();
+					blurHash = mediaUrl != null ? WordPressAPI.getBlurHash(mediaUrl) : null;
 				} catch (IOException e) {
 					this.logError("Couldn't load blur hash of image", e, LOGGER);
 				}

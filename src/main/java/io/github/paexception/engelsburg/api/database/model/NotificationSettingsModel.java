@@ -2,18 +2,18 @@ package io.github.paexception.engelsburg.api.database.model;
 
 import io.github.paexception.engelsburg.api.endpoint.dto.NotificationSettingsDTO;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import javax.persistence.Column;
+import lombok.Setter;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -24,9 +24,9 @@ public class NotificationSettingsModel {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int notificationSettingId;
 
-	@NotNull
-	@Column(length = 16, unique = true)
-	private UUID userId;
+	@OneToOne
+	private UserModel user;
+
 	private boolean enabled;
 	private boolean byTimetable;
 

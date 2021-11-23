@@ -2,8 +2,9 @@ package io.github.paexception.engelsburg.api.database.model;
 
 import io.github.paexception.engelsburg.api.endpoint.dto.TeacherDTO;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -13,7 +14,8 @@ import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -73,7 +75,8 @@ public class TeacherModel {
 		TASTENSCHREIBEN(pow2(19), "Tastenschreiben"),
 		SCHULSOZIALARBEIT(pow2(20), "Schulsozialarbeit"),
 		SOFTWARESCHULUNG(pow2(21), "Softwareschulung"),
-		RELIGIONSPAEDAGOGISCHES_PRAKTIKUM_ALS_GEMEINDEASSISTENTIN(pow2(22), "Religionspädagogisches Praktikum als Gemeindeassistentin"),
+		RELIGIONSPAEDAGOGISCHES_PRAKTIKUM_ALS_GEMEINDEASSISTENTIN(pow2(22),
+				"Religionspädagogisches Praktikum als Gemeindeassistentin"),
 		RUSSISCH(pow2(22), "Russisch"),
 		OFFICE(pow2(23), "Office");
 
