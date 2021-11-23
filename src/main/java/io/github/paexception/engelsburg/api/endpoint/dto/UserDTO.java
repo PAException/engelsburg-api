@@ -33,14 +33,18 @@ public class UserDTO {
 		String[] split = scope.split("\\.");
 		String sub = this.scopes;
 		boolean found = true;
-		for (int i = 0; i < split.length; i++) {
+		for (int i = 0; i < split.length && found; i++) {
 			String part = split[i];
 			if (sub.contains(part)) {
-				int index = sub.indexOf(part);
-				String pre = sub.substring(0, index);
-				if (StringUtils.countMatches(pre, ".") != StringUtils.countMatches(pre, "-") - (i == 0 ? 0 : -1)) {
-					found = false;
+				boolean cascadedFound = false;
+				int index = 0;
+				while (!cascadedFound && (index = sub.indexOf(part, index + 1)) != -1) {
+					String pre = sub.substring(0, index);
+					if (StringUtils.countMatches(pre, ".") == StringUtils.countMatches(pre, "-") - (i == 0 ? 0 : -1)) {
+						cascadedFound = true;
+					}
 				}
+				if (!cascadedFound) found = false;
 				char c = sub.charAt(index + part.length());
 				if (c != '+' && c != '.' && c != '-') {
 					found = false;
