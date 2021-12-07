@@ -1,5 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.paexception.engelsburg.api.endpoint.dto.GradeDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,6 +27,7 @@ public class GradeModel {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int gradeId;
 
+	@JsonIgnore
 	@ManyToOne
 	private UserModel user;
 

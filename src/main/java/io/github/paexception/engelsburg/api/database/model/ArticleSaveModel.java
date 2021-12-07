@@ -1,5 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,7 @@ public class ArticleSaveModel {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int articleSaveId;
 
+	@JsonIgnore
 	@ManyToOne
 	private UserModel user;
 	private int articleId;

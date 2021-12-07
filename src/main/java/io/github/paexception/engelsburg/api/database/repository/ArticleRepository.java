@@ -23,4 +23,5 @@ public interface ArticleRepository extends PagingAndSortingRepository<ArticleMod
 	@Query(value = "SELECT * from article", nativeQuery = true)
 	List<ArticleIdAndContentHash> findAllIdsAndContentHashes();
 
+	boolean existsByArticleId(int articleId);
 }

@@ -80,7 +80,7 @@ public class SubstituteController {
 					return true;
 				}
 			} else { //E1-Q4
-				if (dto.getTeacher().isBlank()) {
+				if (dto.getTeacher() == null || dto.getTeacher().isBlank()) {
 					Optional<SubstituteModel> optionalSubstitute = this.substituteRepository.findByDateAndLessonAndSubject(
 							date, dto.getLesson(), dto.getSubject());
 					if (optionalSubstitute.isPresent()) {
@@ -178,7 +178,7 @@ public class SubstituteController {
 		if (Character.isDigit(className.charAt(0)))
 			substitutes = this.substituteRepository.findAllByDateGreaterThanEqualAndClassNameIsLike(
 					new Date(date), SubstituteRepository.likeClassName(className)); //Include like 5abcde
-		else substitutes = this.substituteRepository.findAllByDateAndClassName(
+		else substitutes = this.substituteRepository.findAllByDateGreaterThanEqualAndClassName(
 				new Date(date), className);
 		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
@@ -195,10 +195,10 @@ public class SubstituteController {
 	public Result<GetSubstitutesResponseDTO> getAllSubstitutes(long date, UserDTO userDTO) {
 		List<SubstituteModel> substitutes;
 		if (date < 0) {
-			substitutes = this.substituteRepository.findAllByDateLessThanEqual(new Date(System.currentTimeMillis()));
+			substitutes = this.substituteRepository.findAllByDateGreaterThanEqual(new Date(System.currentTimeMillis()));
 		} else {
 			if (!pastTimeCheck(userDTO, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
-			substitutes = this.substituteRepository.findAllByDateGreaterThanEqual(new Date(date));
+			substitutes = this.substituteRepository.findAllByDateLessThanEqual(new Date(date));
 		}
 
 		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
@@ -219,7 +219,7 @@ public class SubstituteController {
 				dto.getDate(),
 				dto.getClassName(),
 				dto.getLesson(),
-				dto.getSubject() != null ? dto.getSubject().toUpperCase() : null,
+				dto.getSubject(),
 				dto.getSubstituteTeacher() != null ? dto.getSubstituteTeacher().toUpperCase() : null,
 				dto.getTeacher() != null ? dto.getTeacher().toUpperCase() : null,
 				dto.getType(),

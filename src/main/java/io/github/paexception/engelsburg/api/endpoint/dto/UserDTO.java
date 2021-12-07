@@ -37,7 +37,7 @@ public class UserDTO {
 			String part = split[i];
 			if (sub.contains(part)) {
 				boolean cascadedFound = false;
-				int index = 0;
+				int index = -1;
 				while (!cascadedFound && (index = sub.indexOf(part, index + 1)) != -1) {
 					String pre = sub.substring(0, index);
 					if (StringUtils.countMatches(pre, ".") == StringUtils.countMatches(pre, "-") - (i == 0 ? 0 : -1)) {
@@ -45,9 +45,11 @@ public class UserDTO {
 					}
 				}
 				if (!cascadedFound) found = false;
-				char c = sub.charAt(index + part.length());
-				if (c != '+' && c != '.' && c != '-') {
-					found = false;
+				if ((index + part.length()) <= sub.length() - 1) {
+					char c = sub.charAt(index + part.length());
+					if (c != '+' && c != '.' && c != '-') {
+						found = false;
+					}
 				}
 				sub = sub.substring(sub.indexOf(part));
 			} else {

@@ -32,9 +32,7 @@ public class SubstituteModel {
 	private String className;
 	private int lesson;
 	private String subject;
-	@NotBlank
 	private String substituteTeacher;
-	@NotBlank
 	private String teacher;
 	@NotBlank
 	private String type;

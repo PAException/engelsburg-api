@@ -1,5 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,7 @@ public class TokenModel {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int tokenId;
 
+	@JsonIgnore
 	@ManyToOne
 	private UserModel user;
 	@NotBlank
