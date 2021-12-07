@@ -1,5 +1,6 @@
 package io.github.paexception.engelsburg.api.controller.internal;
 
+import io.github.paexception.engelsburg.api.controller.userdata.UserDataHandler;
 import io.github.paexception.engelsburg.api.database.model.RefreshTokenModel;
 import io.github.paexception.engelsburg.api.database.model.UserModel;
 import io.github.paexception.engelsburg.api.database.repository.RefreshTokenRepository;
@@ -11,7 +12,7 @@ import java.util.Optional;
  * Controller for refresh tokens.
  */
 @Component
-public class RefreshTokenController {
+public class RefreshTokenController implements UserDataHandler {
 
 	private final RefreshTokenRepository refreshTokenRepository;
 
@@ -48,4 +49,13 @@ public class RefreshTokenController {
 		return optionalRefreshToken.get().getExpire() >= System.currentTimeMillis() ? optionalRefreshToken.get().getUser() : null;
 	}
 
+	@Override
+	public void deleteUserData(UserModel user) {
+		this.refreshTokenRepository.deleteAllByUser(user);
+	}
+
+	@Override
+	public Object[] getUserData(UserModel user) {
+		return this.mapData(this.refreshTokenRepository.findByUser(user));
+	}
 }

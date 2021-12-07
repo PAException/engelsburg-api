@@ -25,8 +25,8 @@ public class RateLimitInterceptor extends RateLimiter implements HandlerIntercep
 	 */
 	public RateLimitInterceptor() {
 		super(Bucket4j.builder()
-				.addLimit(Bandwidth.classic(30, Refill.intervally(30, Duration.ofMinutes(1))))
-				.addLimit(Bandwidth.classic(10, Refill.intervally(10, Duration.ofSeconds(15))))
+				.addLimit(Bandwidth.classic(60, Refill.intervally(60, Duration.ofMinutes(1))))
+				.addLimit(Bandwidth.classic(10, Refill.intervally(10, Duration.ofSeconds(10))))
 		);
 	}
 

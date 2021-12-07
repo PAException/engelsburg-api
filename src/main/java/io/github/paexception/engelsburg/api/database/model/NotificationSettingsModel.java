@@ -1,5 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.paexception.engelsburg.api.endpoint.dto.NotificationSettingsDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,6 +25,7 @@ public class NotificationSettingsModel {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int notificationSettingId;
 
+	@JsonIgnore
 	@OneToOne
 	private UserModel user;
 

@@ -1,5 +1,6 @@
 package io.github.paexception.engelsburg.api.controller.userdata;
 
+import io.github.paexception.engelsburg.api.controller.AuthenticationController;
 import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetUserDataResponseDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetUserDataResponseDTOModel;
@@ -25,7 +26,7 @@ public class UserDataController {
 	 * @param userHandler instance of the user handler
 	 */
 	public static void registerUserHandler(UserDataHandler userHandler) {
-		USER_HANDLERS.add(userHandler);
+		USER_HANDLERS.add(userHandler instanceof AuthenticationController ? USER_HANDLERS.size() : 0, userHandler);
 	}
 
 	/**

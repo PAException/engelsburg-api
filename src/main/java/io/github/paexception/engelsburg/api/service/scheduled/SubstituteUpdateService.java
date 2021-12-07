@@ -166,11 +166,10 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 		SubstituteDTO dto = new SubstituteDTO();
 		dto.setDate(this.currentDate);
 		dto.setClassName(row.child(0).text());
-		if (row.child(1).text().contains("-")) { //5 - 6, //3 - 6
-			int low = Integer.parseInt(String.valueOf(row.child(1).text().charAt(row.child(1).text()
-					.replace(" ", "").indexOf("-") - 1))),
-					high = Integer.parseInt(String.valueOf(row.child(1).text().charAt(row.child(1).text()
-							.replace(" ", "").indexOf("-") + 3)));
+		String lessons = row.child(1).text().replace(" ", "");
+		if (lessons.contains("-")) { //5 - 6, //3 - 6
+			int low = Integer.parseInt(lessons.substring(0, lessons.indexOf("-"))),
+					high = Integer.parseInt(lessons.substring(lessons.indexOf("-") + 1));
 
 			for (int i = low; i < high; i++) {
 				row.children().set(1, row.child(1).text(String.valueOf(i)));
@@ -179,10 +178,10 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 			}
 
 			dto.setLesson(high);
-		} else dto.setLesson(Integer.parseInt(row.child(1).text()));
+		} else dto.setLesson(Integer.parseInt(lessons));
 		if (row.child(2).text().matches("(.*)[0-9](.*)")) dto.setSubject(row.child(2).text());
-		dto.setSubstituteTeacher(row.child(3).text());
-		dto.setTeacher(row.child(4).text());
+		if (row.child(3).text().matches("(.*)[a-zA-ZäöüÄÖÜ0-9](.*)")) dto.setSubstituteTeacher(row.child(3).text());
+		if (row.child(4).text().matches("(.*)[a-zA-ZäöüÄÖÜ0-9](.*)")) dto.setTeacher(row.child(4).text());
 		dto.setType(row.child(5).text());
 		if (row.child(6).text().matches("(.*)[0-9](.*)")) dto.setSubstituteOf(row.child(6).text());
 		if (!row.child(7).text().equals("---")) dto.setRoom(row.child(7).text());

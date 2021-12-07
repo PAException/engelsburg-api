@@ -138,7 +138,7 @@ public class ArticleController extends AbstractPageable implements UserDataHandl
 	 */
 	@Transactional
 	public Result<?> saveArticle(boolean value, int articleId, UserDTO userDTO) {
-		if (!this.articleRepository.existsById(articleId)) return Result.of(Error.NOT_FOUND, NAME_KEY);
+		if (!this.articleRepository.existsByArticleId(articleId)) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		if (value) {
 			if (this.articleSaveRepository.existsByArticleIdAndUser(articleId, userDTO.user))

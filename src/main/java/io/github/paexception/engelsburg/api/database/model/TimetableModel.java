@@ -1,5 +1,6 @@
 package io.github.paexception.engelsburg.api.database.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.paexception.engelsburg.api.endpoint.dto.TimetableDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,6 +26,7 @@ public class TimetableModel {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int timetableId;
 
+	@JsonIgnore
 	@ManyToOne
 	private UserModel user;
 	@Range(min = 0, max = 4)//MON to FRI

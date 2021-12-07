@@ -17,7 +17,7 @@ public interface SubstituteRepository extends JpaRepository<SubstituteModel, Int
 
 	List<SubstituteModel> findAllByDate(Date date);
 
-	List<SubstituteModel> findAllByDateAndClassName(Date date, String className);
+	List<SubstituteModel> findAllByDateGreaterThanEqualAndClassName(Date date, String className);
 
 	List<SubstituteModel> findAllByDateAndTeacher(Date date, String teacher);
 
