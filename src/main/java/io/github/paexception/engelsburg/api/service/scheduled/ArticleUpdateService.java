@@ -151,7 +151,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 			this.updateArticles(DATE_FORMAT.format(lastArticle.getResult().getArticles().get(0).getDate()), 1)
 					.forEach(this.articleController::createOrUpdateArticle);
 		} else {
-			this.updateArticles(DATE_FORMAT.format(new Date(0)), 1).forEach(
+			this.updateArticles(DATE_FORMAT.format(new Date(1)), 1).forEach(
 					this.articleController::createOrUpdateArticle);
 		}
 		LOGGER.info("Fetched " + counter + " article" + (counter == 1 ? "" : "s") + "!");
