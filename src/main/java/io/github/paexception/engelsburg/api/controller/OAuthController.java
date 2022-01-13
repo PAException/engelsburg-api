@@ -44,7 +44,7 @@ public class OAuthController {
 	public Result<?> request(String schoolToken, String service, HttpServletRequest request,
 			HttpServletResponse response) {
 		boolean signUp = !schoolToken.isEmpty();
-		if (!signUp && !Environment.SCHOOL_TOKEN.equals(schoolToken)) { //Check school token
+		if (signUp && !Environment.SCHOOL_TOKEN.equals(schoolToken)) { //Check school token
 			return Result.of(Error.FORBIDDEN, "school_token");
 		}
 
