@@ -61,6 +61,17 @@ public class NotificationEndpoint {
 	}
 
 	/**
+	 * Update language of a notification device.
+	 *
+	 * @see NotificationController#updateNotificationDevice(NotificationDeviceDTO, UserDTO)
+	 */
+	@AuthScope("notification.settings.write.self")
+	@PatchMapping("/user/notification/device")
+	public Object updateNotificationDevice(@RequestBody @Valid NotificationDeviceDTO dto, UserDTO userDTO) {
+		return this.notificationController.updateNotificationDevice(dto, userDTO).getHttpResponse();
+	}
+
+	/**
 	 * Remove a notification device.
 	 *
 	 * @see NotificationController#removeNotificationDevice(NotificationDeviceDTO, UserDTO)

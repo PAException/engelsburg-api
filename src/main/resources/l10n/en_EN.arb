@@ -1,0 +1,17 @@
+{
+  "newArticle": "New Article published!",
+  "@newArticle": {
+    "description": "Notification title of article"
+  },
+  "insteadOf": "instead of",
+  "@insteadOf": {
+    "description": "instead of"
+  },
+  "newSubstitute": "{count} substitute(s) changed or published!",
+  "@newSubstitute": {
+    "description": "Notification title of general substitute update",
+    "placeholders": {
+      "count": {}
+    }
+  }
+}

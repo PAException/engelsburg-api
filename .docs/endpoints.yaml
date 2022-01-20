@@ -885,6 +885,10 @@ paths:
                 type: "string"
                 example: "jgsyfskzjxsgnfhjshgnfxmsaukhnmfxkcsaglfjizxann"
                 description: "Token of firebase cloud messaging"
+              langCode:
+                type: "string"
+                example: "de_DE"
+                description: "Language settings of device"
       responses:
         "200":
           description: "Successful operation"
@@ -922,6 +926,10 @@ paths:
                 type: "string"
                 example: "jgsyfskzjxsgnfhjshgnfxmsaukhnmfxkcsaglfjizxann"
                 description: "Token of firebase cloud messaging"
+              langCode:
+                type: "string"
+                example: "de_DE"
+                description: "Language settings of device"
       responses:
         "200":
           description: "Successful operation"
