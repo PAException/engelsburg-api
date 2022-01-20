@@ -12,5 +12,7 @@ public class NotificationDeviceDTO {
 
 	@NotBlank //Because of endpoint use
 	private String token;
+	@NotBlank
+	private String langCode;
 
 }

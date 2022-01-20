@@ -1,15 +1,12 @@
 package io.github.paexception.engelsburg.api.service.notification;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
-import io.github.paexception.engelsburg.api.endpoint.dto.NotificationDTO;
+import com.google.firebase.messaging.Notification;
 import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import lombok.AccessLevel;
@@ -17,16 +14,17 @@ import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
+@Component
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FirebaseCloudMessagingImpl implements LoggingComponent {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FirebaseCloudMessagingImpl.class);
 	private static FirebaseCloudMessagingImpl instance;
-	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	/**
 	 * Initiates the firebase app to send notifications.
@@ -48,54 +46,53 @@ public class FirebaseCloudMessagingImpl implements LoggingComponent {
 	}
 
 	/**
-	 * Sends notification to topics.
+	 * Send a notification to one or many topics.
 	 *
-	 * @param type    of notification
-	 * @param payload with information
-	 * @param topics  to send to
+	 * @param title  of notification
+	 * @param body   of notification
+	 * @param topics to send notification to
 	 */
-	public void sendNotificationToTopics(String type, Object payload, String... topics) {
+	public void sendNotificationToTopics(String title, String body, String... topics) {
 		try {
-			Message.Builder messageBuilder = Message.builder()
-					.putData("type", type)
-					.putData("data", this.objectMapper.writeValueAsString(payload));
+			Message.Builder messageBuilder = Message.builder().setNotification(Notification.builder()
+					.setTitle(title).setBody(body).build());
 
 			for (String topic : topics)
-				if (topic.matches("[A-ZÄÖÜa-zäöü]"))
-					FirebaseMessaging.getInstance().send(messageBuilder.setTopic(topic
-							.replace("Ä", "AE")
-							.replace("Ö", "OE")
-							.replace("Ü", "UE")
-							.replace("ä", "ae")
-							.replace("ö", "oe")
-							.replace("ü", "ue")
-							.toLowerCase()).build(), !Environment.PRODUCTION);
-		} catch (JsonProcessingException | FirebaseMessagingException e) {
+				FirebaseMessaging.getInstance().sendAsync(messageBuilder.setTopic(topic
+						.replace("Ä", "AE")
+						.replace("Ö", "OE")
+						.replace("Ü", "UE")
+						.replace("ä", "ae")
+						.replace("ö", "oe")
+						.replace("ü", "ue")
+						.toLowerCase()).build(), !Environment.PRODUCTION);
+		} catch (Exception e) {
 			this.logError("Couldn't send notification", e, LOGGER);
 		}
 	}
 
 	/**
-	 * Send advanced notifications to many.
+	 * Send a multicast notification to many devices.
 	 *
-	 * @param type of notification
-	 * @param dtos with notification tokens and info
+	 * @param title  of notification
+	 * @param body   of notification
+	 * @param tokens devices to send notification to
 	 */
-	public void sendAdvancedNotifications(String type, List<NotificationDTO> dtos) {
-		dtos.forEach(dto -> {
-			try {
-				if (dto.getTokens().size() > 0) {
-					MulticastMessage multicastMessage = MulticastMessage.builder()
-							.addAllTokens(dto.getTokens())
-							.putData("type", type)
-							.putData("data", this.objectMapper.writeValueAsString(dto.getDto()))
-							.build();
-					FirebaseMessaging.getInstance().sendMulticast(multicastMessage);
-				}
-			} catch (JsonProcessingException | FirebaseMessagingException e) {
-				this.logError("Couldn't send notification", e, LOGGER);
+	public void sendMulticastNotification(String title, String body, List<String> tokens) {
+		try {
+			if (tokens.size() > 0) {
+				MulticastMessage multicastMessage = MulticastMessage.builder()
+						.addAllTokens(tokens)
+						.setNotification(Notification.builder()
+								.setTitle(title)
+								.setBody(body)
+								.build())
+						.build();
+				FirebaseMessaging.getInstance().sendMulticastAsync(multicastMessage, !Environment.PRODUCTION);
 			}
-		});
+		} catch (Exception e) {
+			this.logError("Couldn't send notification", e, LOGGER);
+		}
 	}
 
 	/**

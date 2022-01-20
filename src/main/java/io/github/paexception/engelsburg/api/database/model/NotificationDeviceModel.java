@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
@@ -27,6 +28,14 @@ public class NotificationDeviceModel {
 	@JsonIgnore
 	@ManyToOne
 	private UserModel user;
+	@NotBlank
 	private String token;
+	@NotBlank
+	private String langCode;
 
+	public NotificationDeviceModel updateLangCode(String langCode) {
+		this.langCode = langCode;
+
+		return this;
+	}
 }

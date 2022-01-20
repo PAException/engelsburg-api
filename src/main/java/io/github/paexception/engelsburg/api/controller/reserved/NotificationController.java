@@ -77,7 +77,7 @@ public class NotificationController implements UserDataHandler {
 	/**
 	 * Add a new device to receive notifications on.
 	 *
-	 * @param dto     with device token
+	 * @param dto     with device token and langCode
 	 * @param userDTO user information
 	 * @return empty result or error
 	 */
@@ -85,7 +85,23 @@ public class NotificationController implements UserDataHandler {
 		if (this.notificationDeviceRepository.existsByUserAndToken(userDTO.user, dto.getToken()))
 			return Result.of(Error.ALREADY_EXISTS, NAME_KEY + "_device");
 		else this.notificationDeviceRepository.save(
-				new NotificationDeviceModel(-1, userDTO.user, dto.getToken()));
+				new NotificationDeviceModel(-1, userDTO.user, dto.getToken(), dto.getLangCode()));
+
+		return Result.empty();
+	}
+
+	/**
+	 * Update langCode of notification device.
+	 *
+	 * @param dto     with device token and langCode
+	 * @param userDTO user information
+	 * @return empty result or error
+	 */
+	public Result<?> updateNotificationDevice(NotificationDeviceDTO dto, UserDTO userDTO) {
+		Optional<NotificationDeviceModel> optionalDevice = this.notificationDeviceRepository
+				.findByUserAndToken(userDTO.user, dto.getToken());
+		if (optionalDevice.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY + "_device");
+		else this.notificationDeviceRepository.save(optionalDevice.get().updateLangCode(dto.getLangCode()));
 
 		return Result.empty();
 	}
@@ -93,7 +109,7 @@ public class NotificationController implements UserDataHandler {
 	/**
 	 * Remove an existing device which receives notifications.
 	 *
-	 * @param dto     with device token
+	 * @param dto     with device token and langCode
 	 * @param userDTO user information
 	 * @return empty result or error
 	 */
@@ -119,18 +135,17 @@ public class NotificationController implements UserDataHandler {
 	}
 
 	/**
-	 * Fetch all device tokens of userIds.
+	 * Fetch all notification devices of users.
 	 *
-	 * @param users Set of users to fetch for
-	 * @return a Set of device tokens
+	 * @param users stream of users to fetch for
+	 * @return a Set of notification devices
 	 */
 	@Transactional
-	public Set<String> getTimetableNotificationTokensOfUsers(Stream<UserModel> users) {
+	public Set<NotificationDeviceModel> getTimetableNotificationDeviceOfUsers(Stream<UserModel> users) {
 		return users.filter(
 						userId -> this.notificationSettingsRepository.existsByUserAndEnabledAndByTimetable(userId, true,
 								true))
-				.flatMap(userId -> this.notificationDeviceRepository.findAllByUser(userId).stream()
-						.map(NotificationDeviceModel::getToken)).collect(Collectors.toSet());
+				.flatMap(userId -> this.notificationDeviceRepository.findAllByUser(userId).stream()).collect(
+						Collectors.toSet());
 	}
-
 }
