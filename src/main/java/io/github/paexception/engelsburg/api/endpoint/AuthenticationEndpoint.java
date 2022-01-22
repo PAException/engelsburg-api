@@ -1,7 +1,7 @@
 package io.github.paexception.engelsburg.api.endpoint;
 
 import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket4j;
+import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
 import io.github.paexception.engelsburg.api.controller.AuthenticationController;
 import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
@@ -33,7 +33,7 @@ public class AuthenticationEndpoint extends RateLimiter {
 	private final AuthenticationController authenticationController;
 
 	public AuthenticationEndpoint(AuthenticationController authenticationController) {
-		super(Bucket4j.builder().addLimit(Bandwidth.classic(5, Refill.intervally(5, Duration.ofMinutes(1)))));
+		super(Bucket.builder().addLimit(Bandwidth.classic(5, Refill.intervally(5, Duration.ofMinutes(1)))));
 		this.authenticationController = authenticationController;
 	}
 
