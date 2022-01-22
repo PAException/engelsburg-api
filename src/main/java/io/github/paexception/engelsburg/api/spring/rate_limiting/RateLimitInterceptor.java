@@ -1,7 +1,7 @@
 package io.github.paexception.engelsburg.api.spring.rate_limiting;
 
 import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket4j;
+import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
 import io.github.bucket4j.Refill;
 import lombok.NonNull;
@@ -24,7 +24,7 @@ public class RateLimitInterceptor extends RateLimiter implements HandlerIntercep
 	 * Initialize rate limiting buckets.
 	 */
 	public RateLimitInterceptor() {
-		super(Bucket4j.builder()
+		super(Bucket.builder()
 				.addLimit(Bandwidth.classic(60, Refill.intervally(60, Duration.ofMinutes(1))))
 				.addLimit(Bandwidth.classic(10, Refill.intervally(10, Duration.ofSeconds(10))))
 		);

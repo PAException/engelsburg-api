@@ -6,10 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import java.io.BufferedReader;
+import org.springframework.util.ResourceUtils;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,11 +56,15 @@ public class Localization implements LoggingComponent {
 	@Bean
 	private void initialize() {
 		try {
+			LOGGER.debug("Starting to load localization messages");
 			for (String file : this.getL10nFilenames()) {
 				Map<String, String> map = new HashMap<>(); //Create map to put strings
 				Map<?, ?> json = GSON.fromJson(
-						new InputStreamReader(this.getResourceAsStream("l10n" + File.separator + file)),
-						Map.class); //Get json
+						new InputStreamReader(new FileInputStream(this.getResource("l10n" + File.separator + file))),
+						Map.class
+				); //Get json
+				String lang = file.replace(".arb", "");
+				LOGGER.trace("Loading localization language: " + lang);
 
 				for (Object o1 : json.keySet()) { //Add all entries which don't start with @
 					if (!(o1 instanceof String)) continue; //Casting checks
@@ -71,8 +76,11 @@ public class Localization implements LoggingComponent {
 
 					map.put(key, (String) o2); //Put in map
 				}
-				L10N.put(file.replace(".arb", ""), map);
+				L10N.put(lang, map);
+				LOGGER.trace("Successful loaded localization language: " + lang + " (" + map.size() + " messages)");
 			}
+			if (L10N.isEmpty()) LOGGER.warn("Didn't load any localization languages");
+			else LOGGER.info("Loaded localization messages");
 		} catch (IOException e) {
 			this.logError("Couldn't load localization files", e, LOGGER);
 		}
@@ -84,10 +92,8 @@ public class Localization implements LoggingComponent {
 	 * @param resource to get stream from
 	 * @return stream
 	 */
-	private InputStream getResourceAsStream(String resource) {
-		final InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
-
-		return in == null ? this.getClass().getResourceAsStream(resource) : in;
+	private File getResource(String resource) throws FileNotFoundException {
+		return ResourceUtils.getFile("classpath:" + resource);
 	}
 
 	/**
@@ -99,13 +105,10 @@ public class Localization implements LoggingComponent {
 	private List<String> getL10nFilenames() throws IOException {
 		List<String> filenames = new ArrayList<>();
 
-		try (BufferedReader br = new BufferedReader(new InputStreamReader(this.getResourceAsStream("l10n")))) {
-			String resource;
-
-			while ((resource = br.readLine()) != null) {
-				filenames.add(resource);
-			}
-		}
+		File file = this.getResource("l10n");
+		if (file.isDirectory() && file.exists())
+			for (File sub : Objects.requireNonNull(file.listFiles()))
+				filenames.add(sub.getName()); //file.listFiles() can't be null
 
 		return filenames;
 	}
