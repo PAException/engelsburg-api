@@ -1,5 +1,10 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.endpoint.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,11 +17,12 @@ import javax.validation.constraints.NotBlank;
 public class CreateGradeRequestDTO {
 
 	@NotBlank
+	@Schema(example = "1. Klausur")
 	private String name;
-	private double share;
 	@Range(min = 0, max = 15)
+	@Schema(example = "12")
 	private int value = -1;
-	@NotBlank
-	private String subject;
+	@Schema(example = "14")
+	private int gradeShareId;
 
 }

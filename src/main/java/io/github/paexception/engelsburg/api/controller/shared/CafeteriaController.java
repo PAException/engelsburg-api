@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.controller.shared;
 
 import io.github.paexception.engelsburg.api.endpoint.dto.CafeteriaInformationDTO;
@@ -27,5 +31,4 @@ public class CafeteriaController {
 	public Result<CafeteriaInformationDTO> getInfo() {
 		return this.dto != null ? Result.of(this.dto) : Result.of(Error.NOT_FOUND, "cafeteria");
 	}
-
 }

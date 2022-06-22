@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.spring.rate_limiting;
 
 import io.github.bucket4j.Bandwidth;
@@ -46,11 +50,13 @@ public class RateLimitInterceptor extends RateLimiter implements HandlerIntercep
 	@Override
 	public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
 			@NonNull Object handler) throws Exception {
+		if (!(handler instanceof HandlerMethod)) return true;
+
 		HandlerMethod handlerMethod = (HandlerMethod) handler;
 		if (handlerMethod.hasMethodAnnotation(IgnoreGeneralRateLimit.class)) return true;
 
 		ConsumptionProbe consumption = this.advancedAcquire(request.getRemoteAddr());
-		if (!consumption.isConsumed()) {
+		if (consumption != null && !consumption.isConsumed()) {
 			sendFailResponse(response, consumption.getNanosToWaitForRefill() / 1000000000);
 			return false;
 		}
@@ -58,7 +64,7 @@ public class RateLimitInterceptor extends RateLimiter implements HandlerIntercep
 		if (handlerMethod.getBean() instanceof RateLimiter && handlerMethod.hasMethodAnnotation(RateLimit.class)) {
 			RateLimiter rateLimiter = (RateLimiter) handlerMethod.getBean();
 			consumption = rateLimiter.advancedAcquire(request.getRemoteAddr());
-			if (!consumption.isConsumed()) {
+			if (consumption != null && !consumption.isConsumed()) {
 				sendFailResponse(response, consumption.getNanosToWaitForRefill() / 1000000000);
 				return false;
 			}

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.service.notification;
 
 import com.google.auth.oauth2.GoogleCredentials;
@@ -31,6 +35,8 @@ public class FirebaseCloudMessagingImpl implements LoggingComponent {
 	 */
 	@Bean
 	public void init() {
+		if (!Environment.PRODUCTION) return;
+		if (!FirebaseApp.getApps().isEmpty()) return;
 		try {
 			FileInputStream serviceAccount = new FileInputStream(Environment.GOOGLE_ACCOUNT_CREDENTIALS);
 
@@ -53,6 +59,7 @@ public class FirebaseCloudMessagingImpl implements LoggingComponent {
 	 * @param topics to send notification to
 	 */
 	public void sendNotificationToTopics(String title, String body, String... topics) {
+		if (!Environment.PRODUCTION) return;
 		try {
 			Message.Builder messageBuilder = Message.builder().setNotification(Notification.builder()
 					.setTitle(title).setBody(body).build());
@@ -65,7 +72,7 @@ public class FirebaseCloudMessagingImpl implements LoggingComponent {
 						.replace("ä", "ae")
 						.replace("ö", "oe")
 						.replace("ü", "ue")
-						.toLowerCase()).build(), !Environment.PRODUCTION);
+						.toLowerCase()).build());
 		} catch (Exception e) {
 			this.logError("Couldn't send notification", e, LOGGER);
 		}
@@ -79,6 +86,7 @@ public class FirebaseCloudMessagingImpl implements LoggingComponent {
 	 * @param tokens devices to send notification to
 	 */
 	public void sendMulticastNotification(String title, String body, List<String> tokens) {
+		if (!Environment.PRODUCTION) return;
 		try {
 			if (tokens.size() > 0) {
 				MulticastMessage multicastMessage = MulticastMessage.builder()
@@ -88,7 +96,7 @@ public class FirebaseCloudMessagingImpl implements LoggingComponent {
 								.setBody(body)
 								.build())
 						.build();
-				FirebaseMessaging.getInstance().sendMulticastAsync(multicastMessage, !Environment.PRODUCTION);
+				FirebaseMessaging.getInstance().sendMulticastAsync(multicastMessage);
 			}
 		} catch (Exception e) {
 			this.logError("Couldn't send notification", e, LOGGER);

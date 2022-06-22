@@ -1,49 +1,38 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.controller.shared;
 
-import io.github.paexception.engelsburg.api.controller.userdata.UserDataHandler;
 import io.github.paexception.engelsburg.api.database.model.ArticleModel;
-import io.github.paexception.engelsburg.api.database.model.ArticleSaveModel;
-import io.github.paexception.engelsburg.api.database.model.UserModel;
-import io.github.paexception.engelsburg.api.database.projections.ArticleIdAndContentHash;
+import io.github.paexception.engelsburg.api.database.projections.ArticleIdAndContentHashProjection;
 import io.github.paexception.engelsburg.api.database.repository.ArticleRepository;
-import io.github.paexception.engelsburg.api.database.repository.ArticleSaveRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
+import io.github.paexception.engelsburg.api.endpoint.dto.request.ArticlesUpdatedRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.ArticlesUpdatedResponseDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.response.GetAllSavedArticlesResponseDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetArticlesResponseDTO;
 import io.github.paexception.engelsburg.api.spring.paging.AbstractPageable;
 import io.github.paexception.engelsburg.api.spring.paging.Paging;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import org.springframework.stereotype.Component;
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import static io.github.paexception.engelsburg.api.util.Constants.Article.NAME_KEY;
 
 /**
  * Controller for articles.
  */
 @Component
-public class ArticleController extends AbstractPageable implements UserDataHandler {
+public class ArticleController extends AbstractPageable {
 
 	private final ArticleRepository articleRepository;
-	private final ArticleSaveRepository articleSaveRepository;
 
-	/**
-	 * Paging information.
-	 *
-	 * @param articleRepository     injection
-	 * @param articleSaveRepository injection
-	 */
-	public ArticleController(ArticleRepository articleRepository, ArticleSaveRepository articleSaveRepository) {
+	public ArticleController(ArticleRepository articleRepository) {
+		//Set paging information
 		super(1, 20);
 		this.articleRepository = articleRepository;
-		this.articleSaveRepository = articleSaveRepository;
 	}
 
 	/**
@@ -75,7 +64,7 @@ public class ArticleController extends AbstractPageable implements UserDataHandl
 	 *
 	 * @return ids and hashes
 	 */
-	public List<ArticleIdAndContentHash> prepareArticleToUpdate() {
+	public List<ArticleIdAndContentHashProjection> prepareArticleToUpdate() {
 		return this.articleRepository.findAllIdsAndContentHashes();
 	}
 
@@ -102,19 +91,16 @@ public class ArticleController extends AbstractPageable implements UserDataHandl
 	/**
 	 * Check if any article was updated.
 	 *
-	 * @param idsAndHashes of articles
+	 * @param dto hashes of articles
 	 * @return list of articles that were updated
 	 */
-	public Result<ArticlesUpdatedResponseDTO> checkArticlesUpdated(Map<String, String> idsAndHashes) {
-		List<Integer> idsToUpdate = new ArrayList<>();
+	public Result<ArticlesUpdatedResponseDTO> checkArticlesUpdated(ArticlesUpdatedRequestDTO dto) {
+		List<String> hashes = new ArrayList<>();
+		for (String hash : dto.getHashes()) {
+			if (!this.articleRepository.existsByContentHash(hash)) hashes.add(hash);
+		}
 
-		idsAndHashes.forEach((id, hash) -> {
-			Optional<ArticleModel> optionalArticle = this.articleRepository.findByArticleId(Integer.parseInt(id));
-			if (optionalArticle.isPresent() && !optionalArticle.get().getContentHash().equals(hash))
-				idsToUpdate.add(Integer.parseInt(id));
-		});
-
-		return Result.of(new ArticlesUpdatedResponseDTO(idsToUpdate));
+		return Result.of(new ArticlesUpdatedResponseDTO(hashes));
 	}
 
 	/**
@@ -129,55 +115,14 @@ public class ArticleController extends AbstractPageable implements UserDataHandl
 	}
 
 	/**
-	 * Add or remove like of article.
+	 * Check if article exists.
 	 *
-	 * @param value     add or remove
-	 * @param articleId of article
-	 * @param userDTO   user information
-	 * @return error or empty result
+	 * @param articleId to check
+	 * @return empty result of exists, otherwise error
 	 */
-	@Transactional
-	public Result<?> saveArticle(boolean value, int articleId, UserDTO userDTO) {
-		if (!this.articleRepository.existsByArticleId(articleId)) return Result.of(Error.NOT_FOUND, NAME_KEY);
-
-		if (value) {
-			if (this.articleSaveRepository.existsByArticleIdAndUser(articleId, userDTO.user))
-				return Result.of(Error.ALREADY_EXISTS, "article_save");
-
-			this.articleSaveRepository.save(new ArticleSaveModel(-1, userDTO.user, articleId));
-		} else {
-			if (!this.articleSaveRepository.existsByArticleIdAndUser(articleId, userDTO.user))
-				return Result.of(Error.NOT_FOUND, "article_save");
-
-			this.articleSaveRepository.deleteByArticleIdAndUser(articleId, userDTO.user);
-		}
-
-		return Result.empty();
+	public Result<?> exists(int articleId) {
+		return this.articleRepository.existsByArticleId(articleId)
+				? Result.empty()
+				: Result.of(Error.NOT_FOUND, NAME_KEY);
 	}
-
-	/**
-	 * Return all saved articles of user.
-	 *
-	 * @param userDTO user information
-	 * @return saved articles
-	 */
-	public Result<GetAllSavedArticlesResponseDTO> getSavedArticles(UserDTO userDTO) {
-		List<Integer> savedArticles = this.articleSaveRepository
-				.findAllByUser(userDTO.user).stream().map(ArticleSaveModel::getArticleId).collect(
-						Collectors.toList());
-
-		if (savedArticles.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
-		else return Result.of(new GetAllSavedArticlesResponseDTO(savedArticles));
-	}
-
-	@Override
-	public void deleteUserData(UserModel user) {
-		this.articleSaveRepository.deleteAllByUser(user);
-	}
-
-	@Override
-	public Object[] getUserData(UserModel user) {
-		return this.mapData(this.articleSaveRepository.findAllByUser(user));
-	}
-
 }

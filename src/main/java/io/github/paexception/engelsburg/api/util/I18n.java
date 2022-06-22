@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.util;
 
 import lombok.AccessLevel;
@@ -22,5 +26,5 @@ public class I18n {
 	public static final String INVALID = "INVALID";
 	public static final String BAD_REQUEST = "BAD_REQUEST";
 	public static final String TOO_MANY_REQUESTS = "TOO_MANY_REQUESTS";
-
+	public static final String FAILED_DEPENDENCY = "FAILED_DEPENDENCY";
 }

@@ -1,0 +1,58 @@
+version: "3.6"
+
+services:
+  engelsburg-api:
+    image: paulhuerkamp/engelsburg-api
+    restart: unless-stopped
+    container_name: eb-api
+    depends_on:
+      - engelsburg-api-database
+    ports:
+      - "80:8080"
+      - "433:8433"
+    links:
+      - engelsburg-api-database:eb-api-db
+    networks:
+      eb-api-net:
+    environment:
+      DATABASE_HOSTNAME: eb-api-db
+      DATABASE_PORT: 3306
+      DATABASE_USERNAME: eb-api
+      DATABASE_PASSWORD: eb-api
+      DATABASE_DATABASE: eb-api
+      SERVER_PORT: 8080
+      use.ssl: false
+      JWT_SECRET: env
+      SCHOOL_TOKEN: env
+      SMTP_SERVER: env
+      EMAIL_USERNAME: env
+      EMAIL_PASSWORD: env
+      SMTP_PORT: env
+      GOOGLE_ACCOUNT_CREDENTIALS: env
+      GOOGLE_CLIENT_ID: env
+      OAUTH2_REDIRECT_URI: env
+      GOOGLE_CLIENT_SECRET: env
+      logging.level.io.github.paexception.engelsburg.api: debug
+      PRODUCTION: false
+      logging.level.io.github.paexception.engelsburg.api.util.l10n.Localization: trace
+  engelsburg-api-database:
+    image: mariadb:10.6.7
+    restart: unless-stopped
+    container_name: eb-api-db
+    expose:
+      - "3306"
+    networks:
+      eb-api-net:
+    environment:
+      MYSQL_USER: eb-api
+      MYSQL_PASSWORD: eb-api
+      MYSQL_DATABASE: eb-api
+      MYSQL_RANDOM_ROOT_PASSWORD: yes
+    volumes:
+      - eb-api-db:/var/lib/mysql
+
+networks:
+  eb-api-net:
+
+volumes:
+  eb-api-db:

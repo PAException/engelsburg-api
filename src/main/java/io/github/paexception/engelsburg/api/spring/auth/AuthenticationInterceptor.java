@@ -1,12 +1,17 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.spring.auth;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import io.github.paexception.engelsburg.api.controller.AuthenticationController;
+import io.github.paexception.engelsburg.api.controller.internal.UserController;
 import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.JwtUtil;
 import io.github.paexception.engelsburg.api.util.Pair;
 import io.github.paexception.engelsburg.api.util.Result;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
@@ -25,14 +30,10 @@ import java.util.UUID;
  * Handles authentication via {@link AuthScope} and {@link Authorization}.
  */
 @Component
+@AllArgsConstructor
 public class AuthenticationInterceptor extends HandlerInterceptorAdapter implements HandlerMethodArgumentResolver {
 
-	private final AuthenticationController authenticationController;
-
-	public AuthenticationInterceptor(
-			AuthenticationController authenticationController) {
-		this.authenticationController = authenticationController;
-	}
+	private final UserController userController;
 
 	/**
 	 * Preprocessing all authorization of user.
@@ -51,21 +52,28 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter impleme
 	@Override
 	public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull
 			Object handler) throws IOException {
+		if (!(handler instanceof HandlerMethod)) return true;
+
 		HandlerMethod method = (HandlerMethod) handler;
+		boolean required = true;
 
 		AuthScope[] authScopes;
 		Authorization auth = method.getMethodAnnotation(Authorization.class);
 		AuthScope methodAuthScope = method.getMethodAnnotation(AuthScope.class);
 		if (auth != null) authScopes = auth.value();
 		else {
-			if (methodAuthScope == null) return true;
-			authScopes = new AuthScope[]{methodAuthScope};
+			if (methodAuthScope == null) {
+				required = false;
+				authScopes = new AuthScope[0];
+			} else authScopes = new AuthScope[]{methodAuthScope};
 		}
 
 		String jwt = request.getHeader("Authorization");
 		if (jwt == null || jwt.isBlank()) {
-			Result.of(Error.UNAUTHORIZED, "token").respond(response);
-			return false;
+			if (required) {
+				Result.of(Error.UNAUTHORIZED, "token").respond(response);
+				return false;
+			} else return true;
 		}
 
 		Pair<DecodedJWT, JwtUtil.VerificationResult> result = JwtUtil.getInstance().verify(jwt);
@@ -85,7 +93,7 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter impleme
 
 		UserDTO userDTO = new UserDTO(
 				result.getLeft(),
-				this.authenticationController.getUser(UUID.fromString(result.getLeft().getSubject()))
+				this.userController.get(UUID.fromString(result.getLeft().getSubject()))
 		);
 
 		for (AuthScope authScope : authScopes) {
@@ -114,5 +122,4 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter impleme
 	public boolean supportsParameter(MethodParameter parameter) {
 		return parameter.getParameterType().equals(UserDTO.class);
 	}
-
 }

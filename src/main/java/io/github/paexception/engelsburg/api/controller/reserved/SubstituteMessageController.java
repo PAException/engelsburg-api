@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.controller.reserved;
 
 import io.github.paexception.engelsburg.api.database.model.SubstituteMessageModel;
@@ -6,9 +10,9 @@ import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateSubstituteMessageRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetSubstituteMessagesResponseDTO;
 import io.github.paexception.engelsburg.api.service.scheduled.SubstituteUpdateService;
-import io.github.paexception.engelsburg.api.util.Constants;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
@@ -21,14 +25,10 @@ import static io.github.paexception.engelsburg.api.util.Constants.SubstituteMess
  * Controller for substitute messages.
  */
 @Component
+@AllArgsConstructor
 public class SubstituteMessageController {
 
 	private final SubstituteMessageRepository substituteMessageRepository;
-
-	public SubstituteMessageController(
-			SubstituteMessageRepository substituteMessageRepository) {
-		this.substituteMessageRepository = substituteMessageRepository;
-	}
 
 	/**
 	 * Checks if sender has permission to get past substitutes messages.
@@ -52,7 +52,7 @@ public class SubstituteMessageController {
 	 * @param dto with information
 	 */
 	public void createSubstituteMessage(CreateSubstituteMessageRequestDTO dto) {
-		SubstituteMessageModel substituteMessage = new SubstituteMessageModel(
+		this.substituteMessageRepository.save(new SubstituteMessageModel(
 				-1,
 				dto.getDate(),
 				dto.getAbsenceTeachers(),
@@ -61,9 +61,7 @@ public class SubstituteMessageController {
 				dto.getAffectedRooms(),
 				dto.getBlockedRooms(),
 				dto.getMessages()
-		);
-
-		this.substituteMessageRepository.save(substituteMessage);
+		));
 	}
 
 	/**
@@ -86,14 +84,17 @@ public class SubstituteMessageController {
 	 * @return all found substitute messages
 	 */
 	public Result<GetSubstituteMessagesResponseDTO> getAllSubstituteMessages(long date, UserDTO userDTO) {
+		//Check if user has permissions and set date
 		if (date < 0) date = System.currentTimeMillis();
-		if (!pastTimeCheck(userDTO, date)) return Result.of(Error.FORBIDDEN, Constants.Substitute.NAME_KEY);
+		if (!pastTimeCheck(userDTO, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
 
-		List<SubstituteMessageModel> substitutes = this.substituteMessageRepository.findAllByDateGreaterThanEqual(
-				new Date(date));
+		//Get substitute messages by date, if not present return error
+		List<SubstituteMessageModel> substitutes = this.substituteMessageRepository
+				.findAllByDateGreaterThanEqual(new Date(date));
 		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
-		else return Result.of(new GetSubstituteMessagesResponseDTO(substitutes.stream()
+
+		//Map and return substitute messages
+		return Result.of(new GetSubstituteMessagesResponseDTO(substitutes.stream()
 				.map(SubstituteMessageModel::toResponseDTO).collect(Collectors.toList())));
 	}
-
 }

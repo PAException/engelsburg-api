@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.controller.shared;
 
 import io.github.paexception.engelsburg.api.database.model.EventModel;
@@ -7,23 +11,21 @@ import io.github.paexception.engelsburg.api.endpoint.dto.response.GetEventsRespo
 import io.github.paexception.engelsburg.api.service.scheduled.EventUpdateService;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import static io.github.paexception.engelsburg.api.util.Constants.Event.NAME_KEY;
 
 /**
  * Controller for events.
  */
 @Component
+@AllArgsConstructor
 public class EventController {
 
 	private final EventRepository eventRepository;
-
-	public EventController(EventRepository eventRepository) {
-		this.eventRepository = eventRepository;
-	}
 
 	/**
 	 * Create a new event.
@@ -50,11 +52,10 @@ public class EventController {
 	 * @return found events in DTO
 	 */
 	public Result<GetEventsResponseDTO> getAllEvents() {
-		List<EventDTO> responseDTOs = new ArrayList<>();
-		this.eventRepository.findAll().forEach(event -> responseDTOs.add(event.toResponseDTO()));
+		List<EventDTO> responseDTOs = this.eventRepository.findAll().stream()
+				.map(EventModel::toResponseDTO).collect(Collectors.toList());
 		if (responseDTOs.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		return Result.of(new GetEventsResponseDTO(responseDTOs));
 	}
-
 }

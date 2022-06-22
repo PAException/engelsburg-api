@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.util;
 
 import io.github.paexception.engelsburg.api.service.notification.NotificationService;

@@ -1,12 +1,19 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.controller;
 
 import com.auth0.jwt.JWTCreator;
 import io.github.paexception.engelsburg.api.controller.internal.RefreshTokenController;
 import io.github.paexception.engelsburg.api.controller.internal.ScopeController;
 import io.github.paexception.engelsburg.api.controller.internal.TokenController;
-import io.github.paexception.engelsburg.api.controller.userdata.UserDataHandler;
-import io.github.paexception.engelsburg.api.database.model.UserModel;
-import io.github.paexception.engelsburg.api.database.repository.UserRepository;
+import io.github.paexception.engelsburg.api.controller.internal.UserController;
+import io.github.paexception.engelsburg.api.controller.internal.UserOAuthController;
+import io.github.paexception.engelsburg.api.controller.internal.UserPasswordController;
+import io.github.paexception.engelsburg.api.controller.reserved.SemesterController;
+import io.github.paexception.engelsburg.api.database.model.user.UserModel;
+import io.github.paexception.engelsburg.api.database.model.user.UserPasswordModel;
 import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.LoginRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.ResetPasswordRequestDTO;
@@ -15,103 +22,40 @@ import io.github.paexception.engelsburg.api.endpoint.dto.response.AuthResponseDT
 import io.github.paexception.engelsburg.api.service.email.EmailService;
 import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.Error;
-import io.github.paexception.engelsburg.api.util.Hash;
 import io.github.paexception.engelsburg.api.util.JwtUtil;
 import io.github.paexception.engelsburg.api.util.Result;
-import org.apache.commons.lang3.RandomStringUtils;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 /**
  * Controller for authentication.
  */
 @Component
-public class AuthenticationController implements UserDataHandler {
+@AllArgsConstructor
+public class AuthenticationController {
 
-	/**
-	 * List of default scopes to grant to user by creating an account.
-	 */
-	public static final List<String> DEFAULT_SCOPES = List.of(
-			"substitute.message.read.current",
-			"substitute.read.current",
-
-			"info.teacher.read.all",
-			"info.classes.read.all",
-
-			"notification.settings.write.self",
-			"notification.settings.read.self",
-
-			"user.data.read.self",
-			"user.data.delete.self"
-	);
-	/**
-	 * List of scopes to grant to user by verifying the email address.
-	 */
-	public static final List<String> VERIFIED_SCOPES = List.of(
-			"article.save.write.self",
-			"article.save.delete.self",
-			"article.save.read.self",
-
-			"grade.write.self",
-			"grade.read.self",
-			"grade.delete.self",
-
-			"task.delete.self",
-			"task.write.self",
-			"task.read.self",
-
-			"timetable.write.self",
-			"timetable.read.self",
-			"timetable.delete.self"
-	);
-
-	private final EmailService emailService;
+	private final UserController userController;
+	private final UserPasswordController userPasswordController;
+	private final UserOAuthController userOAuthController;
 
 	private final ScopeController scopeController;
 	private final TokenController tokenController;
 	private final RefreshTokenController refreshTokenController;
 
-	private final UserRepository userRepository;
-
-	public AuthenticationController(EmailService emailService,
-			ScopeController scopeController,
-			TokenController tokenController,
-			RefreshTokenController refreshTokenController,
-			UserRepository userRepository) {
-		this.emailService = emailService;
-		this.scopeController = scopeController;
-		this.tokenController = tokenController;
-		this.refreshTokenController = refreshTokenController;
-		this.userRepository = userRepository;
-	}
-
-	/**
-	 * Hash a password.
-	 *
-	 * @param password password
-	 * @param salt     and salt to hash
-	 * @return valid hash
-	 */
-	public static byte[] hashPassword(String password, String salt) {
-		String parsed = ((password == null ? RandomStringUtils.randomAlphanumeric(16) : password) + salt);
-
-		return Hash.sha256(parsed);
-	}
-
-	/**
-	 * Create a new random salt.
-	 *
-	 * @return salt
-	 */
-	public static String randomSalt() {
-		return RandomStringUtils.randomAlphanumeric(16);
-	}
+	private final EmailService emailService;
 
 	/**
 	 * Sign up with credentials and schoolToken.
@@ -119,25 +63,26 @@ public class AuthenticationController implements UserDataHandler {
 	 * @param dto email, password and schoolToken
 	 * @return empty response or error
 	 */
+	@Transactional
 	public Result<AuthResponseDTO> signUp(SignUpRequestDTO dto) {
-		if (!dto.getSchoolToken().equals(Environment.SCHOOL_TOKEN))
-			return Result.of(Error.FORBIDDEN, "school_token");
+		//If user by email exists return error
+		if (this.userPasswordController.existsByEmail(dto.getEmail())) return Result.of(Error.ALREADY_EXISTS, "user");
 
-		Optional<UserModel> optionalUser = this.userRepository.findByEmail(dto.getEmail());
-		if (optionalUser.isPresent()) return Result.of(Error.ALREADY_EXISTS, "user");
+		//Create new user and userPassword
+		UserModel user = this.userController.create(dto.getEmail(), false);
+		this.userPasswordController.create(user, dto.getEmail(), dto.getPassword());
 
-		String salt = randomSalt();
-		byte[] hashedPassword = hashPassword(dto.getPassword(), salt);
+		//Add default scopes to user
+		this.scopeController.addDefaultScopes(user);
 
-		UUID userId = UUID.randomUUID();
-		UserModel user = this.userRepository.save(
-				new UserModel(-1, userId, dto.getEmail(), hashedPassword, salt, false));
-		DEFAULT_SCOPES.forEach(scope -> this.scopeController.addScope(user, scope)); //Add default scopes
-		if (this.emailService.verify(
-				dto.getEmail(), this.tokenController.createRandomToken(user, "verify"))) {
+		//Verify email with created token
+		if (this.emailService.verify(dto.getEmail(), this.tokenController
+				.createRandomToken(user, "verify", user.getUserId().toString())))
+			//Return authentication response
 			return Result.of(this.createAuthResponse(user));
-		} else {
-			this.userRepository.deleteByUserId(userId);
+		else {
+			//If something goes wrong while sending the email return an unexpected error
+			this.userController.delete(user);
 			return Result.of(Error.FAILED, "signup");
 		}
 	}
@@ -149,14 +94,15 @@ public class AuthenticationController implements UserDataHandler {
 	 * @return valid jwt token
 	 */
 	public Result<AuthResponseDTO> login(LoginRequestDTO dto) {
-		Optional<UserModel> optionalUser = this.userRepository.findByEmail(dto.getEmail());
-		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, "user");
+		//Get userPassword if not present return error
+		Optional<UserPasswordModel> optionalUserPassword = this.userPasswordController.getByEmail(dto.getEmail());
+		if (optionalUserPassword.isEmpty()) return Result.of(Error.NOT_FOUND, "user");
 
-		UserModel user = optionalUser.get();
-		if (!Arrays.equals(user.getPassword(), hashPassword(dto.getPassword(), user.getSalt())))
-			return Result.of(Error.FORBIDDEN, "wrong_password");
-
-		return Result.of(this.createAuthResponse(user));
+		//Check if password is correct then return authentication response otherwise return error
+		UserPasswordModel userPassword = optionalUserPassword.get();
+		if (UserPasswordController.verifyPasswort(userPassword, dto.getPassword()))
+			return Result.of(this.createAuthResponse(userPassword.getUser()));
+		else return Result.of(Error.FORBIDDEN, "wrong_password");
 	}
 
 	/**
@@ -166,66 +112,137 @@ public class AuthenticationController implements UserDataHandler {
 	 * @return JWT
 	 */
 	public Result<AuthResponseDTO> auth(String refreshToken) {
+		//Get user by verifying refreshToken, if verifying fails return error
 		UserModel user = this.refreshTokenController.verifyRefreshToken(refreshToken);
-		if (user == null) return Result.of(Error.FAILED, "refresh_token");
+		if (user == null) return Result.of(Error.FAILED, "refreshToken");
 
+		//Return authentication response
 		return Result.of(this.createAuthResponse(user));
 	}
 
 	/**
 	 * Request to reset a password of existing account.
-	 * An email will be sent with a token to reset the password
+	 * An email will be sent with a token to reset the password.
+	 * A user can also set his password with this method if the account was created via an OAuth method.
 	 *
-	 * @param email of account to reset
+	 * @param email   of account to reset
+	 * @param userDTO to create password authentication if account was created via OAuth
 	 * @return empty response
 	 */
-	public Result<?> requestResetPassword(String email) {
-		Optional<UserModel> optionalUser = this.userRepository.findByEmail(email);
-		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, "user");
+	public Result<?> requestResetPassword(String email, UserDTO userDTO) {
+		//Get userPassword by email if not present and no user is authenticated return error
+		Optional<UserPasswordModel> optionalUserPassword = this.userPasswordController.getByEmail(email);
+		if (optionalUserPassword.isEmpty() && userDTO != null)
+			optionalUserPassword = this.userPasswordController.get(userDTO.user);
+		if (optionalUserPassword.isEmpty() && userDTO == null) return Result.of(Error.NOT_FOUND, "user");
 
-		if (this.emailService.resetPassword(
-				email,
-				this.tokenController.createRandomTemporaryToken(optionalUser.get(), "reset_password",
-						System.currentTimeMillis() + 1000 * 60 * 30)
-		)) return Result.empty();
-		else return Result.of(Error.FAILED, "request_reset_password");
+		//Set user and email
+		UserModel user = optionalUserPassword.map(UserPasswordModel::getUser).orElseGet(() -> userDTO.user);
+		if (userDTO != null && optionalUserPassword.isPresent()) email = optionalUserPassword.get().getEmail();
+
+		//Create a new token and email to reset the password. If something goes wrong by sending the email return error
+		long exp = System.currentTimeMillis() + 1000 * 60 * 30;
+		String token = this.tokenController
+				.createRandomTemporaryToken(user, "reset_password", exp, email, user.getUserId().toString());
+		if (!this.emailService.resetPassword(email, token)) return Result.of(Error.FAILED, "request_reset_password");
+
+		//Return empty result
+		return Result.empty();
 	}
 
 	/**
-	 * Set the new password with password reset token.
+	 * Set the new password with password reset token or if the user is authenticated.
+	 * Reset by authenticated user is only possible if no password has been specified before.
+	 * Use case is intended to set a password if a user signed up via OAuth method.
 	 *
 	 * @param dto with email, new password and password reset token
 	 * @return empty result or error
 	 */
 	public Result<?> resetPassword(ResetPasswordRequestDTO dto) {
-		Optional<UserModel> optionalUser = this.userRepository.findByEmail(dto.getEmail());
-		if (optionalUser.isEmpty()) return Result.of(Error.NOT_FOUND, "user");
+		//Check if token is valid, otherwise return error
+		if (!this.tokenController.checkToken("reset_password", dto.getToken()))
+			return Result.of(Error.FAILED, "reset_password");
 
-		UserModel user = optionalUser.get();
-		if (this.tokenController.checkToken(user, "reset_password", dto.getToken())) {
-			user.setPassword(hashPassword(dto.getPassword(), user.getSalt()));
-			this.userRepository.save(user);
+		//Get params
+		String[] params = this.tokenController.getParams("reset_password", dto.getToken());
+		if (params.length < 2)
+			throw new IllegalStateException("Suffix must be present, was created in request password reset");
+
+		//Check if user email already has a password
+		Optional<UserPasswordModel> optionalUserPassword = this.userPasswordController.getByEmail(params[0]);
+		if (optionalUserPassword.isEmpty()) {
+			//Get user by param
+			UserModel user = this.userController.get(UUID.fromString(params[1]));
+			if (user == null) throw new IllegalStateException("User must be present, was set in request password");
+
+			//Create a new password
+			this.userPasswordController.create(user, params[0], dto.getPassword());
 			this.tokenController.deleteToken(user, "reset_password", dto.getToken());
-			return Result.empty();
-		} else return Result.of(Error.FAILED, "reset_password");
+		} else {
+			//Update the password
+			UserPasswordModel userPassword = optionalUserPassword.get();
+			this.userPasswordController.updatePassword(userPassword, dto.getPassword());
+			this.tokenController.deleteToken(userPassword.getUser(), "reset_password", dto.getToken());
+
+			//If the user reset the password then remove all refresh tokens to force a re-login
+			this.refreshTokenController.deleteRefreshTokensOfUser(userPassword.getUser());
+		}
+
+		//Return empty result
+		return Result.empty();
 	}
 
 	/**
 	 * Verifies a user.
 	 *
-	 * @param userDTO with userId
-	 * @param token   to verify
+	 * @param token to verify
 	 * @return empty response or error
 	 */
-	public Result<?> verify(UserDTO userDTO, String token) {
-		UserModel user = userDTO.user;
-		if (this.tokenController.checkToken(user, "verify", token)) {
-			user.setVerified(true);
-			this.userRepository.save(user);
-			this.tokenController.deleteToken(user, "verify", token);
-			VERIFIED_SCOPES.forEach(scope -> this.scopeController.addScope(user, scope));
-			return Result.empty();
-		} else return Result.of(Error.FAILED, "verify");
+	public Result<AuthResponseDTO> verify(String token) {
+		//Check if token is valid, otherwise return error
+		if (!this.tokenController.checkToken("verify", token)) return Result.of(Error.FAILED, "verify");
+
+		//Get params
+		String[] params = this.tokenController.getParams("verify", token);
+		if (params.length < 1)
+			throw new IllegalStateException("Params must be present, was created in request password reset");
+
+		//Get user by param
+		UserModel user = this.userController.get(UUID.fromString(params[0]));
+		if (user == null) throw new IllegalStateException("User must be present, was set in request password");
+
+		//Verify user and add verified scopes
+		this.userController.verify(user);
+		this.scopeController.addVerifiedScopes(user);
+
+		//Delete token and return empty result
+		this.tokenController.deleteToken(user, "verify", token);
+		return Result.of(this.createAuthResponse(user));
+	}
+
+	/**
+	 * Request a specific scopes to grant to the user.
+	 *
+	 * @param requestParams request params with scope and verification
+	 * @param userDTO       user to grant scope to
+	 * @return auth with updated scopes
+	 */
+	public Result<AuthResponseDTO> requestScopes(Map<String, String> requestParams, UserDTO userDTO) {
+		//Search through all validators if they validate that scope, then validate if
+		List<String> scopes = new ArrayList<>();
+		List<String> failed = new ArrayList<>();
+		for (ScopeRequestValidator validator : ScopeRequestValidator.VALIDATORS) {
+			if (!requestParams.containsKey(validator.scope)) continue;
+			if (validator.validate.apply(requestParams.get(validator.scope))) scopes.add(validator.scope);
+			else failed.add(validator.scope);
+		}
+
+		//If no scopes found return error, else grant scope
+		if (scopes.isEmpty()) return Result.of(Error.FAILED, StringUtils.joinWith(",", failed.toArray()));
+		for (String grant : scopes) this.scopeController.addScope(userDTO.user, grant);
+
+		//Return auth response
+		return Result.of(this.createAuthResponse(userDTO.user));
 	}
 
 	/**
@@ -233,9 +250,10 @@ public class AuthenticationController implements UserDataHandler {
 	 */
 	@EventListener(ApplicationStartedEvent.class)
 	public void updateDefaultScopes() {
-		this.userRepository.findAll().forEach(user -> this.scopeController.updateScopes(user, DEFAULT_SCOPES));
-		this.userRepository.findAllByVerified(true).forEach(
-				user -> this.scopeController.updateScopes(user, VERIFIED_SCOPES));
+		//Get all users, update scopes
+		List<UserModel> all = this.userController.getAll();
+		List<UserModel> verified = this.userController.getAllVerified();
+		this.scopeController.updateDefaultScopes(all, verified);
 	}
 
 	/**
@@ -245,32 +263,55 @@ public class AuthenticationController implements UserDataHandler {
 	 * @return jwt token
 	 */
 	public AuthResponseDTO createAuthResponse(UserModel user) {
-		JWTCreator.Builder builder = JwtUtil.getInstance()
-				.createBuilder(user.getUserId().toString(), 5, Calendar.MINUTE);
 		String[] scopes = this.scopeController.getScopes(user);
+		//Create jwtBuilder with userId as subject and 5 minute expiration
+		JWTCreator.Builder jwtBuilder = JwtUtil.getInstance()
+				.createBuilder(user.getUserId().toString(), 5, Calendar.MINUTE)
+				.withClaim("scopes", ScopeController.mergeScopes(scopes));
+		String jwt = JwtUtil.getInstance().sign(jwtBuilder);
 
+		String refreshToken = this.refreshTokenController.create(user);
+
+		String email = this.userPasswordController.get(user).map(UserPasswordModel::getEmail).orElse(null);
+		String[] loginVia = this.userOAuthController.getServicesByUser(user);
+		if (email != null) {
+			loginVia = Arrays.copyOf(loginVia, loginVia.length + 1);
+			loginVia[loginVia.length - 1] = "email";
+		}
+
+		String className = null;
+		if (user.getCurrentSemester() != null) {
+			className = SemesterController.classNameBySemester(user.getCurrentSemester().getSemester());
+			className += user.getCurrentSemester().getClassSuffix();
+		}
+
+
+		//Create JWT with additional merged scopes and return with refreshToken, accountName and if the user is verified
 		return new AuthResponseDTO(
-				JwtUtil.getInstance().sign(builder.withClaim("scopes", ScopeController.mergeScopes(scopes))),
-				this.refreshTokenController.create(user), user.getEmail(), user.isVerified());
+				jwt,
+				refreshToken,
+				email,
+				user.getUsername(),
+				className,
+				loginVia,
+				user.isVerified()
+		);
 	}
 
 	/**
-	 * Simply get a user by its userId.
-	 *
-	 * @param userId to get user.
-	 * @return user
+	 * Used to verify scopes.
 	 */
-	public UserModel getUser(UUID userId) {
-		return this.userRepository.findByUserId(userId);
-	}
+	@Getter
+	@AllArgsConstructor
+	static class ScopeRequestValidator {
+		public static final List<ScopeRequestValidator> VALIDATORS = List.of(
+				new ScopeRequestValidator("substitute.read.current", Environment.SCHOOL_TOKEN::equals),
+				new ScopeRequestValidator("substitute.message.read.current", Environment.SCHOOL_TOKEN::equals),
+				new ScopeRequestValidator("info.teacher.read.all", Environment.SCHOOL_TOKEN::equals),
+				new ScopeRequestValidator("info.classes.read.all", Environment.SCHOOL_TOKEN::equals)
+		);
 
-	@Override
-	public void deleteUserData(UserModel user) {
-		this.userRepository.deleteByUserId(user.getUserId());
-	}
-
-	@Override
-	public Object[] getUserData(UserModel user) {
-		return this.mapData(this.userRepository.findByUserId(user.getUserId()));
+		private final String scope;
+		private final Function<String, Boolean> validate;
 	}
 }

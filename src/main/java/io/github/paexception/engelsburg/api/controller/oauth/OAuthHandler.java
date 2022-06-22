@@ -1,76 +1,38 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.controller.oauth;
 
-import io.github.paexception.engelsburg.api.util.Environment;
-import io.github.paexception.engelsburg.api.util.Error;
-import io.github.paexception.engelsburg.api.util.Pair;
-import io.github.paexception.engelsburg.api.util.Result;
-import org.apache.commons.lang3.RandomStringUtils;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.stereotype.Component;
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.HashMap;
+import javax.validation.constraints.NotNull;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 /**
  * This class helps to handle oauth verifications.
  */
+@Component
 public abstract class OAuthHandler {
 
-	private static final Set<OAuthHandler> O_AUTH_HANDLERS = new HashSet<>();
-	private final Map<String, Boolean> tokens = new HashMap<>();
+	private static final Set<OAuthHandler> HANDLERS = new HashSet<>();
 
 	/**
-	 * Default function to redirect.
+	 * Whether a service is supported or not.
 	 *
-	 * @param response to redirect
-	 * @param redirect to redirect to
-	 * @return empty result or error
+	 * @param name of the service.
+	 * @return true if supported, false if not
 	 */
-	protected static Result<?> defaultRedirect(HttpServletResponse response, String redirect) {
-		try {
-			response.sendRedirect(redirect);
-		} catch (IOException e) {
-			Result.of(Error.FAILED, "oauth");
-		}
+	public static boolean supports(String name) {
+		if (name == null || name.isEmpty()) return false;
 
-		return Result.empty();
-	}
-
-	/**
-	 * Creates a random alphanumeric to secure that the server sends the redirect.
-	 * Should be contained in the redirect or rather in the oauth request.
-	 *
-	 * @param signUp to save value if schoolToken was provided
-	 * @return random alphanumeric token
-	 */
-	protected final String createToken(boolean signUp) {
-		String token = RandomStringUtils.randomAlphanumeric(20);
-		this.tokens.put(token, signUp);
-
-		return token;
-	}
-
-	/**
-	 * Verifies alphanumeric token sent in request.
-	 *
-	 * @param token to verify
-	 * @return true if token exists
-	 */
-	protected final boolean verifyToken(String token) {
-		return this.tokens.containsKey(token);
-	}
-
-	/**
-	 * Get signUp value for token and delete it.
-	 *
-	 * @param token for key
-	 * @return signUp value
-	 */
-	protected final Boolean getSignUpAndDeleteToken(String token) {
-		return this.tokens.remove(token);
+		return HANDLERS.stream().anyMatch(handler -> handler.getName().equals(name));
 	}
 
 	/**
@@ -78,46 +40,38 @@ public abstract class OAuthHandler {
 	 */
 	@PostConstruct
 	public final void registerOAuthController() {
-		O_AUTH_HANDLERS.add(this);
+		HANDLERS.add(this);
 	}
 
 	/**
-	 * Handles the OAuthResponse of the server.
+	 * Handle request to sign up or log in with oauth.
 	 *
-	 * @param request  sent by the server
-	 * @param response given by spring
-	 * @return email and signUp
+	 * @param accessToken to access resources
+	 * @return email of user or null
 	 */
-	abstract public Pair<String, Boolean> resolveOAuthResponse(HttpServletRequest request,
-			HttpServletResponse response);
+	@Nullable
+	abstract public HandlerResult verifyOAuthLoginRequest(String accessToken);
 
-	/**
-	 * Handle request to login with oauth.
-	 *
-	 * @param request  of user
-	 * @param response given by spring
-	 * @param signUp   store to know if schoolToken was provided
-	 * @return result
-	 */
-	abstract public Result<?> resolveOAuthLoginRequest(HttpServletRequest request, HttpServletResponse response,
-			boolean signUp);
+	@Getter
+	@Setter
+	@AllArgsConstructor(staticName = "of")
+	public static class HandlerResult {
+
+		@NotNull
+		private final String username;
+		@NotNull
+		private final String identification;
+		private List<String> grantScopes;
+
+	}
 
 	/**
 	 * Getter of all oauth handlers.
 	 *
 	 * @return all oauth handlers.
 	 */
-	public static OAuthHandler[] getOAuthHandlers() {
-		return O_AUTH_HANDLERS.toArray(OAuthHandler[]::new);
-	}
-
-	/**
-	 * Get the service specific redirect uri to process the oauth response.
-	 *
-	 * @return redirect uri
-	 */
-	protected final String getRedirectUri() {
-		return Environment.OAUTH2_REDIRECT_URI + "/" + this.getName();
+	public static Set<OAuthHandler> getHandlers() {
+		return HANDLERS;
 	}
 
 	/**
@@ -125,6 +79,6 @@ public abstract class OAuthHandler {
 	 *
 	 * @return the name
 	 */
+	@NotNull
 	abstract public String getName();
-
 }

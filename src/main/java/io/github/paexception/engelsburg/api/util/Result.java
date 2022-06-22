@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,9 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.security.MessageDigest;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Class to return on endpoints.
@@ -25,7 +29,6 @@ import java.util.Map;
 public class Result<T> {
 
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-	private static MessageDigest digest;
 	private T result;
 	private Error error;
 	private String extra;
@@ -63,6 +66,7 @@ public class Result<T> {
 	 * @param instance The instance to map
 	 * @return the given instance
 	 */
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	public static <T> Result<T> ret(Result instance) {
 		return instance;
 	}
@@ -74,24 +78,28 @@ public class Result<T> {
 	 * @return hash of o
 	 */
 	public static String hash(Object o) {
-		return bytesToHex(Hash.sha1(o));
-	}
-
-	/**
-	 * Function to convert a bytearray into a hex string.
-	 *
-	 * @param hash bytearray to convert to hex string
-	 * @return hex string
-	 */
-	private static String bytesToHex(byte[] hash) {
 		StringBuilder hexString = new StringBuilder();
-		for (byte b : hash) {
+		for (byte b : Hash.sha1(o)) {
 			String hex = Integer.toHexString(0xff & b);
 			if (hex.length() == 1) hexString.append('0');
 			hexString.append(hex);
 		}
 
 		return hexString.toString();
+	}
+
+	/**
+	 * Map a result to a new result.
+	 * If error present nothing gets mapped.
+	 *
+	 * @param map Apply to result
+	 * @param <S> new Type
+	 * @return new Result
+	 */
+	public <S> Result<S> map(Function<T, S> map) {
+		if (this.isErrorPresent()) return ret(this);
+
+		return Result.of(map.apply(this.result));
 	}
 
 	/**
@@ -108,6 +116,10 @@ public class Result<T> {
 		response.getWriter().write(
 				OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(responseEntity.getBody()));
 		response.getWriter().flush();
+	}
+
+	public T onErrorReturn(T ret) {
+		return this.isErrorPresent() ? ret : this.result;
 	}
 
 	/**

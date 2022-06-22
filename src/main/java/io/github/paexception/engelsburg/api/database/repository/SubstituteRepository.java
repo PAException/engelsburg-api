@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.database.repository;
 
 import io.github.paexception.engelsburg.api.database.model.SubstituteModel;
@@ -36,9 +40,34 @@ public interface SubstituteRepository extends JpaRepository<SubstituteModel, Int
 
 	Optional<SubstituteModel> findByDateAndLessonAndTeacher(Date date, int lesson, String teacher);
 
+	default Optional<SubstituteModel> findByDateAndLessonAndClassNameLike(Date date, int lesson, String className) {
+		return this.findByDateAndLessonAndClassNameIsLike(date, lesson, likeClassName(className));
+	}
+
 	Optional<SubstituteModel> findByDateAndLessonAndClassNameIsLike(Date date, int lesson, String className);
 
 	Optional<SubstituteModel> findByDateAndLessonAndSubject(Date date, int lesson, String subject);
 
 	List<SubstituteModel> findAllByDateLessThanEqual(Date date);
+
+	List<SubstituteModel> findAllByDateAndLessonAndClassNameAndSubstituteTeacherAndTeacher(
+			Date date, int lesson, String className, String substituteTeacher, String teacher);
+
+	List<SubstituteModel> findAllByDateAndLessonAndClassNameAndSubstituteTeacher(
+			Date sqlDate, int lesson, String className, String substituteTeacher);
+
+	List<SubstituteModel> findAllByDateAndLessonAndClassName(Date sqlDate, int lesson, String className);
+
+	List<SubstituteModel> findAllByDateAndLesson(Date sqlDate, int lesson);
+
+	List<SubstituteModel> findAllByDateAndClassNameAndSubstituteTeacherAndTeacher(
+			Date sqlDate, String className, String substituteTeacher, String teacher);
+
+	List<SubstituteModel> findAllByDateAndClassNameAndSubstituteTeacher(
+			Date sqlDate, String className, String substituteTeacher);
+
+	List<SubstituteModel> findAllByDateAndClassName(Date sqlDate, String className);
+
+	List<SubstituteModel> findAllByDateAndSubstituteTeacherAndTeacher(
+			Date sqlDate, String substituteTeacher, String teacher);
 }

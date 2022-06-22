@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.service.scheduled;
 
 import com.google.gson.JsonElement;
@@ -5,12 +9,11 @@ import io.github.paexception.engelsburg.api.controller.shared.EventController;
 import io.github.paexception.engelsburg.api.endpoint.dto.EventDTO;
 import io.github.paexception.engelsburg.api.service.JsonFetchingService;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
+import lombok.AllArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
@@ -24,21 +27,18 @@ import java.util.List;
  * Service to update articles.
  */
 @Service
+@AllArgsConstructor
 public class EventUpdateService extends JsonFetchingService implements LoggingComponent {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(EventUpdateService.class);
 	private final EventController eventController;
 
-	public EventUpdateService(EventController eventController) {
-		this.eventController = eventController;
-	}
-
 	/**
 	 * Scheduled function to update events every hour.
 	 */
-	@Scheduled(fixedRate = 5 * 60 * 1000, initialDelay = 5 * 60 * 1000)
-	@EventListener(ApplicationReadyEvent.class)
+	@Scheduled(fixedRate = 5 * 60 * 1000)
 	public void updateEvents() {
+		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
 		LOGGER.debug("Starting to fetch events");
 		try {
 			JsonElement content = this.request(

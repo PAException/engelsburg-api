@@ -1,6 +1,11 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.database.model;
 
 import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,9 +27,11 @@ import javax.validation.constraints.NotBlank;
 @Table
 public class ArticleModel {
 
+	@Setter(AccessLevel.NONE)
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
+
 	@Min(0)
 	private int articleId; //Article id of WP-API
 	@Min(0)

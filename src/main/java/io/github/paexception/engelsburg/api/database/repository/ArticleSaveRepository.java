@@ -1,7 +1,11 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.database.repository;
 
 import io.github.paexception.engelsburg.api.database.model.ArticleSaveModel;
-import io.github.paexception.engelsburg.api.database.model.UserModel;
+import io.github.paexception.engelsburg.api.database.model.user.UserModel;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -13,8 +17,5 @@ public interface ArticleSaveRepository extends PagingAndSortingRepository<Articl
 
 	void deleteByArticleIdAndUser(int articleId, UserModel user);
 
-	void deleteAllByUser(UserModel user);
-
 	List<ArticleSaveModel> findAllByUser(UserModel user);
-
 }

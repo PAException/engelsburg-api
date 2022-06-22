@@ -1,13 +1,16 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.controller.reserved;
 
-import io.github.paexception.engelsburg.api.controller.userdata.UserDataHandler;
+import io.github.paexception.engelsburg.api.database.model.SemesterModel;
+import io.github.paexception.engelsburg.api.database.model.SubjectModel;
 import io.github.paexception.engelsburg.api.database.model.TaskModel;
-import io.github.paexception.engelsburg.api.database.model.UserModel;
 import io.github.paexception.engelsburg.api.database.repository.TaskRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.TaskDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateTaskRequestDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.MarkTaskAsDoneRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.UpdateTaskRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetTasksResponseDTO;
 import io.github.paexception.engelsburg.api.spring.paging.AbstractPageable;
@@ -26,31 +29,39 @@ import static io.github.paexception.engelsburg.api.util.Constants.Task.NAME_KEY;
  * Controller for tasks.
  */
 @Component
-public class TaskController extends AbstractPageable implements UserDataHandler {
+public class TaskController extends AbstractPageable {
 
 	private final TaskRepository taskRepository;
+	private final SubjectController subjectController;
 
-	public TaskController(TaskRepository taskRepository) {
+	public TaskController(TaskRepository taskRepository, SubjectController subjectController) {
 		super(1, 50);
 		this.taskRepository = taskRepository;
+		this.subjectController = subjectController;
 	}
 
 	/**
 	 * Create a new task.
 	 *
-	 * @param dto     with task information
-	 * @param userDTO user information
+	 * @param dto      with task information
+	 * @param userDTO  user information
+	 * @param semester semester of user
 	 * @return created task
 	 */
-	public Result<TaskDTO> createTask(CreateTaskRequestDTO dto, UserDTO userDTO) {
+	public Result<TaskDTO> createTask(CreateTaskRequestDTO dto, UserDTO userDTO, SemesterModel semester) {
+		//Get subject by subjectId if error return
+		Result<SubjectModel> result = this.subjectController.getSubjectRaw(dto.getSubjectId(), userDTO);
+		if (result.isErrorPresent()) return Result.ret(result);
+
+		//Save new task and return dto
 		return Result.of(this.taskRepository.save(
 				new TaskModel(
 						-1,
-						userDTO.user,
+						semester,
+						result.getResult(), //Subject
 						dto.getTitle(),
 						dto.getCreated() < 0 ? System.currentTimeMillis() : dto.getCreated(),
-						dto.getDue(),
-						dto.getSubject(),
+						dto.getDue() < 0 ? 0 : dto.getDue(),
 						dto.getContent(),
 						false
 				)
@@ -65,15 +76,23 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	 * @return updated task
 	 */
 	public Result<TaskDTO> updateTask(UpdateTaskRequestDTO dto, UserDTO userDTO) {
-		if (dto.getTaskId() < 0) return Result.of(Error.INVALID_PARAM, NAME_KEY);
+		//Get task by id if not present return error if not owned by user return error
 		Optional<TaskModel> optionalTask = this.taskRepository.findById(dto.getTaskId());
 		if (optionalTask.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
-		if (!optionalTask.get().getUser().is(userDTO)) Result.of(Error.FORBIDDEN, NAME_KEY);
+		if (!userDTO.is(optionalTask.get().getSemester().getUser()) && !userDTO.hasScope("task.write.all"))
+			return Result.of(Error.FORBIDDEN, NAME_KEY);
 
+		//Update values if they were specified
 		TaskModel task = optionalTask.get();
 		if (dto.getTitle() != null && !dto.getTitle().isBlank()) task.setTitle(dto.getTitle());
 		if (dto.getDue() >= 0) task.setDue(dto.getDue());
-		if (dto.getSubject() != null && !dto.getSubject().isBlank()) task.setSubject(dto.getSubject());
+		if (dto.getSubjectId() >= 0) {
+			//Get subject by id if error return
+			Result<SubjectModel> result = this.subjectController.getSubjectRaw(dto.getSubjectId(), userDTO);
+			if (result.isErrorPresent()) return Result.ret(result);
+
+			task.setSubject(result.getResult());
+		}
 		if (dto.getContent() != null && !dto.getContent().isBlank()) task.setContent(dto.getContent());
 
 		return Result.of(this.taskRepository.save(task).toResponseDTO());
@@ -87,35 +106,29 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	 *
 	 * @param onlyUndone filter by task that are not marked as done
 	 * @param date       date to filter by
-	 * @param userDTO    user information
+	 * @param semester   semester information
 	 * @param paging     paging options
 	 * @return list of taskDTOs
 	 */
 	@Transactional
-	public Result<GetTasksResponseDTO> getTasks(boolean onlyUndone, long date, UserDTO userDTO, Paging paging) {
+	public Result<GetTasksResponseDTO> getTasks(boolean onlyUndone, long date, SemesterModel semester, Paging paging) {
+		//Get stream depending on specified parameter onlyUndone and date
 		Stream<TaskModel> taskStream;
-		if (onlyUndone) {
-			if (date < 0) {
-				taskStream = this.taskRepository.findAllByUserAndCreatedBeforeAndDoneOrderByCreatedDesc(
-						userDTO.user,
-						System.currentTimeMillis(), false, this.toPage(paging));
-			} else {
-				taskStream = this.taskRepository.findAllByUserAndCreatedAfterAndDoneOrderByCreatedAsc(
-						userDTO.user, date,
-						false, this.toPage(paging));
-			}
+		if (onlyUndone && date < 0) {
+			taskStream = this.taskRepository.findAllBySemesterAndCreatedBeforeAndDoneOrderByCreatedDesc(
+					semester, System.currentTimeMillis(), false, this.toPage(paging));
+		} else if (onlyUndone) {
+			taskStream = this.taskRepository.findAllBySemesterAndCreatedAfterAndDoneOrderByCreatedAsc(
+					semester, date, false, this.toPage(paging));
+		} else if (date < 0) {
+			taskStream = this.taskRepository.findAllBySemesterAndCreatedBeforeOrderByCreatedDesc(
+					semester, System.currentTimeMillis(), this.toPage(paging));
 		} else {
-			if (date < 0) {
-				taskStream = this.taskRepository.findAllByUserAndCreatedBeforeOrderByCreatedDesc(
-						userDTO.user,
-						System.currentTimeMillis(), this.toPage(paging));
-			} else {
-				taskStream = this.taskRepository.findAllByUserAndCreatedAfterOrderByCreatedAsc(
-						userDTO.user, date,
-						this.toPage(paging));
-			}
+			taskStream = this.taskRepository.findAllBySemesterAndCreatedAfterOrderByCreatedAsc(
+					semester, date, this.toPage(paging));
 		}
 
+		//Collect if empty return error otherwise tasks
 		List<TaskDTO> dtos = taskStream.map(TaskModel::toResponseDTO).collect(Collectors.toList());
 		if (dtos.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 		else return Result.of(new GetTasksResponseDTO(dtos));
@@ -124,17 +137,20 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	/**
 	 * Mark a task as done or undone.
 	 *
-	 * @param dto     with taskId and value to be set for done (default = true)
+	 * @param taskId  of task
+	 * @param done    value to be set for done (default = true)
 	 * @param userDTO user information
 	 * @return empty result
 	 */
-	public Result<?> markAsDone(MarkTaskAsDoneRequestDTO dto, UserDTO userDTO) {
-		Optional<TaskModel> optionalTask = this.taskRepository.findById(dto.getTaskId());
+	public Result<?> markAsDone(int taskId, boolean done, UserDTO userDTO) {
+		//Get task by id if not present return error if not owned by user return error
+		Optional<TaskModel> optionalTask = this.taskRepository.findById(taskId);
 		if (optionalTask.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
-		if (!optionalTask.get().getUser().is(userDTO)) Result.of(Error.FORBIDDEN, NAME_KEY);
+		if (!userDTO.is(optionalTask.get().getSemester().getUser()) && !userDTO.hasScope("task.write.all"))
+			return Result.of(Error.FORBIDDEN, NAME_KEY);
 
-		this.taskRepository.save(optionalTask.get().markAsDone(dto.isDone()));
-
+		//Save and return empty result
+		this.taskRepository.save(optionalTask.get().markAsDone(done));
 		return Result.empty();
 	}
 
@@ -147,26 +163,14 @@ public class TaskController extends AbstractPageable implements UserDataHandler 
 	 */
 	@Transactional
 	public Result<?> deleteTask(int taskId, UserDTO userDTO) {
+		//Get task by id if not present return error if not owned by user return error
 		Optional<TaskModel> optionalTask = this.taskRepository.findById(taskId);
 		if (optionalTask.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
+		if (!userDTO.is(optionalTask.get().getSemester().getUser()) && !userDTO.hasScope("task.delete.all"))
+			return Result.of(Error.FORBIDDEN, NAME_KEY);
 
-		TaskModel task = optionalTask.get();
-		if (!task.getUser().is(userDTO)) return Result.of(Error.FORBIDDEN, NAME_KEY);
-		else {
-			this.taskRepository.delete(task);
-			return Result.empty();
-		}
+		//Delete task and return empty result
+		this.taskRepository.delete(optionalTask.get());
+		return Result.empty();
 	}
-
-
-	@Override
-	public void deleteUserData(UserModel user) {
-		this.taskRepository.deleteAllByUser(user);
-	}
-
-	@Override
-	public Object[] getUserData(UserModel user) {
-		return this.mapData(this.taskRepository.findAllByUser(user));
-	}
-
 }

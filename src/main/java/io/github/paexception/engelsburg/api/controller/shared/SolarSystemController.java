@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.controller.shared;
 
 import io.github.paexception.engelsburg.api.endpoint.dto.SolarSystemDTO;
@@ -44,5 +48,4 @@ public class SolarSystemController {
 	public void updateText(String text) {
 		this.dto.setText(text);
 	}
-
 }

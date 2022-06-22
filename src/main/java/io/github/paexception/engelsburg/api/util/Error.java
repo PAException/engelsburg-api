@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.util;
 
 import lombok.Data;
@@ -25,7 +29,7 @@ public class Error extends ResponseEntity<Object> {
 	public static final Error FAILED = new Error(HttpStatus.BAD_REQUEST, I18n.FAILED);
 	public static final Error INVALID = new Error(HttpStatus.BAD_REQUEST, I18n.INVALID);
 	public static final Error TOO_MANY_REQUESTS = new Error(HttpStatus.TOO_MANY_REQUESTS, I18n.TOO_MANY_REQUESTS);
-
+	public static final Error FAILED_DEPENDENCY = new Error(HttpStatus.FAILED_DEPENDENCY, I18n.FAILED_DEPENDENCY);
 
 	private final int status;
 	private final String messageKey;

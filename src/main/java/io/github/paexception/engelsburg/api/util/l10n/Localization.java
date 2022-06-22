@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.util.l10n;
 
 import com.google.gson.Gson;
@@ -5,12 +9,12 @@ import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,10 +63,8 @@ public class Localization implements LoggingComponent {
 			LOGGER.debug("Starting to load localization messages");
 			for (String file : this.getL10nFilenames()) {
 				Map<String, String> map = new HashMap<>(); //Create map to put strings
-				Map<?, ?> json = GSON.fromJson(
-						new InputStreamReader(new FileInputStream(this.getResource("l10n" + File.separator + file))),
-						Map.class
-				); //Get json
+				InputStreamReader in = new InputStreamReader(this.getResource("l10n" + File.separator + file));
+				Map<?, ?> json = GSON.fromJson(in, Map.class); //Get json
 				String lang = file.replace(".arb", "");
 				LOGGER.trace("Loading localization language: " + lang);
 
@@ -78,6 +80,7 @@ public class Localization implements LoggingComponent {
 				}
 				L10N.put(lang, map);
 				LOGGER.trace("Successful loaded localization language: " + lang + " (" + map.size() + " messages)");
+				in.close();
 			}
 			if (L10N.isEmpty()) LOGGER.warn("Didn't load any localization languages");
 			else LOGGER.info("Loaded localization messages");
@@ -92,8 +95,8 @@ public class Localization implements LoggingComponent {
 	 * @param resource to get stream from
 	 * @return stream
 	 */
-	private File getResource(String resource) throws FileNotFoundException {
-		return ResourceUtils.getFile("classpath:" + resource);
+	private InputStream getResource(String resource) throws IOException {
+		return new ClassPathResource(resource).getInputStream();
 	}
 
 	/**
@@ -105,10 +108,10 @@ public class Localization implements LoggingComponent {
 	private List<String> getL10nFilenames() throws IOException {
 		List<String> filenames = new ArrayList<>();
 
-		File file = this.getResource("l10n");
-		if (file.isDirectory() && file.exists())
-			for (File sub : Objects.requireNonNull(file.listFiles()))
-				filenames.add(sub.getName()); //file.listFiles() can't be null
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(this.getResource("l10n")))) {
+			String file;
+			while ((file = reader.readLine()) != null) filenames.add(file);
+		}
 
 		return filenames;
 	}
