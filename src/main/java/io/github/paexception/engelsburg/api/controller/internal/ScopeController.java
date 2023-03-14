@@ -68,7 +68,7 @@ public class ScopeController {
 	 * <p>On the same level ({@code '+'}):
 	 * {@code example.read.self} and {@code example.write.self} would be merged to {@code example.read+write.self}</p>
 	 * <p>The {@code '.'} marks a step into, the {@code '-'} a step out:
-	 * {@code example.read.self} and {@code example.write.all} would be merged to {@code example.read.self-write.self}</p>
+	 * {@code example.read.self} and {@code example.write.all} would be merged to {@code example.read.self-write.all}</p>
 	 * These scopes would look hierarchic like this:
 	 * <p>example</p>
 	 * <p>- read</p>

@@ -52,6 +52,12 @@ public class SemesterInterceptor extends HandlerInterceptorAdapter implements Ha
 			Object handler) throws IOException {
 		try {
 			if (!(handler instanceof HandlerMethod)) return true;
+			HandlerMethod method = (HandlerMethod) handler;
+
+			//Only continue if method has Semester as a parameter
+			Class<?>[] params = method.getMethod().getParameterTypes();
+			for (Class<?> param : params)
+				if (param.equals(SemesterModel.class)) return true;
 
 			UserDTO user = (UserDTO) request.getAttribute("jwt");
 			if (user == null) return true;

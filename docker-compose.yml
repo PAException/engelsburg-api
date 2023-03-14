@@ -21,7 +21,7 @@ services:
       DATABASE_PASSWORD: eb-api
       DATABASE_DATABASE: eb-api
       SERVER_PORT: 8080
-      use.ssl: false
+      use.ssl: "false"
       JWT_SECRET: env
       SCHOOL_TOKEN: env
       SMTP_SERVER: env
@@ -33,7 +33,7 @@ services:
       OAUTH2_REDIRECT_URI: env
       GOOGLE_CLIENT_SECRET: env
       logging.level.io.github.paexception.engelsburg.api: debug
-      PRODUCTION: false
+      PRODUCTION: "false"
       logging.level.io.github.paexception.engelsburg.api.util.l10n.Localization: trace
   engelsburg-api-database:
     image: mariadb:10.6.7
@@ -47,7 +47,7 @@ services:
       MYSQL_USER: eb-api
       MYSQL_PASSWORD: eb-api
       MYSQL_DATABASE: eb-api
-      MYSQL_RANDOM_ROOT_PASSWORD: yes
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
     volumes:
       - eb-api-db:/var/lib/mysql
 
