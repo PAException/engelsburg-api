@@ -1,6 +1,11 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.database.model;
 
 import io.github.paexception.engelsburg.api.endpoint.dto.TeacherDTO;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,9 +27,11 @@ import java.util.List;
 @Table
 public class TeacherModel {
 
+	@Setter(AccessLevel.NONE)
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int teacherId;
+
 	@NotBlank
 	private String abbreviation;
 	@NotBlank
@@ -122,6 +129,4 @@ public class TeacherModel {
 		}
 
 	}
-
-
 }

@@ -1,9 +1,12 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.service.notification;
 
-import io.github.paexception.engelsburg.api.controller.reserved.NotificationController;
+import io.github.paexception.engelsburg.api.controller.reserved.NotificationSettingsController;
 import io.github.paexception.engelsburg.api.controller.reserved.TimetableController;
 import io.github.paexception.engelsburg.api.database.model.NotificationDeviceModel;
-import io.github.paexception.engelsburg.api.database.model.TimetableModel;
 import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.ErrorNotificationDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
@@ -14,6 +17,7 @@ import io.github.paexception.engelsburg.api.util.l10n.Localization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -28,12 +32,13 @@ public class NotificationService implements LoggingComponent {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NotificationService.class);
 	private static final FirebaseCloudMessagingImpl FCM = FirebaseCloudMessagingImpl.getInstance();
 	private final TimetableController timetableController;
-	private final NotificationController notificationController;
+	private final NotificationSettingsController notificationSettingsController;
 
 	public NotificationService(
-			TimetableController timetableController, NotificationController notificationController) {
+			TimetableController timetableController,
+			NotificationSettingsController notificationSettingsController) {
 		this.timetableController = timetableController;
-		this.notificationController = notificationController;
+		this.notificationSettingsController = notificationSettingsController;
 	}
 
 	/**
@@ -105,7 +110,7 @@ public class NotificationService implements LoggingComponent {
 	 * @param langCode   language code
 	 * @return formatted text
 	 */
-	private static String getSubstituteText(SubstituteNotificationDTO substitute, String langCode) {
+	private static String getSubstituteText(@NotNull SubstituteNotificationDTO substitute, @NotNull String langCode) {
 		return (substitute.getClassName() == null ? "" : substitute.getClassName()) +
 				(substitute.getClassName() == null ? "" : " – ") +
 				(substitute.getSubject() == null ? "" : substitute.getSubject()) + " (" +
@@ -121,7 +126,7 @@ public class NotificationService implements LoggingComponent {
 						!substitute.getSubstituteTeacher().equals("+") &&
 						substitute.getTeacher() != null &&
 						!substitute.getSubstituteTeacher().equals(substitute.getTeacher())
-						? " " + Localization.string(langCode == null ? "de_DE" : langCode, "insteadOf") + " "
+						? " " + Localization.string(langCode, "insteadOf") + " "
 						: "") +
 				(substitute.getTeacher() == null || substitute.getTeacher().equals(substitute.getSubstituteTeacher())
 						? ""
@@ -138,22 +143,28 @@ public class NotificationService implements LoggingComponent {
 	 * Return a title of substitute notification.
 	 *
 	 * @param substitute substitute to format
+	 * @param created    if substitute was updated or created
+	 * @param langCode   language abbreviation
 	 * @return title
 	 */
-	private static String getSubstituteTitle(SubstituteNotificationDTO substitute) {
-		return substitute.getType() + " " + substitute.getLesson();
+	private static String getSubstituteTitle(SubstituteNotificationDTO substitute, boolean created, String langCode) {
+		return (created ? Localization.string(langCode, "changed") + ": " : "")
+				+ substitute.getType() + " " + substitute.getLesson();
 	}
 
 	/**
 	 * Processes SubstituteDTOs to send as notification.
 	 *
-	 * @param dtos SubstituteDTOs
+	 * @param dtos    SubstituteDTOs
+	 * @param created if given substitutes have been created
 	 */
-	public void sendSubstituteNotifications(List<SubstituteDTO> dtos) {
+	public void sendSubstituteNotifications(List<SubstituteDTO> dtos, boolean created) {
+		final String langCode = "de_DE";
 		LOGGER.debug("Starting to send " + dtos.size() + " substitute notification" + (dtos.size() != 1 ? "s" : ""));
 
+		//Remove same substitutes (e.g. 5th and 6th lesson)
 		List<SubstituteNotificationDTO> notificationDTOs = new ArrayList<>();
-		for (var i = 0; i < dtos.size(); i++) { //Remove same substitutes (e.g. 5th and 6th lesson)
+		for (int i = 0; i < dtos.size(); i++) {
 			List<Integer> same = new ArrayList<>();
 			SubstituteDTO dto = dtos.get(i);
 			if (dto == null) continue;
@@ -162,14 +173,16 @@ public class NotificationService implements LoggingComponent {
 			for (var ii = 0; ii < dtos.size(); ii++) {
 				if (ii != i) {
 					var compare = dtos.get(ii);
-					if (sub.getDate() == compare.getDate() &&
-							Objects.equals(sub.getClassName(), compare.getClassName()) &&
-							Objects.equals(sub.getTeacher(), compare.getTeacher()) &&
-							Objects.equals(sub.getSubstituteTeacher(), compare.getSubstituteTeacher()) &&
-							Objects.equals(sub.getRoom(), compare.getRoom()) &&
-							Objects.equals(sub.getSubject(), compare.getSubject()) &&
-							Objects.equals(sub.getType(), compare.getType()) &&
-							Objects.equals(sub.getSubstituteOf(), compare.getSubstituteOf())) {
+					if (
+							sub.getDate() == compare.getDate() &&
+									Objects.equals(sub.getClassName(), compare.getClassName()) &&
+									Objects.equals(sub.getTeacher(), compare.getTeacher()) &&
+									Objects.equals(sub.getSubstituteTeacher(), compare.getSubstituteTeacher()) &&
+									Objects.equals(sub.getRoom(), compare.getRoom()) &&
+									Objects.equals(sub.getSubject(), compare.getSubject()) &&
+									Objects.equals(sub.getType(), compare.getType()) &&
+									Objects.equals(sub.getSubstituteOf(), compare.getSubstituteOf())
+					) {
 						same.add(ii);
 
 						if (sub.getLesson() > compare.getLesson()) {
@@ -195,27 +208,34 @@ public class NotificationService implements LoggingComponent {
 			}
 		}
 
-		FCM.sendNotificationToTopics(//General notification
-				Localization.string("de_DE", "newSubstitute").placeholder("count", notificationDTOs.size()).get(),
-				null,
-				"substitute"
-		);
+		//Send general substitute notifications if they have been created
+		if (created) {
+			FCM.sendNotificationToTopics(
+					Localization.string(langCode, "newSubstitute").placeholder("count", notificationDTOs.size()).get(),
+					null,
+					"substitute"
+			);
+		}
 
-		for (SubstituteNotificationDTO dto : notificationDTOs) { //To topics (classes and teacher)
+
+		//Send substitute notifications to topics (classes and teacher)
+		for (SubstituteNotificationDTO dto : notificationDTOs) {
 			FCM.sendNotificationToTopics(//Classes
-					getSubstituteTitle(dto),
-					getSubstituteText(dto, null),
+					getSubstituteTitle(dto, created, langCode),
+					getSubstituteText(dto, langCode),
 					splitClasses(dto.getClassName())
 			);
 
 			FCM.sendNotificationToTopics(//Teacher
-					getSubstituteTitle(dto),
-					getSubstituteText(dto, null),
+					getSubstituteTitle(dto, created, langCode),
+					getSubstituteText(dto, langCode),
 					"teacher." + dto.getSubstituteTeacher()
 			);
 		}
 
-		List<Pair<Set<NotificationDeviceModel>, SubstituteNotificationDTO>> list = dtos.stream().map(dto -> {
+		//Send substitute notifications via timetable
+		List<Pair<Set<NotificationDeviceModel>, SubstituteNotificationDTO>> list = dtos.stream()
+				.map(dto -> {
 					CALENDAR.setTime(dto.getDate());
 					return Pair.of(this.timetableController.getAllByWeekDayAndLessonAndTeacherOrClassName(
 							CALENDAR.get(Calendar.DAY_OF_WEEK) - 2, //MON starts at 2
@@ -223,18 +243,20 @@ public class NotificationService implements LoggingComponent {
 							dto.getTeacher(),
 							dto.getClassName()
 					), dto);
-				}).filter(pair -> !pair.getLeft().isEmpty())
+				})
+				.filter(pair -> !pair.getLeft().isEmpty())
 				.map(pair -> Pair.of(
-						this.notificationController.getTimetableNotificationDeviceOfUsers(
-								pair.getLeft().stream().map(TimetableModel::getUser)),
+						this.notificationSettingsController.getTimetableNotificationDeviceOfUsers(
+								pair.getLeft().stream().map(
+										timetable -> timetable.getSubject().getSemester().getUser())),
 						SubstituteNotificationDTO.fromSubstituteDTO(pair.getRight(), null)
 				))
 				.collect(Collectors.toList());
 
 		for (Pair<Set<NotificationDeviceModel>, SubstituteNotificationDTO> pair : list) {
 			FCM.sendMulticastNotification(
-					getSubstituteTitle(pair.getRight()),
-					getSubstituteText(pair.getRight(), null),
+					getSubstituteTitle(pair.getRight(), created, langCode),
+					getSubstituteText(pair.getRight(), langCode),
 					pair.getLeft().stream().map(NotificationDeviceModel::getToken).collect(Collectors.toList())
 			);
 		}

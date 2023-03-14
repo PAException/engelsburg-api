@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.service.scheduled;
 
 import io.github.paexception.engelsburg.api.controller.reserved.InformationController;
@@ -12,8 +16,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
@@ -37,7 +39,7 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 	private final InformationController informationController;
 	private Date currentDate;
 	private List<SubstituteDTO> substitutes;
-	private int splitSubstitute = 0;
+	private int splitSubstitute;
 
 	public SubstituteUpdateService(
 			SubstituteController substituteController,
@@ -51,9 +53,9 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 	/**
 	 * Scheduled function to update substitutes every 5 minutes.
 	 */
-	@Scheduled(fixedRate = 60 * 1000, initialDelay = 60 * 1000)
-	@EventListener(ApplicationReadyEvent.class)
+	@Scheduled(fixedRate = 60 * 1000)
 	public void updateSubstitutes() {
+		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
 		LOGGER.debug("Starting to fetch substitutes");
 		try {
 			int count = 0;

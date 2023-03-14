@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.endpoint;
 
 import io.github.paexception.engelsburg.api.spring.rate_limiting.IgnoreGeneralRateLimit;
@@ -34,5 +38,4 @@ public class OtherEndpoint {
 	public Object dataPolicy() {
 		return "data_policy";
 	}
-
 }

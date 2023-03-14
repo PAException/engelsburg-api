@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.controller.reserved;
 
 import io.github.paexception.engelsburg.api.database.model.TeacherModel;
@@ -9,14 +13,15 @@ import io.github.paexception.engelsburg.api.service.scheduled.SubstituteUpdateSe
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.Result;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import static io.github.paexception.engelsburg.api.database.model.TeacherModel.Job.BIOLOGIE;
 import static io.github.paexception.engelsburg.api.database.model.TeacherModel.Job.CHEMIE;
 import static io.github.paexception.engelsburg.api.database.model.TeacherModel.Job.DEUTSCH;
@@ -45,15 +50,12 @@ import static io.github.paexception.engelsburg.api.util.Constants.Information.NA
  * Controller for all other information.
  */
 @Component
+@AllArgsConstructor
 public class InformationController implements LoggingComponent {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(InformationController.class);
 	private static String[] currentClasses;
 	private final TeacherRepository teacherRepository;
-
-	public InformationController(TeacherRepository teacherRepository) {
-		this.teacherRepository = teacherRepository;
-	}
 
 	/**
 	 * Get a teacher by its abbreviation.
@@ -62,8 +64,10 @@ public class InformationController implements LoggingComponent {
 	 * @return DTO with information about the teacher
 	 */
 	public Result<TeacherDTO> getTeacher(String abbreviation) {
+		//Find teacher by abbreviation
 		Optional<TeacherModel> optionalTeacher = this.teacherRepository.findByAbbreviation(abbreviation);
 
+		//If found return as response dto otherwise return error
 		return optionalTeacher.map(teacherModel -> Result.of(teacherModel.toResponseDTO()))
 				.orElseGet(() -> Result.of(Error.NOT_FOUND, NAME_KEY));
 	}
@@ -72,9 +76,10 @@ public class InformationController implements LoggingComponent {
 	 * Add teachers manually on startup.
 	 * <a>https:engelsburg.smmp.de/unser-gymnasium/lehrer/</a>
 	 */
-	@EventListener(ApplicationStartedEvent.class)
+	@Scheduled(fixedDelay = Long.MAX_VALUE, initialDelay = 30 * 1000)
 	public void setTeacher() {
 		LOGGER.debug("Starting to add teachers");
+		//Delete all teacher
 		this.teacherRepository.deleteAll();
 		List<TeacherModel> teachers = new ArrayList<>();
 
@@ -224,6 +229,7 @@ public class InformationController implements LoggingComponent {
 
 		//Some teachers aren't listed on the website
 
+		//Add all teachers
 		this.teacherRepository.saveAll(teachers);
 		LOGGER.info("Added " + teachers.size() + " teachers");
 	}
@@ -256,11 +262,12 @@ public class InformationController implements LoggingComponent {
 	 * @return DTO with all registered teachers
 	 */
 	public Result<GetTeachersResponseDTO> getAllTeachers() {
-		List<TeacherDTO> teacherDTOs = new ArrayList<>();
-		this.teacherRepository.findAll().forEach(teacher -> teacherDTOs.add(teacher.toResponseDTO()));
+		//Get all teachers
+		List<TeacherDTO> teacherDTOs = this.teacherRepository.findAll().stream()
+				.map(TeacherModel::toResponseDTO).collect(Collectors.toList());
 
+		//Return teachers, if empty error
 		if (teacherDTOs.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 		else return Result.of(new GetTeachersResponseDTO(teacherDTOs));
 	}
-
 }

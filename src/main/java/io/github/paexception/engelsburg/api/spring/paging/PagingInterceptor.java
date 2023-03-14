@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.spring.paging;
 
 import lombok.NoArgsConstructor;
@@ -27,14 +31,14 @@ public class PagingInterceptor extends HandlerInterceptorAdapter implements Hand
 		Paging paging = new Paging();
 
 		try {
-			paging.setPage(Integer.parseInt(paramPage));
-			try {
-				paging.setSize(Integer.parseInt(paramSize));
-			} catch (NumberFormatException e) {
-				paging.setSize(Integer.MAX_VALUE);
-			}
-
+			if (paramPage != null) paging.setPage(Integer.parseInt(paramPage));
 		} catch (NumberFormatException ignored) {
+			paging.setPage(1);
+		}
+		try {
+			if (paramSize != null) paging.setSize(Integer.parseInt(paramSize));
+		} catch (NumberFormatException ignored) {
+			paging.setSize(Integer.MAX_VALUE);
 		}
 		request.setAttribute("paging", paging);
 

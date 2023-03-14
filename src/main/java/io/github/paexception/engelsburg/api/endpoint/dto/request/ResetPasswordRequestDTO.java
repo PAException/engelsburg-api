@@ -1,9 +1,13 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.endpoint.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 @Data
@@ -11,12 +15,10 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 public class ResetPasswordRequestDTO {
 
-	@Email
 	@NotBlank
-	private String email;
-	@NotBlank
+	@Schema(example = "NewPassword123")
 	private String password;
 	@NotBlank
+	@Schema(example = "iuz2187A")
 	private String token;
-
 }

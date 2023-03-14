@@ -1,7 +1,11 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.database.repository;
 
+import io.github.paexception.engelsburg.api.database.model.SemesterModel;
 import io.github.paexception.engelsburg.api.database.model.TimetableModel;
-import io.github.paexception.engelsburg.api.database.model.UserModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -11,11 +15,9 @@ import java.util.stream.Stream;
 @Repository
 public interface TimetableRepository extends JpaRepository<TimetableModel, Integer> {
 
-	void deleteAllByUser(UserModel user);
+	List<TimetableModel> findAllBySemester(SemesterModel semester);
 
-	List<TimetableModel> findAllByUser(UserModel user);
-
-	Optional<TimetableModel> findByUserAndDayAndLesson(UserModel user, int day, int lesson);
+	Optional<TimetableModel> findBySemesterAndDayAndLesson(SemesterModel semester, int day, int lesson);
 
 	List<TimetableModel> findAllByDayAndLessonAndClassNameAndTeacher(int day, int lesson, String className,
 			String teacher);
@@ -24,10 +26,9 @@ public interface TimetableRepository extends JpaRepository<TimetableModel, Integ
 
 	List<TimetableModel> findAllByDayAndLessonAndTeacher(int day, int lesson, String teacher);
 
-	Stream<TimetableModel> findAllByUserAndDayAndLesson(UserModel user, int day, int lesson);
+	Stream<TimetableModel> findAllBySemesterAndDayAndLesson(SemesterModel semester, int day, int lesson);
 
-	Stream<TimetableModel> findAllByUserAndDay(UserModel user, int day);
+	Stream<TimetableModel> findAllBySemesterAndDay(SemesterModel semester, int day);
 
-	Stream<TimetableModel> findAllByUserAndLesson(UserModel user, int lesson);
-
+	Stream<TimetableModel> findAllBySemesterAndLesson(SemesterModel semester, int lesson);
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.spring;
 
 import io.github.paexception.engelsburg.api.util.Error;
@@ -60,8 +64,8 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
 		} else if (ex instanceof HttpMessageNotReadableException) {
 			return Result.of(Error.INVALID_PARAM, "possible missing body or content type").getHttpResponse();
 		} else if (ex instanceof MissingServletRequestParameterException) {
-			return Result.of(Error.INVALID_PARAM, "missing request param: "
-					+ ((MissingServletRequestParameterException) ex).getParameterName()).getHttpResponse();
+			return Result.of(Error.INVALID_PARAM,
+					((MissingServletRequestParameterException) ex).getParameterName()).getHttpResponse();
 		} else return Result.of(Error.fromHttpStatus(status)).getHttpResponse();
 	}
 

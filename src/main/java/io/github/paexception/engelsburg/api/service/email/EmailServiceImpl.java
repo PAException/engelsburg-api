@@ -1,12 +1,16 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.service.email;
 
+import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
-import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 @Component
@@ -34,8 +38,8 @@ public class EmailServiceImpl implements LoggingComponent {
 			helper.setText(html, true);
 			helper.setTo(recipient);
 			helper.setSubject(subject);
-			this.emailSender.send(mimeMessage);
-		} catch (MessagingException e) {
+			if (Environment.PRODUCTION) this.emailSender.send(mimeMessage);
+		} catch (Exception e) {
 			this.logError("An error occurred sending an email", e, LOGGER);
 			return false;
 		}

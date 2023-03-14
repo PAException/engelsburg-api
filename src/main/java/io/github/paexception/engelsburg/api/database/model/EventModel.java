@@ -1,6 +1,11 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.database.model;
 
 import io.github.paexception.engelsburg.api.endpoint.dto.EventDTO;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +27,7 @@ import java.sql.Date;
 @Table
 public class EventModel {
 
+	@Setter(AccessLevel.NONE)
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int eventId;
@@ -33,5 +39,4 @@ public class EventModel {
 	public EventDTO toResponseDTO() {
 		return new EventDTO(this.date, this.title);
 	}
-
 }

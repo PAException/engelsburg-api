@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.service.scheduled;
 
 import com.google.gson.JsonArray;
@@ -12,10 +16,9 @@ import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.Result;
 import io.github.paexception.engelsburg.api.util.WordPressAPI;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
@@ -29,6 +32,7 @@ import java.util.List;
  * Service to update articles.
  */
 @Service
+@AllArgsConstructor
 public class ArticleUpdateService extends JsonFetchingService implements LoggingComponent {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ArticleUpdateService.class);
@@ -37,18 +41,12 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	private final ArticleController articleController;
 	private final NotificationService notificationService;
 
-	public ArticleUpdateService(ArticleController articleController,
-			NotificationService notificationService) {
-		this.articleController = articleController;
-		this.notificationService = notificationService;
-	}
-
 	/**
 	 * Call {@link #updateArticles(String, int)} every 15 minutes and return all articles published in that passed 1 minute.
 	 */
-	@Scheduled(fixedRate = 60 * 1000, initialDelay = 60 * 1000)
-	@EventListener(ApplicationReadyEvent.class)
+	@Scheduled(fixedRate = 60 * 1000)
 	public void fetchNewArticles() {
+		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
 		LOGGER.debug("Starting fetching new articles");
 		this.updateArticles(DATE_FORMAT.format(System.currentTimeMillis() - 60 * 1000), 1).stream()
 				.peek(this.notificationService::sendArticleNotifications)
@@ -60,6 +58,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	 */
 	@Scheduled(fixedRate = 30 * 60 * 1000, initialDelay = 30 * 60 * 1000)
 	public void checkIfArticlesChanged() {
+		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
 		this.articleController.prepareArticleToUpdate().forEach(idAndHash -> {
 			try {
 				JsonElement json = this.request(
@@ -143,8 +142,8 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	/**
 	 * Load articles on start up.
 	 */
-	@EventListener(ApplicationReadyEvent.class)
 	public void loadPastArticles() {
+		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
 		LOGGER.debug("Starting fetching past articles");
 		Result<GetArticlesResponseDTO> lastArticle = this.articleController.getArticlesAfter(-1, new Paging(0, 1));
 		if (lastArticle.isResultPresent()) { //Empty would be an error

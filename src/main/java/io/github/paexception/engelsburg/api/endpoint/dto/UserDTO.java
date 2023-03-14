@@ -1,9 +1,13 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.endpoint.dto;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import io.github.paexception.engelsburg.api.database.model.UserModel;
+import io.github.paexception.engelsburg.api.controller.internal.ScopeController;
+import io.github.paexception.engelsburg.api.database.model.user.UserModel;
 import io.github.paexception.engelsburg.api.spring.auth.AuthenticationInterceptor;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 
 /**
@@ -30,33 +34,10 @@ public class UserDTO {
 	 * @return true if scope was found
 	 */
 	public boolean hasScope(String scope) {
-		String[] split = scope.split("\\.");
-		String sub = this.scopes;
-		boolean found = true;
-		for (int i = 0; i < split.length && found; i++) {
-			String part = split[i];
-			if (sub.contains(part)) {
-				boolean cascadedFound = false;
-				int index = -1;
-				while (!cascadedFound && (index = sub.indexOf(part, index + 1)) != -1) {
-					String pre = sub.substring(0, index);
-					if (StringUtils.countMatches(pre, ".") == StringUtils.countMatches(pre, "-") - (i == 0 ? 0 : -1)) {
-						cascadedFound = true;
-					}
-				}
-				if (!cascadedFound) found = false;
-				if ((index + part.length()) <= sub.length() - 1) {
-					char c = sub.charAt(index + part.length());
-					if (c != '+' && c != '.' && c != '-') {
-						found = false;
-					}
-				}
-				sub = sub.substring(sub.indexOf(part));
-			} else {
-				found = false;
-			}
-		}
+		return ScopeController.hasScope(scope, this.scopes);
+	}
 
-		return found;
+	public boolean is(UserModel user) {
+		return this.user.equals(user);
 	}
 }

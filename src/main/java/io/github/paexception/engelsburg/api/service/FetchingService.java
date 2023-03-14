@@ -1,7 +1,10 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.service;
 
 import io.github.paexception.engelsburg.api.util.Hash;
-import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +14,6 @@ import java.util.Map;
  */
 public abstract class FetchingService {
 
-	private static MessageDigest digest;
 	private final Map<String, byte[]> currentHash = new HashMap<>();
 
 	/**

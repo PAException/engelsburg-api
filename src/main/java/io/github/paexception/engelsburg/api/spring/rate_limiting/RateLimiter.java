@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.spring.rate_limiting;
 
 import io.github.bucket4j.Bucket;
@@ -6,6 +10,7 @@ import io.github.bucket4j.local.LocalBucketBuilder;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import lombok.Getter;
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
@@ -50,7 +55,8 @@ public class RateLimiter {
 	 * @return true if request can be acquired
 	 */
 	public boolean acquire(String identifier) {
-		return this.advancedAcquire(identifier).isConsumed();
+		ConsumptionProbe probe = this.advancedAcquire(identifier);
+		return probe != null && probe.isConsumed();
 	}
 
 	/**
@@ -60,7 +66,9 @@ public class RateLimiter {
 	 * @return consumption probe to customise response
 	 * like time to refill and remaining requests
 	 */
+	@Nullable
 	public ConsumptionProbe advancedAcquire(String identifier) {
+		if (identifier.equals("127.0.0.1") || identifier.equals("localhost")) return null;
 		if (this.limiter.containsKey(identifier)) {
 			return this.limiter.get(identifier).tryConsumeAndReturnRemaining(1);
 		} else {
