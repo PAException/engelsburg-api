@@ -26,20 +26,6 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: .
-        platforms: linux/amd64
-        push: true
-        tags: ${{ env.TAG }}-amd64
-    - name: Build and push
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        platforms: linux/arm64
-        push: true
-        tags: ${{ env.TAG }}-arm64
-    - name: Build and push
-      uses: docker/build-push-action@v4
-      with:
-        context: .
         platforms: linux/arm64/v8
         push: true
         tags: ${{ env.TAG }}-arm64-v8
