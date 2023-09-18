@@ -8,13 +8,17 @@ import io.github.paexception.engelsburg.api.controller.reserved.InformationContr
 import io.github.paexception.engelsburg.api.endpoint.dto.TeacherDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetClassesResponseDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetTeachersResponseDTO;
-import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
+import io.github.paexception.engelsburg.api.util.Environment;
+import io.github.paexception.engelsburg.api.util.Error;
+import io.github.paexception.engelsburg.api.util.Result;
 import io.github.paexception.engelsburg.api.util.openapi.ErrorResponse;
 import io.github.paexception.engelsburg.api.util.openapi.Response;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -32,11 +36,16 @@ public class InformationEndpoint {
 	 *
 	 * @see InformationController#getTeacher(String)
 	 */
-	@AuthScope("info.teacher.read.all")
 	@GetMapping("/teacher/{abbreviation}")
 	@Response(TeacherDTO.class)
 	@ErrorResponse(status = 404, messageKey = "NOT_FOUND", extra = "information")
-	public Object getTeacher(@PathVariable("abbreviation") String abbreviation) {
+	@ErrorResponse(status = 403, messageKey = "FORBIDDEN", extra = "information")
+	public Object getTeacher(
+			@RequestParam @Schema(example = "<substituteKey>") String substituteKey,
+			@PathVariable("abbreviation") String abbreviation) {
+		if (!Environment.SCHOOL_TOKEN.equals(substituteKey))
+			return Result.of(Error.FORBIDDEN, "information").getHttpResponse();
+
 		return this.informationController.getTeacher(abbreviation).getHttpResponse();
 	}
 
@@ -45,11 +54,14 @@ public class InformationEndpoint {
 	 *
 	 * @see InformationController#getCurrentClasses()
 	 */
-	@AuthScope("info.classes.read.all")
 	@GetMapping("/classes")
 	@Response(GetClassesResponseDTO.class)
 	@ErrorResponse(status = 404, messageKey = "NOT_FOUND", extra = "information")
-	public Object getCurrentClasses() {
+	@ErrorResponse(status = 403, messageKey = "FORBIDDEN", extra = "information")
+	public Object getCurrentClasses(@RequestParam @Schema(example = "<substituteKey>") String substituteKey) {
+		if (!Environment.SCHOOL_TOKEN.equals(substituteKey))
+			return Result.of(Error.FORBIDDEN, "information").getHttpResponse();
+
 		return this.informationController.getCurrentClasses().getHttpResponse();
 	}
 
@@ -58,11 +70,14 @@ public class InformationEndpoint {
 	 *
 	 * @see InformationController#getAllTeachers()
 	 */
-	@AuthScope("info.teacher.read.all")
 	@GetMapping("/teacher")
 	@Response(GetTeachersResponseDTO.class)
 	@ErrorResponse(status = 404, messageKey = "NOT_FOUND", extra = "information")
-	public Object getTeachers() {
+	@ErrorResponse(status = 403, messageKey = "FORBIDDEN", extra = "information")
+	public Object getTeachers(@RequestParam @Schema(example = "<substituteKey>") String substituteKey) {
+		if (!Environment.SCHOOL_TOKEN.equals(substituteKey))
+			return Result.of(Error.FORBIDDEN, "information").getHttpResponse();
+
 		return this.informationController.getAllTeachers().getHttpResponse();
 	}
 

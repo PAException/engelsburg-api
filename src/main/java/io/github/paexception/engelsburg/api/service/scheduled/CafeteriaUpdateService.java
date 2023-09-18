@@ -32,6 +32,7 @@ public class CafeteriaUpdateService extends JsonFetchingService implements Loggi
 	public void updateCafeteriaInformation() {
 		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
 		try {
+			LOGGER.debug("[CAFETERIA] Fetching...");
 			JsonObject json = this.request("https://engelsburg.smmp.de/wp-json/wp/v2/pages/635").getAsJsonObject();
 			if (json.get("id") == null) return;
 
@@ -45,14 +46,14 @@ public class CafeteriaUpdateService extends JsonFetchingService implements Loggi
 					content = WordPressAPI.applyBlurHashToAllImages(Jsoup.parse(content)).toString();
 					blurHash = mediaUrl != null ? WordPressAPI.getBlurHash(mediaUrl) : null;
 				} catch (IOException e) {
-					this.logError("Couldn't load blur hash of image", e, LOGGER);
+					this.logError("[CAFETERIA] Couldn't load blur hash of image", e, LOGGER);
 				}
 
 				this.cafeteriaController.update(new CafeteriaInformationDTO(content, link, mediaUrl, blurHash));
-				LOGGER.info("Updated cafeteria information");
-			} else LOGGER.debug("Cafeteria information has not changed");
+				LOGGER.info("[CAFETERIA] Updated");
+			} else LOGGER.debug("[CAFETERIA] Not changed");
 		} catch (IOException e) {
-			this.logError("Couldn't fetch cafeteria information", e, LOGGER);
+			this.logError("[CAFETERIA] Couldn't fetch", e, LOGGER);
 		}
 	}
 

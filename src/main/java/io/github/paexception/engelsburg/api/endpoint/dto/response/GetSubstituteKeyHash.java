@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ * Copyright (c) 2023 Paul Huerkamp. All rights reserved.
  */
 
 package io.github.paexception.engelsburg.api.endpoint.dto.response;
@@ -11,9 +11,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GetUserDataResponseDTOModel {
-
-	private String nameKey;
-	private Object queriedData;
-
+public class GetSubstituteKeyHash {
+	private String sha1;
 }

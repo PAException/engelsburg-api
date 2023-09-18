@@ -5,8 +5,6 @@
 package io.github.paexception.engelsburg.api.spring.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.paexception.engelsburg.api.spring.auth.AuthenticationInterceptor;
-import io.github.paexception.engelsburg.api.spring.auth.SemesterInterceptor;
 import io.github.paexception.engelsburg.api.spring.paging.PagingInterceptor;
 import io.github.paexception.engelsburg.api.spring.rate_limiting.RateLimitInterceptor;
 import lombok.AllArgsConstructor;
@@ -33,10 +31,8 @@ import java.util.List;
 @AllArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
-	private final AuthenticationInterceptor authenticationInterceptor;
 	private final PagingInterceptor pagingInterceptor;
 	private final RateLimitInterceptor rateLimitInterceptor;
-	private final SemesterInterceptor semesterInterceptor;
 	private final ObjectMapper mapper;
 
 	/**
@@ -71,7 +67,7 @@ public class WebConfig implements WebMvcConfigurer {
 	 */
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-		resolvers.addAll(List.of(this.pagingInterceptor, this.authenticationInterceptor, this.semesterInterceptor));
+		resolvers.addAll(List.of(this.pagingInterceptor));
 	}
 
 	/**
@@ -84,12 +80,6 @@ public class WebConfig implements WebMvcConfigurer {
 	public void addInterceptors(@NonNull InterceptorRegistry registry) {
 		registry.addInterceptor(this.rateLimitInterceptor)
 				.order(Ordered.HIGHEST_PRECEDENCE)
-				.addPathPatterns("/**/*");
-		registry.addInterceptor(this.authenticationInterceptor)
-				.order(Ordered.HIGHEST_PRECEDENCE)
-				.addPathPatterns("/**/*");
-		registry.addInterceptor(this.semesterInterceptor)
-				.order(Ordered.LOWEST_PRECEDENCE)
 				.addPathPatterns("/**/*");
 		registry.addInterceptor(this.pagingInterceptor)
 				.order(Ordered.LOWEST_PRECEDENCE)

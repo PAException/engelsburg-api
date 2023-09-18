@@ -78,7 +78,7 @@ public class InformationController implements LoggingComponent {
 	 */
 	@Scheduled(fixedDelay = Long.MAX_VALUE, initialDelay = 30 * 1000)
 	public void setTeacher() {
-		LOGGER.debug("Starting to add teachers");
+		LOGGER.debug("[Information] Starting to add teachers");
 		//Delete all teacher
 		this.teacherRepository.deleteAll();
 		List<TeacherModel> teachers = new ArrayList<>();
@@ -231,7 +231,7 @@ public class InformationController implements LoggingComponent {
 
 		//Add all teachers
 		this.teacherRepository.saveAll(teachers);
-		LOGGER.info("Added " + teachers.size() + " teachers");
+		LOGGER.info("[Information] Added " + teachers.size() + " teachers");
 	}
 
 	/**

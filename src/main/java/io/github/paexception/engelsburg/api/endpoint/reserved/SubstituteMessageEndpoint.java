@@ -5,9 +5,10 @@
 package io.github.paexception.engelsburg.api.endpoint.reserved;
 
 import io.github.paexception.engelsburg.api.controller.reserved.SubstituteMessageController;
-import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetSubstituteMessagesResponseDTO;
-import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
+import io.github.paexception.engelsburg.api.util.Environment;
+import io.github.paexception.engelsburg.api.util.Error;
+import io.github.paexception.engelsburg.api.util.Result;
 import io.github.paexception.engelsburg.api.util.openapi.ErrorResponse;
 import io.github.paexception.engelsburg.api.util.openapi.Response;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,19 +33,17 @@ public class SubstituteMessageEndpoint {
 	/**
 	 * Get all substitute messages since date.
 	 *
-	 * @param date can't be in the past
 	 * @return all found substitute messages
-	 * @see SubstituteMessageController#getAllSubstituteMessages(long, UserDTO)
+	 * @see SubstituteMessageController#getAllSubstituteMessages()
 	 */
-	@AuthScope("substitute.message.read.current")
 	@GetMapping
 	@Response(GetSubstituteMessagesResponseDTO.class)
 	@ErrorResponse(status = 404, messageKey = "NOT_FOUND", extra = "substitute_message")
 	@ErrorResponse(status = 403, messageKey = "FORBIDDEN", extra = "substitute_message")
-	public Object getAllSubstituteMessages(
-			@RequestParam(required = false, defaultValue = "-1") @Schema(example = "1645721680045") long date,
-			UserDTO userDTO) {
-		return this.substituteMessageController.getAllSubstituteMessages(date, userDTO).getHttpResponse();
+	public Object getAllSubstituteMessages(@RequestParam @Schema(example = "<substituteKey>") String substituteKey) {
+		if (!Environment.SCHOOL_TOKEN.equals(substituteKey)) return Result.of(Error.FORBIDDEN, "substitute");
+
+		return this.substituteMessageController.getAllSubstituteMessages().getHttpResponse();
 	}
 
 }

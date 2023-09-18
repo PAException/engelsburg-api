@@ -39,7 +39,9 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
 	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Object> exception(Exception exception) {
-		this.logError("Caught unhandled error reaching the end of the endpoint pipeline", exception, LOGGER);
+		this.logError(
+				"[RestControllerExceptionHandler] Caught unhandled error reaching the end of the endpoint pipeline",
+				exception, LOGGER);
 
 		return Result.of(Error.INTERNAL_SERVER_ERROR, "An internal server error occurred!").getHttpResponse();
 	}

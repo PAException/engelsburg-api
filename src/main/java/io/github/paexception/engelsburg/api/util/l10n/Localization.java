@@ -60,13 +60,13 @@ public class Localization implements LoggingComponent {
 	@Bean
 	private void initialize() {
 		try {
-			LOGGER.debug("Starting to load localization messages");
+			LOGGER.debug("[Localization] Starting to load messages");
 			for (String file : this.getL10nFilenames()) {
 				Map<String, String> map = new HashMap<>(); //Create map to put strings
 				InputStreamReader in = new InputStreamReader(this.getResource("l10n" + File.separator + file));
 				Map<?, ?> json = GSON.fromJson(in, Map.class); //Get json
 				String lang = file.replace(".arb", "");
-				LOGGER.trace("Loading localization language: " + lang);
+				LOGGER.trace("[Localization] Loading language: " + lang);
 
 				for (Object o1 : json.keySet()) { //Add all entries which don't start with @
 					if (!(o1 instanceof String)) continue; //Casting checks
@@ -79,13 +79,13 @@ public class Localization implements LoggingComponent {
 					map.put(key, (String) o2); //Put in map
 				}
 				L10N.put(lang, map);
-				LOGGER.trace("Successful loaded localization language: " + lang + " (" + map.size() + " messages)");
+				LOGGER.trace("[Localization] Successful loaded language: " + lang + " (" + map.size() + " messages)");
 				in.close();
 			}
-			if (L10N.isEmpty()) LOGGER.warn("Didn't load any localization languages");
-			else LOGGER.info("Loaded localization messages");
+			if (L10N.isEmpty()) LOGGER.warn("[Localization] Didn't load any localization languages");
+			else LOGGER.info("[Localization] Loaded messages");
 		} catch (IOException e) {
-			this.logError("Couldn't load localization files", e, LOGGER);
+			this.logError("[Localization] Couldn't load files", e, LOGGER);
 		}
 	}
 

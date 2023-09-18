@@ -5,10 +5,7 @@
 package io.github.paexception.engelsburg.api.spring.config;
 
 import com.google.common.reflect.ClassPath;
-import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.SubstituteNotificationDTO;
-import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
-import io.github.paexception.engelsburg.api.spring.auth.Authorization;
 import io.github.paexception.engelsburg.api.util.openapi.ErrorResponse;
 import io.github.paexception.engelsburg.api.util.openapi.ErrorResponses;
 import io.github.paexception.engelsburg.api.util.openapi.Response;
@@ -36,10 +33,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Handles every setting related to open api.
@@ -48,7 +43,6 @@ import java.util.Set;
 public class OpenAPIConfig {
 
 	private final static List<String> EXCLUDE_LOAD = List.of(
-			UserDTO.class.getSimpleName(),
 			SubstituteNotificationDTO.class.getSimpleName()
 	);
 	private final Map<String, Schema<?>> schemas = new HashMap<>();
@@ -110,7 +104,6 @@ public class OpenAPIConfig {
 	 * @return modified operations
 	 * @see Response
 	 * @see ErrorResponse
-	 * @see AuthScope
 	 */
 	@Bean
 	public OperationCustomizer customOperations() {
@@ -214,6 +207,8 @@ public class OpenAPIConfig {
 				}
 			}
 
+			/*
+
 			//Get all @AuthScope annotations of method
 			Set<String> scopes = new HashSet<>();
 			AuthScope[] authScopes = {};
@@ -294,6 +289,8 @@ public class OpenAPIConfig {
 				parameters.removeIf(parameter -> parameter.getName().equals("userDTO"));
 				parameters.add(authParam);
 			}
+
+			*/
 
 			//If method parameter has semester then set semester parameter
 			if (parameters.stream().anyMatch(parameter -> parameter.getName().equals("semester"))) {

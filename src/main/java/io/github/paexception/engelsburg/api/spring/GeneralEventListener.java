@@ -4,6 +4,7 @@
 
 package io.github.paexception.engelsburg.api.spring;
 
+import io.github.paexception.engelsburg.api.service.notification.NotificationService;
 import io.github.paexception.engelsburg.api.service.scheduled.ArticleUpdateService;
 import io.github.paexception.engelsburg.api.service.scheduled.CafeteriaUpdateService;
 import io.github.paexception.engelsburg.api.service.scheduled.EventUpdateService;
@@ -31,6 +32,8 @@ public class GeneralEventListener {
 	private final EventUpdateService eventUpdateService;
 	private final SolarSystemUpdateService solarSystemUpdateService;
 	private final SubstituteUpdateService substituteUpdateService;
+
+	private final NotificationService notificationService;
 
 	private static void async(Runnable asyncTask) {
 		THREAD_POOL.submit(asyncTask);
