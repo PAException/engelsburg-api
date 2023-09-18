@@ -6,14 +6,12 @@ package io.github.paexception.engelsburg.api.controller.reserved;
 
 import io.github.paexception.engelsburg.api.database.model.SubstituteMessageModel;
 import io.github.paexception.engelsburg.api.database.repository.SubstituteMessageRepository;
-import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateSubstituteMessageRequestDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetSubstituteMessagesResponseDTO;
 import io.github.paexception.engelsburg.api.service.scheduled.SubstituteUpdateService;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 import java.sql.Date;
@@ -29,20 +27,6 @@ import static io.github.paexception.engelsburg.api.util.Constants.SubstituteMess
 public class SubstituteMessageController {
 
 	private final SubstituteMessageRepository substituteMessageRepository;
-
-	/**
-	 * Checks if sender has permission to get past substitutes messages.
-	 *
-	 * @param userDTO user information
-	 * @param date    specified
-	 * @return true if permitted, false if not
-	 */
-	private static boolean pastTimeCheck(UserDTO userDTO, long date) {
-		if (!userDTO.hasScope("substitute.message.read.all")) {
-			return DateUtils.isSameDay(new Date(System.currentTimeMillis()),
-					new Date(date)) || System.currentTimeMillis() <= date; //Same day or in the future
-		} else return true;
-	}
 
 	/**
 	 * Create a substitute message.
@@ -79,18 +63,12 @@ public class SubstituteMessageController {
 	/**
 	 * Return all substitute messages since.
 	 *
-	 * @param date    can't be in the past
-	 * @param userDTO user information
 	 * @return all found substitute messages
 	 */
-	public Result<GetSubstituteMessagesResponseDTO> getAllSubstituteMessages(long date, UserDTO userDTO) {
-		//Check if user has permissions and set date
-		if (date < 0) date = System.currentTimeMillis();
-		if (!pastTimeCheck(userDTO, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
-
+	public Result<GetSubstituteMessagesResponseDTO> getAllSubstituteMessages() {
 		//Get substitute messages by date, if not present return error
-		List<SubstituteMessageModel> substitutes = this.substituteMessageRepository
-				.findAllByDateGreaterThanEqual(new Date(date));
+		List<SubstituteMessageModel> substitutes = this.substituteMessageRepository.findAllByDateGreaterThanEqual(
+				new Date(System.currentTimeMillis()));
 		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
 
 		//Map and return substitute messages

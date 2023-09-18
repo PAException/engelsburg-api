@@ -113,16 +113,4 @@ public class ArticleController extends AbstractPageable {
 		return this.articleRepository.findByArticleId(articleId).map(article -> Result.of(article.toResponseDTO()))
 				.orElseGet(() -> Result.of(Error.NOT_FOUND, NAME_KEY));
 	}
-
-	/**
-	 * Check if article exists.
-	 *
-	 * @param articleId to check
-	 * @return empty result of exists, otherwise error
-	 */
-	public Result<?> exists(int articleId) {
-		return this.articleRepository.existsByArticleId(articleId)
-				? Result.empty()
-				: Result.of(Error.NOT_FOUND, NAME_KEY);
-	}
 }

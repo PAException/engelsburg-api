@@ -229,4 +229,4 @@ nbdist/
 .idea/codeStyles
 .idea/
 
-production-compose.yml
+development-compose.yml

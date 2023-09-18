@@ -1,11 +1,10 @@
 /*
- * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ * Copyright (c) 2023 Paul Huerkamp. All rights reserved.
  */
 
 package io.github.paexception.engelsburg.api.database.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.github.paexception.engelsburg.api.database.model.user.UserModel;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +17,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Getter
@@ -26,18 +26,23 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @Entity
 @Table
-public class ArticleSaveModel {
-
+public class NotificationPriorityTopicModel {
 	@Setter(AccessLevel.NONE)
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int articleSaveId;
+	private int priorityTopicId;
+
+	@NotBlank
+	private String topic;
 
 	@NotNull
 	@JsonIgnore
 	@ManyToOne
-	@JoinColumn(name = "user_userId")
-	private UserModel user;
+	@JoinColumn(name = "notificationToken_notificationTokenId")
+	private NotificationTokenModel notificationToken;
 
-	private int articleId;
+	public NotificationPriorityTopicModel(String topic, NotificationTokenModel notificationToken) {
+		this.topic = topic;
+		this.notificationToken = notificationToken;
+	}
 }

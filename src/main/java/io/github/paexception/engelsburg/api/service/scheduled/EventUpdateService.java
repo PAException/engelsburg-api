@@ -39,7 +39,7 @@ public class EventUpdateService extends JsonFetchingService implements LoggingCo
 	@Scheduled(fixedRate = 5 * 60 * 1000)
 	public void updateEvents() {
 		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
-		LOGGER.debug("Starting to fetch events");
+		LOGGER.debug("[EVENT] Fetching...");
 		try {
 			JsonElement content = this.request(
 					"https://engelsburg.smmp.de/wp-json/wp/v2/pages/318").getAsJsonObject().get(
@@ -57,10 +57,10 @@ public class EventUpdateService extends JsonFetchingService implements LoggingCo
 
 				this.eventController.clearAllEvents();
 				dtos.forEach(this.eventController::createEvent);
-				LOGGER.info("Updated events");
-			} else LOGGER.debug("Events have not changed");
+				LOGGER.info("[EVENT] Updated");
+			} else LOGGER.debug("[EVENT] Not changed");
 		} catch (IOException e) {
-			this.logError("Couldn't fetch events", e, LOGGER);
+			this.logError("[EVENT] Couldn't fetch", e, LOGGER);
 		}
 	}
 

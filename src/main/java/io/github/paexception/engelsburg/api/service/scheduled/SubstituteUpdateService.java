@@ -11,6 +11,7 @@ import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateSubstituteMessageRequestDTO;
 import io.github.paexception.engelsburg.api.service.HtmlFetchingService;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
+import lombok.AllArgsConstructor;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -31,24 +32,13 @@ import java.util.Map;
  * Service to update substitutes.
  */
 @Service
+@AllArgsConstructor
 public class SubstituteUpdateService extends HtmlFetchingService implements LoggingComponent {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SubstituteUpdateService.class);
 	private final SubstituteController substituteController;
 	private final SubstituteMessageController substituteMessageController;
 	private final InformationController informationController;
-	private Date currentDate;
-	private List<SubstituteDTO> substitutes;
-	private int splitSubstitute;
-
-	public SubstituteUpdateService(
-			SubstituteController substituteController,
-			SubstituteMessageController substituteMessageController,
-			InformationController informationController) {
-		this.substituteController = substituteController;
-		this.substituteMessageController = substituteMessageController;
-		this.informationController = informationController;
-	}
 
 	/**
 	 * Scheduled function to update substitutes every 5 minutes.
@@ -56,117 +46,224 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 	@Scheduled(fixedRate = 60 * 1000)
 	public void updateSubstitutes() {
 		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
-		LOGGER.debug("Starting to fetch substitutes");
+		LOGGER.debug("[SUBSTITUTE] Fetching...");
+		int count = 0;
+
 		try {
-			int count = 0;
-			Document navbar = this.request(
-					"https://engelsburg.smmp.de/vertretungsplaene/eng/Stp_Upload/frames/navbar.htm");
+			String navBarUrl = "https://engelsburg.smmp.de/vertretungsplaene/eng/Stp_Upload/frames/navbar.htm";
+			Document navbar = this.request(navBarUrl);
+			LOGGER.trace("[SUBSTITUTE] Requested navbar");
 
-			Map<String, Integer> weeks = new HashMap<>(); //Week year
-			navbar.select("select[name=week].selectBox > option").forEach(element2 ->
-					weeks.put(element2.attr("value"),
-							Integer.parseInt(
-									element2.text().substring(
-											element2.text().lastIndexOf(
-													'.') + 1)))
-			);
+			Map<Integer, Integer> weeks = new HashMap<>(); //Week of year, Year
+			//e.g.
+			// <select name="week" class="selectbox" ...>
+			//   <option value="37">11.9.2023</option>
+			//   <option value="38">18.9.2023</option>
+			// </select>
+			String cssQuery = "select[name=week].selectBox > option";
+			for (Element element : navbar.select(cssQuery)) {
+				//e.g. <option value="37">11.9.2023</option>
+				int weekOfYear = Integer.parseInt(element.attr("value")); //e.g. 37
+				int year = Integer.parseInt(element.text().substring(element.text().lastIndexOf('.') + 1)); //e.g. 2023
 
-			String rawClasses = navbar.html().substring(navbar.html().indexOf("var classes = ["),
-					navbar.html().indexOf("];"));
-			if (this.checkChanges(rawClasses, "classes")) {
-				this.informationController.setCurrentClasses(//Update current classes
-						rawClasses.trim()
-								.replace("var classes = [", "")
-								.replace("];", "")
-								.replaceAll("\"", "")
-								.split(",")
-				);
+				weeks.put(weekOfYear, year);
 			}
+			LOGGER.trace("[SUBSTITUTE] Parsed weeks: " + weeks.keySet());
 
-			for (String week : weeks.keySet()) { //Iterate weeks
-				Element substitute = this.request(
-						"https://engelsburg.smmp.de/vertretungsplaene/eng/Stp_Upload/" + week + "/w/w00000.htm").getElementById(
-						"vertretung");
-				if (substitute != null && this.checkChanges(substitute, "substitutes." + week)) {
-					this.currentDate = this.parseDate(
-							substitute.child(2).text().substring(0, substitute.child(2).text().lastIndexOf('.')),
-							weeks.get(week));
+			//e.g. var classes = ["5a","5b","5c",...,"Q4"];
+			String startIdentifier = "var classes = [";
+			String endIdentifier = "];";
+			int startClasses = navbar.html().indexOf(startIdentifier);
+			int endClasses = navbar.html().indexOf(endIdentifier);
 
-					for (Element substituteContent : substitute.getAllElements().subList(8,
-							substitute.getAllElements().size())) {
-						if (substituteContent.tagName().equals("table")) {
-							if (substituteContent.hasClass("subst")) {
-								this.substitutes = new ArrayList<>();
+			//Extract classes and check for changes, if changed update to informationController
+			String rawClasses = navbar.html().substring(startClasses, endClasses);
+			if (this.checkChanges(rawClasses, "classes")) {
+				rawClasses = rawClasses
+						.replace(startIdentifier, "")
+						.replace(endIdentifier, "")
+						.replaceAll("\"", "");
 
-								Elements children = substituteContent.child(0).children();
-								for (Element row : children) {
-									if (row.hasClass("odd") || row.hasClass("even")) {
-										if (this.substitutes.size() > 0 && !row.child(0).text().matches(
-												"(.*)[0-9](.*)")) {
-											this.appendTextOnLastSubstitute(row, this.substitutes);
-											for (int j = 1; j <= this.splitSubstitute; j++) {
-												this.substitutes.get(this.substitutes.size() - 1 - j).setText(
-														this.substitutes.get(this.substitutes.size() - 1).getText());
-											}
-										} else {
-											this.splitSubstitute = 0;
-											this.substitutes.add(this.createSubstituteDTO(row));
-										}
+				//Update current classes
+				this.informationController.setCurrentClasses(rawClasses.split(","));
+				LOGGER.trace("[SUBSTITUTE] Updated classes");
+			} else LOGGER.trace("[SUBSTITUTE] Classes did not change");
+
+			for (int week : weeks.keySet()) { //Iterate weeks
+				String requestUrl = "https://engelsburg.smmp.de/vertretungsplaene/eng/Stp_Upload/" + week + "/w/w00000.htm";
+				//e.g.
+				// 1 <div id="vertretung">
+				// 2   <a name="1">&nbsp;</a>
+				// 3   <br>
+				// 4   <b>11.9. Montag</b>
+				// 5   <a href="#2">[ Dienstag ]</a>
+				// 6   <a href="#3">[ Mittwoch ]</a>
+				// 7   <a href="#4">[ Donnerstag ]</a>
+				// 8   <a href="#5">[ Freitag ]</a>
+				// 9   <p>
+				//10     <table class="subst">...</table>
+				//11   </p>
+				//12   <p>
+				//13     <a name="2">&nbsp;</a>
+				//14     <br>
+				//15     <a href="#1">[ Montag ]</a>
+				//16     <b>12.9. Dienstag</b>
+				//17     ...
+				//18   </p>
+				//19   <p>
+				//20     <table ...>...</table>    <!-- substitute messages
+				//21   </p>
+				//22   <p>
+				//23     <table class="subst">...</table>    <!-- actual substitutes
+				//24   </p>
+				//25   ...
+				//26   <p> </p>
+				//27</div>
+				Element substitute = this.request(requestUrl).getElementById("vertretung");
+				LOGGER.trace("[SUBSTITUTE] Requested substitutes of week " + week);
+
+				//If substitutes have not changed continue with next week
+				if (substitute == null || !this.checkChanges(substitute, "substitutes." + week)) {
+					LOGGER.trace("[SUBSTITUTE] Substitutes of week " + week + " did not change");
+					continue;
+				}
+
+				//Parse date to start with, --> [4]
+				String rawDate = substitute.child(2).text();
+				String dayAndMonth = rawDate.substring(0, rawDate.lastIndexOf('.'));
+				Date currentDate = this.parseDate(dayAndMonth, weeks.get(week));
+				LOGGER.trace("[SUBSTITUTE] First date of week is " + dayAndMonth + "." + weeks.get(week));
+
+				//Remove the already used date elements, [2] - [8]
+				List<Element> substituteContentToParse = substitute.children();
+				for (Element paragraph : substituteContentToParse) {
+					if (!paragraph.tagName().equals("p") || paragraph.children().size() == 0) continue;
+
+					Element table = paragraph.child(0);
+					//If the tagName is not equal to "table", there will be information about the current date, --> [16]
+
+					if (table.tagName().equals("table")) {
+						//If table has class "subst" then it will contain the actual substitutes
+						//Otherwise it will contain the substitute messages
+						// --> [20], --> [23]
+						if (table.hasClass("subst")) {
+							List<SubstituteDTO> substitutes = new ArrayList<>();
+
+							// --> [23]
+							// <table class="subst">
+							//   <tbody>
+							//     <tr class="list">...</tr>    <!-- Header
+							//     <tr class="list odd">
+							//       <td ...>
+							//         <b>8e</b>
+							//       </td>
+							//       <td ...>1-13</td>
+							//       <td ...>&nbsp;</td>
+							//       <td ...>&nbsp;</td>
+							//       <td ...>&nbsp;</td>
+							//       <td ...>Veranst.</td>
+							//       <td ...>&nbsp;</td>
+							//       <td ...>&nbsp;</td>
+							//       <td ...>
+							//         <b>ALL</b>
+							//       </td>
+							//     </tr>
+							//     <tr class="list even">...</tr>
+							//   </tbody>
+							// </table>
+							int splitSubstitute = 0;
+							for (Element row : table.child(0).children()) {
+								//Skip header of row
+								if (!row.hasClass("odd") && !row.hasClass("even")) continue;
+
+								//If the row does not contain a className then this row is used to extend the text from
+								// the previous substitute, so it needs to be added to the latest substitute
+								String className = row.child(0).text();
+								if (substitutes.size() > 0 && !className.matches("(.*)[0-9](.*)")) {
+									this.appendTextOnLastSubstitute(row, substitutes);
+									String appendedText = substitutes.get(substitutes.size() - 1).getText();
+
+									//There is also a possibility that the previous substitute will go over more than
+									// one hour, in this case every single one needs to be updated
+									for (int i = 1; i <= splitSubstitute; i++) {
+										substitutes.get(substitutes.size() - 1 - i).setText(appendedText);
 									}
+
+									splitSubstitute = 0;
+								} else {
+									var newDtos = this.createSubstituteDTOs(row, currentDate);
+
+									//If more than one substitute is returned it must have been split
+									splitSubstitute = newDtos.size() - 1;
+									substitutes.addAll(newDtos);
 								}
 
-								this.substituteController.updateSubstitutes(this.substitutes, this.currentDate);
-								count += this.substitutes.size();
-							} else {
-								CreateSubstituteMessageRequestDTO dto = new CreateSubstituteMessageRequestDTO();
-								dto.setDate(this.currentDate);
-
-								Elements tableEntries = substituteContent.getElementsByTag("td");
-								for (int i = 0; i < tableEntries.size(); i += 2) {
-									Element entry = tableEntries.get(i);
-									if (entry.text().startsWith("Abwesende Lehrer"))
-										dto.setAbsenceTeachers(tableEntries.get(i + 1).text());
-									else if (entry.text().startsWith("Blockierte Räume"))
-										dto.setBlockedRooms(tableEntries.get(i + 1).text());
-									else if (entry.text().startsWith("Betroffene Klassen"))
-										dto.setAffectedClasses(tableEntries.get(i + 1).text());
-									else if (entry.text().startsWith("Betroffene Räume"))
-										dto.setAffectedRooms(tableEntries.get(i + 1).text());
-									else if (entry.text().startsWith("Abwesende Klassen"))
-										dto.setAbsenceClasses(tableEntries.get(i + 1).text());
-									else dto.setMessages(entry.text());
-								}
-
-								this.substituteMessageController.clearSubstituteMessages(this.currentDate);
-								this.substituteMessageController.createSubstituteMessage(dto);
 							}
-						} else if (substituteContent.tagName().equals("p")) {
-							Elements days = substituteContent.getElementsByTag("b");
-							if (days.size() > 0) {
-								String dayAndMonth = days.get(0).text().substring(0,
-										days.get(0).text().lastIndexOf('.'));
-								this.currentDate = this.parseDate(dayAndMonth, weeks.get(week));
+
+							//After cycling through the list update all substitutes to the controller
+							if (!substitutes.isEmpty()) {
+								this.substituteController.updateSubstitutes(substitutes, currentDate);
+								LOGGER.trace("[SUBSTITUTE] Updated substitutes: " + substitutes.size());
+								count += substitutes.size();
+							} else LOGGER.trace("[SUBSTITUTE] No substitutes updated");
+						} else {
+							//Parse information to get the latest substitute message
+							CreateSubstituteMessageRequestDTO dto = new CreateSubstituteMessageRequestDTO();
+							dto.setDate(currentDate);
+
+							Elements tableEntries = paragraph.getElementsByTag("td");
+							for (int i = 0; i < tableEntries.size(); i += 2) {
+								Element entry = tableEntries.get(i);
+								if (entry.text().startsWith("Abwesende Lehrer"))
+									dto.setAbsenceTeachers(tableEntries.get(i + 1).text());
+								else if (entry.text().startsWith("Blockierte Räume"))
+									dto.setBlockedRooms(tableEntries.get(i + 1).text());
+								else if (entry.text().startsWith("Betroffene Klassen"))
+									dto.setAffectedClasses(tableEntries.get(i + 1).text());
+								else if (entry.text().startsWith("Betroffene Räume"))
+									dto.setAffectedRooms(tableEntries.get(i + 1).text());
+								else if (entry.text().startsWith("Abwesende Klassen"))
+									dto.setAbsenceClasses(tableEntries.get(i + 1).text());
+								else dto.setMessages(entry.text());
 							}
+
+							//Update substitute message of current day to the controller
+							this.substituteMessageController.clearSubstituteMessages(currentDate);
+							this.substituteMessageController.createSubstituteMessage(dto);
+							LOGGER.trace("[SUBSTITUTE] Updated substitute message");
+						}
+					} else {
+						//Update the current date
+						Elements days = paragraph.getElementsByTag("b");
+						if (days.size() > 0) {
+							rawDate = days.get(0).text();
+							dayAndMonth = rawDate.substring(0, rawDate.lastIndexOf('.'));
+							currentDate = this.parseDate(dayAndMonth, weeks.get(week));
+							LOGGER.trace("[SUBSTITUTE] Switching to new date: " + dayAndMonth + "." + weeks.get(week));
 						}
 					}
 				}
+
 			}
-			if (count > 0) LOGGER.info("Updated " + count + " substitutes");
-			else LOGGER.debug("Substitutes have not changed");
+
+			if (count > 0) LOGGER.info("[SUBSTITUTE] Fetched " + count);
+			else LOGGER.debug("[SUBSTITUTE] Not changed");
 		} catch (IOException | ParseException e) {
-			this.logError("Couldn't fetch substitutes", e, LOGGER);
+			this.logError("[SUBSTITUTE] Couldn't fetch", e, LOGGER);
 		}
 	}
 
 	/**
 	 * Function to create a substitute dto out of an html row.
 	 *
-	 * @param row with substitute information
+	 * @param row         with substitute information
+	 * @param currentDate current date to assign to substitute
 	 * @return substitute dto
 	 */
-	private SubstituteDTO createSubstituteDTO(Element row) {
+	private List<SubstituteDTO> createSubstituteDTOs(Element row, Date currentDate) {
+		List<SubstituteDTO> dtos = new ArrayList<>();
 		SubstituteDTO dto = new SubstituteDTO();
-		dto.setDate(this.currentDate);
+		dto.setDate(currentDate);
 		dto.setClassName(row.child(0).text());
 		String lessons = row.child(1).text().replace(" ", "");
 		if (lessons.contains("-")) { //5 - 6, //3 - 6
@@ -175,8 +272,7 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 
 			for (int i = low; i < high; i++) {
 				row.children().set(1, row.child(1).text(String.valueOf(i)));
-				this.substitutes.add(this.createSubstituteDTO(row));
-				this.splitSubstitute++;
+				dtos.addAll(this.createSubstituteDTOs(row, currentDate));
 			}
 
 			dto.setLesson(high);
@@ -189,7 +285,8 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 		if (!row.child(7).text().equals("---")) dto.setRoom(row.child(7).text());
 		if (!row.child(8).text().matches("\\h")) dto.setText(row.child(8).text());
 
-		return dto;
+		dtos.add(dto);
+		return dtos;
 	}
 
 	/**

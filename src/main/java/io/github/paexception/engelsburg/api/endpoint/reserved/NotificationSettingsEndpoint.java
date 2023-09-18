@@ -1,57 +1,53 @@
 /*
- * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ * Copyright (c) 2023 Paul Huerkamp. All rights reserved.
  */
 
 package io.github.paexception.engelsburg.api.endpoint.reserved;
 
 import io.github.paexception.engelsburg.api.controller.reserved.NotificationSettingsController;
-import io.github.paexception.engelsburg.api.endpoint.dto.NotificationSettingsDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.request.ChangeNotificationSettingsRequestDTO;
-import io.github.paexception.engelsburg.api.spring.auth.AuthScope;
+import io.github.paexception.engelsburg.api.endpoint.dto.request.UpdateNotificationSettingsRequestDTO;
 import io.github.paexception.engelsburg.api.util.openapi.ErrorResponse;
 import io.github.paexception.engelsburg.api.util.openapi.Response;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 
 /**
- * RestController for notificationSettings.
+ * Controller to handle notification settings of FCM-Clients.
  */
 @RestController
 @AllArgsConstructor
-@RequestMapping("/user/notification")
+@RequestMapping("/settings/notification")
 public class NotificationSettingsEndpoint {
 
 	private final NotificationSettingsController notificationSettingsController;
 
 	/**
-	 * Change user notification settings.
+	 * Update the notification settings of an FCM-token.
 	 *
-	 * @see NotificationSettingsController#changeNotificationSettings(ChangeNotificationSettingsRequestDTO, UserDTO)
+	 * @see NotificationSettingsController#updateNotificationSettings(UpdateNotificationSettingsRequestDTO)
 	 */
-	@AuthScope("notification.settings.write.self")
-	@PatchMapping
+	@PostMapping
 	@Response
-	public Object changeNotificationSettings(@RequestBody @Valid ChangeNotificationSettingsRequestDTO dto,
-			UserDTO userDTO) {
-		return this.notificationSettingsController.changeNotificationSettings(dto, userDTO).getHttpResponse();
+	public Object updateNotificationSettings(@RequestBody @Valid UpdateNotificationSettingsRequestDTO dto) {
+		return this.notificationSettingsController.updateNotificationSettings(dto).getHttpResponse();
 	}
 
 	/**
-	 * Get notification settings.
+	 * Delete the notification settings of an FCM-token.
 	 *
-	 * @see NotificationSettingsController#getNotificationSettings(UserDTO)
+	 * @see NotificationSettingsController#deleteNotificationSettings(String)
 	 */
-	@AuthScope("notification.settings.read.self")
-	@GetMapping
-	@Response(NotificationSettingsDTO.class)
+	@DeleteMapping
+	@Response
 	@ErrorResponse(status = 404, messageKey = "NOT_FOUND", extra = "notification_settings")
-	public Object getNotificationSettings(UserDTO userDTO) {
-		return this.notificationSettingsController.getNotificationSettings(userDTO).getHttpResponse();
+	public Object deleteNotificationSettings(@RequestParam @NotBlank String token) {
+		return this.notificationSettingsController.deleteNotificationSettings(token).getHttpResponse();
 	}
 }

@@ -7,6 +7,7 @@ package io.github.paexception.engelsburg.api.service.scheduled;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import io.github.paexception.engelsburg.api.controller.shared.ArticleController;
+import io.github.paexception.engelsburg.api.database.projections.ArticleIdAndContentHashProjection;
 import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetArticlesResponseDTO;
 import io.github.paexception.engelsburg.api.service.JsonFetchingService;
@@ -42,15 +43,22 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	private final NotificationService notificationService;
 
 	/**
-	 * Call {@link #updateArticles(String, int)} every 15 minutes and return all articles published in that passed 1 minute.
+	 * Call {@link #updateArticles(String, int)} every minute and return all articles published in that passed 1 minute.
 	 */
-	@Scheduled(fixedRate = 60 * 1000)
+	@Scheduled(fixedRate = 60 * 1000, initialDelay = 60 * 1000)
 	public void fetchNewArticles() {
+		if (counter != 0) return; //Locked by past fetch
+
 		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
-		LOGGER.debug("Starting fetching new articles");
-		this.updateArticles(DATE_FORMAT.format(System.currentTimeMillis() - 60 * 1000), 1).stream()
-				.peek(this.notificationService::sendArticleNotifications)
-				.forEach(this.articleController::createOrUpdateArticle);
+		LOGGER.debug("[ARTICLE] Fetching...");
+		List<ArticleDTO> articles = this.updateArticles(DATE_FORMAT.format(System.currentTimeMillis() - 60 * 1000), 1);
+		if (articles.isEmpty()) LOGGER.debug("[ARTICLE] Not updated");
+		else LOGGER.debug("[ARTICLE] Fetched " + articles.size());
+
+		for (ArticleDTO article : articles) {
+			this.notificationService.sendArticleNotifications(article);
+			this.articleController.createOrUpdateArticle(article);
+		}
 	}
 
 	/**
@@ -59,17 +67,22 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	@Scheduled(fixedRate = 30 * 60 * 1000, initialDelay = 30 * 60 * 1000)
 	public void checkIfArticlesChanged() {
 		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
-		this.articleController.prepareArticleToUpdate().forEach(idAndHash -> {
+		LOGGER.debug("[ARTICLE] Starting to check for changes...");
+		int counter = 0;
+		for (ArticleIdAndContentHashProjection idAndHash : this.articleController.prepareArticleToUpdate()) {
 			try {
 				JsonElement json = this.request(
 						"https://engelsburg.smmp.de/wp-json/wp/v2/posts/" + idAndHash.getArticleId());
 				String content = json.getAsJsonObject().get("content").getAsJsonObject().get("rendered").getAsString();
 				if (!idAndHash.getContentHash().equals(Result.hash(content))) {
+					counter++;
 					this.articleController.createOrUpdateArticle(this.createArticleDTO(idAndHash.getArticleId(), json));
 				}
 			} catch (Exception ignored) {
 			}
-		});
+		}
+		if (counter == 0) LOGGER.debug("[ARTICLE] Not changed");
+		else LOGGER.info("[ARTICLE] Updated " + counter);
 	}
 
 	/**
@@ -92,12 +105,13 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 					counter++;
 				}
 
-				LOGGER.info("Fetched articles");
-				if (jsonArticles.size() == 100)
+				if (jsonArticles.size() == 100) {
 					this.updateArticles(date, page + 1).forEach(this.articleController::createOrUpdateArticle);
-			} else LOGGER.debug("No articles found");
+					LOGGER.info("[ARTICLE] Still fetching articles (current count: " + counter + ")");
+				}
+			}
 		} catch (IOException | ParseException e) {
-			this.logError("Couldn't fetch articles", e, LOGGER);
+			this.logError("[ARTICLE] Couldn't fetch", e, LOGGER);
 		}
 		return dtos;
 	}
@@ -114,16 +128,22 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	private ArticleDTO createArticleDTO(int articleId, JsonElement article) throws IOException, ParseException {
 		String content = article.getAsJsonObject().get("content").getAsJsonObject().get(
 				"rendered").getAsString(); //Get content
-		String mediaUrl = WordPressAPI.getFeaturedMedia(article.getAsJsonObject().get("featured_media").getAsInt(),
-				content);
+		String mediaUrl = null;
 		String blurHash = null;
+
+		try {
+			mediaUrl = WordPressAPI.getFeaturedMedia(article.getAsJsonObject().get("featured_media").getAsInt(),
+					content);
+		} catch (Exception e) {
+			this.logError("[ARTICLE] Couldn't load media: " + articleId, e, LOGGER);
+		}
 
 		if (Environment.PRODUCTION) {
 			try {
 				//content = WordpressAPI.applyBlurHashToAllImages(Jsoup.parse(content)).toString(); --> not needed
 				blurHash = mediaUrl != null ? WordPressAPI.getBlurHash(mediaUrl) : null;
 			} catch (IOException e) {
-				this.logError("Couldn't load blur hash of image", e, LOGGER);
+				this.logError("[ARTICLE] Couldn't load blur hash of image", e, LOGGER);
 			}
 		}
 
@@ -144,7 +164,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	 */
 	public void loadPastArticles() {
 		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
-		LOGGER.debug("Starting fetching past articles");
+		LOGGER.debug("[ARTICLE] Starting fetching past articles");
 		Result<GetArticlesResponseDTO> lastArticle = this.articleController.getArticlesAfter(-1, new Paging(0, 1));
 		if (lastArticle.isResultPresent()) { //Empty would be an error
 			this.updateArticles(DATE_FORMAT.format(lastArticle.getResult().getArticles().get(0).getDate()), 1)
@@ -153,7 +173,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 			this.updateArticles(DATE_FORMAT.format(new Date(1000)), 1).forEach(
 					this.articleController::createOrUpdateArticle);
 		}
-		LOGGER.info("Fetched " + counter + " article" + (counter == 1 ? "" : "s") + "!");
+		LOGGER.info("[ARTICLE] Fetched " + counter + " past article" + (counter == 1 ? "" : "s") + "!");
+		counter = 0;
 	}
-
 }
