@@ -4,13 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       platform:
+        description: Platform of the Image to build for
         required: true
       tag:
+        description: Tag for the Image
         required: true
+      dockerfile:
+        description: Relative path of the Dockerfile to build from
+        default: "amd64.Dockerfile"
 
 env:
   TAG: paulhuerkamp/engelsburg-api:${{ github.event.inputs.tag }}
   PLATFORM: ${{ github.event.inputs.platform }}
+  DOCKERFILE: ${{ github.event.inputs.dockerfile }}
 
 jobs:
   docker:
@@ -43,6 +49,7 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: .
+        file: ${{ env.DOCKERFILE }}
         platforms: ${{ env.PLATFORM }}
         push: true
         tags: ${{ env.TAG }}
