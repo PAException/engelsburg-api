@@ -1,5 +1,20 @@
 # Engelsburg-API
 
+A REST API that evaluates and clearly presents information about the [Engelsburg-Gymnasium Kassel](https://engelsburg.smmp.de), mostly used by the Engelsburg-Planer Flutter app, which the API can also send notifications via [FCM](https://firebase.google.com/docs/cloud-messaging) to.
+
+## Run
+ - Clone the repository
+ - Check for the correct image tag
+ - Fill out missing enviromental variables
+ - Uncomment Watchtower for automatic updates
+ - Run the following command
+
+```Shell
+docker compose up -d
+```
+
+
+
 Unofficial API of the Engelsburg-Gymnasium-Kassel.
 
 ## Structure
@@ -9,7 +24,7 @@ The Engelsburg-API can be divided into two sections.
 ### Public
 
 The first section ist completely public. It includes unprotected resources of
-the [Engelsburg-Website](https://engelsburg.smmp.de) like events and articles.
+the [Engelsburg-Website] like events and articles.
 
 ### Private
 
@@ -60,20 +75,10 @@ This project needs several environment variables:
 | Environment Variable| Description                            |
 |---------------------|----------------------------------------|
 | SERVER_PORT         | The port the server is running on      |
-| DATABASE_HOSTNAME   | Hostname of the database               | 
-| DATABASE_PORT       | Port of the database                   |
-| DATABASE_DATABASE   | Database-name of the database          |
-| DATABASE_USERNAME   | Username to login into database        |
-| DATABASE_PASSWORD   | Password to login into database        |
-| SERVICE_TOKEN       | Service-Token to secure access         |
 | SCHOOL_TOKEN        | Token given by the school for the substitutes|
-| JWT_SECRET          | Secret for JWT                         |
 | GOOGLE_ACCOUNT_CREDENTIALS| Google account credentials for firebase cloud messaging|
-| GOOGLE_CLIENT_ID    | Google Client ID to auth api calls     |
-| GOOGLE_CLIENT_SECRET| Google Client Secret to auth api calls |
-| OAUTH2_REDIRECT_URI | OAuth redirect uri for oauth requests  |
 | PRODUCTION          | Production mode to actually send notifications and more|
-| use.ssl             | Enable https and ssl                   |
+| SSL_ENABLED         | Enable https and ssl                   |
 
 If you want to enable https and ssl (use.ssl=true) which is highly recommended you also need following environment
 variables:
