@@ -1,3 +1,5 @@
+name: Build and push production Docker Image
+
 on:
   push:
     branches: [ "main" ]
