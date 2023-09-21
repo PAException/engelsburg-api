@@ -25,11 +25,13 @@ services:
       SSL_ENABLED: true
       SSL_KEYSTORE:
       SSL_KEYSTORE_PASSWORD:
-      SSL_KEYSTORR_KEY_PASSWORD:
+      SSL_KEYSTORE_KEY_PASSWORD:
       lets-encrypt-helper.domain:
       lets-encrypt-helper.contact:
       GOOGLE_ACCOUNT_CREDENTIALS:
       SCHOOL_TOKEN:
+    volumes:
+    - /etc/letsencrypt/live:/var/ssl
   #  eb-api-watchtower:
   #    container_name: eb-api-watchtower
   #    image: containrrr/watchtower
