@@ -140,6 +140,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 
 		if (Environment.PRODUCTION) {
 			try {
+				LOGGER.trace("[ARTICLE] Loading blurhash of " + articleId);
 				//content = WordpressAPI.applyBlurHashToAllImages(Jsoup.parse(content)).toString(); --> not needed
 				blurHash = mediaUrl != null ? WordPressAPI.getBlurHash(mediaUrl) : null;
 			} catch (IOException e) {
