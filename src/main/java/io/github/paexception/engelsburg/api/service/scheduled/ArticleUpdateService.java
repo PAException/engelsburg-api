@@ -105,7 +105,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 					counter++;
 				}
 
-				if (json.toString().startsWith("[")) {//Errors start with {
+				if (json.toString().startsWith("[")) { //Errors start with {
 					this.updateArticles(date, page + 1).forEach(this.articleController::createOrUpdateArticle);
 					LOGGER.info("[ARTICLE] Still fetching articles (current count: " + counter + ")");
 				}
