@@ -1,5 +1,6 @@
 {
   "newArticle": "Neuer Artikel veröffentlicht!",
   "insteadOf": "statt",
-  "newSubstitute": "{count} Vertretung(en) geändert oder veröffentlicht!"
+  "newSubstitute": "{count} Vertretung(en) geändert oder veröffentlicht!",
+  "changed": "Geändert"
 }

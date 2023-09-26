@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>Persistence</ID>
+  <OriginalElement>JavaeeElement:/6a283f8f/entityManagerFactory/engelsburg-infrastructure/jpa/JPA/PersistenceModel</OriginalElement>
+  <nodes>
+    <node x="-128.1470588235295" y="276.5588235294117">SemesterModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/SemesterModel.java</node>
+    <node x="688.7337662337659" y="1040.1827731092435">TeacherModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/TeacherModel.java</node>
+    <node x="357.1848739495797" y="276.5588235294117">RefreshTokenModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/RefreshTokenModel.java</node>
+    <node x="335.6848739495797" y="435.766806722689">NotificationSettingsModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/NotificationSettingsModel.java</node>
+    <node x="339.6848739495797" y="616.9747899159663">NotificationDeviceModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/NotificationDeviceModel.java</node>
+    <node x="381.1848739495797" y="798.1827731092436">ScopeModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/ScopeModel.java</node>
+    <node x="366.1848739495797" y="957.3907563025209">UserOAuthModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserOAuthModel.java</node>
+    <node x="364.6848739495797" y="1160.5987394957983">ArticleSaveModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/ArticleSaveModel.java</node>
+    <node x="688.7337662337659" y="435.766806722689">SubstituteModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/SubstituteModel.java</node>
+    <node x="-122.1470588235295" y="0.0">UserModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserModel.java</node>
+    <node x="688.7337662337659" y="1287.3907563025207">EventModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/EventModel.java</node>
+    <node x="356.1848739495797" y="1319.8067226890755">UserPasswordModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserPasswordModel.java</node>
+    <node x="688.7337662337659" y="770.9747899159663">SubstituteMessageModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/SubstituteMessageModel.java</node>
+    <node x="-145.6470588235295" y="466.5588235294117">SubjectModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/SubjectModel.java</node>
+    <node x="-117.6470588235295" y="1314.5588235294117">GradeModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/GradeModel.java</node>
+    <node x="-131.1470588235295" y="678.5588235294117">TimetableModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/TimetableModel.java</node>
+    <node x="-136.1470588235295" y="1146.5588235294117">GradeShareModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/GradeShareModel.java</node>
+    <node x="-116.6470588235295" y="912.5588235294117">TaskModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/TaskModel.java</node>
+    <node x="381.6848739495797" y="1523.0147058823527">TokenModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/TokenModel.java</node>
+    <node x="688.7337662337659" y="144.5588235294117">ArticleModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/ArticleModel.java</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="UserModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserModel.java" target="UserPasswordModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserPasswordModel.java" relationship="RELATION">
+      <point x="0.0" y="-61.0" />
+      <point x="-58.147058823529505" y="199.27941176470586" />
+      <point x="246.89915966386536" y="199.27941176470586" />
+      <point x="246.89915966386536" y="1380.8067226890755" />
+      <point x="441.1848739495797" y="1380.8067226890755" />
+      <point x="0.0" y="61.0" />
+    </edge>
+    <edge source="UserModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserModel.java" target="ArticleSaveModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/ArticleSaveModel.java" relationship="RELATION">
+      <point x="0.0" y="-61.0" />
+      <point x="-58.147058823529505" y="199.27941176470586" />
+      <point x="246.89915966386536" y="199.27941176470586" />
+      <point x="246.89915966386536" y="1199.5987394957983" />
+      <point x="441.1848739495797" y="1199.5987394957983" />
+      <point x="0.0" y="39.0" />
+    </edge>
+    <edge source="UserModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserModel.java" target="UserOAuthModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserOAuthModel.java" relationship="RELATION">
+      <point x="0.0" y="-61.0" />
+      <point x="-58.147058823529505" y="199.27941176470586" />
+      <point x="246.89915966386536" y="199.27941176470586" />
+      <point x="246.89915966386536" y="1018.3907563025209" />
+      <point x="441.1848739495797" y="1018.3907563025209" />
+      <point x="0.0" y="61.0" />
+    </edge>
+    <edge source="SemesterModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/SemesterModel.java" target="SubjectModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/SubjectModel.java" relationship="RELATION">
+      <point x="0.0" y="-61.0" />
+      <point x="-58.147058823529505" y="337.5588235294117" />
+      <point x="-265.61917494270483" y="337.5588235294117" />
+      <point x="-265.61917494270483" y="538.5588235294117" />
+      <point x="-58.147058823529505" y="538.5588235294117" />
+      <point x="0.0" y="72.0" />
+    </edge>
+    <edge source="TaskModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/TaskModel.java" target="SemesterModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/SemesterModel.java" relationship="RELATION">
+      <point x="0.0" y="-83.0" />
+      <point x="-58.147058823529505" y="995.5588235294117" />
+      <point x="-265.61917494270483" y="995.5588235294117" />
+      <point x="-265.61917494270483" y="337.5588235294117" />
+      <point x="-58.147058823529505" y="337.5588235294117" />
+      <point x="0.0" y="61.0" />
+    </edge>
+    <edge source="TimetableModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/TimetableModel.java" target="SubjectModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/SubjectModel.java" relationship="RELATION">
+      <point x="0.0" y="-83.0" />
+      <point x="-58.147058823529505" y="761.5588235294117" />
+      <point x="136.8529411764705" y="761.5588235294117" />
+      <point x="136.8529411764705" y="538.5588235294117" />
+      <point x="-58.147058823529505" y="538.5588235294117" />
+      <point x="0.0" y="72.0" />
+    </edge>
+    <edge source="UserModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserModel.java" target="TokenModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/TokenModel.java" relationship="RELATION">
+      <point x="0.0" y="-61.0" />
+      <point x="-58.147058823529505" y="199.27941176470586" />
+      <point x="246.89915966386536" y="199.27941176470586" />
+      <point x="246.89915966386536" y="1584.0147058823527" />
+      <point x="441.1848739495797" y="1584.0147058823527" />
+      <point x="0.0" y="61.0" />
+    </edge>
+    <edge source="SemesterModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/SemesterModel.java" target="UserModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserModel.java" relationship="RELATION">
+      <point x="0.0" y="-61.0" />
+      <point x="-58.147058823529505" y="66.0735294117647" />
+      <point x="-58.147058823529505" y="66.0735294117647" />
+      <point x="0.0" y="61.0" />
+    </edge>
+    <edge source="UserModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserModel.java" target="SemesterModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/SemesterModel.java" relationship="RELATION">
+      <point x="0.0" y="61.0" />
+      <point x="-58.147058823529505" y="66.0735294117647" />
+      <point x="-58.147058823529505" y="66.0735294117647" />
+      <point x="0.0" y="-61.0" />
+    </edge>
+    <edge source="TaskModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/TaskModel.java" target="SubjectModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/SubjectModel.java" relationship="RELATION">
+      <point x="0.0" y="-83.0" />
+      <point x="-58.147058823529505" y="995.5588235294117" />
+      <point x="136.8529411764705" y="995.5588235294117" />
+      <point x="136.8529411764705" y="538.5588235294117" />
+      <point x="-58.147058823529505" y="538.5588235294117" />
+      <point x="0.0" y="72.0" />
+    </edge>
+    <edge source="UserModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserModel.java" target="ScopeModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/ScopeModel.java" relationship="RELATION">
+      <point x="0.0" y="-61.0" />
+      <point x="-58.147058823529505" y="199.27941176470586" />
+      <point x="246.89915966386536" y="199.27941176470586" />
+      <point x="246.89915966386536" y="837.1827731092436" />
+      <point x="441.1848739495797" y="837.1827731092436" />
+      <point x="0.0" y="39.0" />
+    </edge>
+    <edge source="GradeModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/GradeModel.java" target="GradeShareModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/GradeShareModel.java" relationship="RELATION">
+      <point x="0.0" y="-50.0" />
+      <point x="-58.147058823529505" y="1323.5294117647059" />
+      <point x="-58.147058823529505" y="1323.5294117647059" />
+      <point x="0.0" y="50.0" />
+    </edge>
+    <edge source="TimetableModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/TimetableModel.java" target="SemesterModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/SemesterModel.java" relationship="RELATION">
+      <point x="0.0" y="-83.0" />
+      <point x="-58.147058823529505" y="761.5588235294117" />
+      <point x="-265.61917494270483" y="761.5588235294117" />
+      <point x="-265.61917494270483" y="337.5588235294117" />
+      <point x="-58.147058823529505" y="337.5588235294117" />
+      <point x="0.0" y="61.0" />
+    </edge>
+    <edge source="UserModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserModel.java" target="NotificationSettingsModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/NotificationSettingsModel.java" relationship="RELATION">
+      <point x="0.0" y="-61.0" />
+      <point x="-58.147058823529505" y="199.27941176470586" />
+      <point x="246.89915966386536" y="199.27941176470586" />
+      <point x="246.89915966386536" y="485.766806722689" />
+      <point x="441.1848739495797" y="485.766806722689" />
+      <point x="0.0" y="50.0" />
+    </edge>
+    <edge source="UserModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserModel.java" target="NotificationDeviceModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/NotificationDeviceModel.java" relationship="RELATION">
+      <point x="0.0" y="-61.0" />
+      <point x="-58.147058823529505" y="199.27941176470586" />
+      <point x="246.89915966386536" y="199.27941176470586" />
+      <point x="246.89915966386536" y="666.9747899159663" />
+      <point x="441.1848739495797" y="666.9747899159663" />
+      <point x="0.0" y="50.0" />
+    </edge>
+    <edge source="UserModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/user/UserModel.java" target="RefreshTokenModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/RefreshTokenModel.java" relationship="RELATION">
+      <point x="0.0" y="-61.0" />
+      <point x="-58.147058823529505" y="199.27941176470586" />
+      <point x="246.89915966386536" y="199.27941176470586" />
+      <point x="246.89915966386536" y="287.9191176470588" />
+      <point x="441.1848739495797" y="287.9191176470588" />
+      <point x="0.0" y="50.0" />
+    </edge>
+    <edge source="SubjectModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/SubjectModel.java" target="GradeShareModel#file://C:/Users/huerk/Desktop/Sonstige/engelsburg-infrastructure/src/main/java/io/github/paexception/engelsburg/api/database/model/GradeShareModel.java" relationship="RELATION">
+      <point x="0.0" y="-72.0" />
+      <point x="-58.147058823529505" y="494.9411764705882" />
+      <point x="6.852941176470495" y="494.9411764705882" />
+      <point x="6.852941176470495" y="538.5588235294117" />
+      <point x="136.8529411764705" y="538.5588235294117" />
+      <point x="136.8529411764705" y="1199.5987394957983" />
+      <point x="-58.147058823529505" y="1199.5987394957983" />
+      <point x="0.0" y="50.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic" zoom="1.0" showDependencies="false" x="394.0" y="781.0" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Embeddables</Category>
+    <Category>Properties</Category>
+  </Categories>
+</Diagram>
+

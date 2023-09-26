@@ -1,0 +1,62 @@
+version: "3.6"
+
+services:
+  engelsburg-api:
+    image: paulhuerkamp/engelsburg-api
+    restart: unless-stopped
+    container_name: eb-api
+    depends_on:
+      - engelsburg-api-database
+    ports:
+      - "80:80"
+      - "443:8443"
+    links:
+      - engelsburg-api-database:eb-api-db
+    networks:
+      eb-api-net:
+    environment:
+      PRODUCTION: true
+      DATABASE_HOSTNAME: eb-api-db
+      DATABASE_PORT: 3306
+      DATABASE_DATABASE: eb-api
+      DATABASE_USERNAME: eb-api
+      DATABASE_PASSWORD: eb-api
+      SERVER_PORT: 8443
+      SSL_ENABLED: true
+      SSL_KEYSTORE:
+      SSL_KEYSTORE_PASSWORD:
+      SSL_KEYSTORE_KEY_PASSWORD:
+      lets-encrypt-helper.domain:
+      lets-encrypt-helper.contact:
+      GOOGLE_ACCOUNT_CREDENTIALS:
+      SCHOOL_TOKEN:
+    volumes:
+    - /etc/letsencrypt/live:/var/ssl
+  #  eb-api-watchtower:
+  #    container_name: eb-api-watchtower
+  #    image: containrrr/watchtower
+  #    restart: unless-stopped
+  #    volumes:
+  #      - /var/run/docker.sock:/var/run/docker.sock
+  #    command: --interval 30
+  engelsburg-api-database:
+    image: mariadb:10.6.7
+    restart: unless-stopped
+    container_name: eb-api-db
+    expose:
+      - "3306"
+    networks:
+      eb-api-net:
+    environment:
+      MYSQL_USER: eb-api
+      MYSQL_PASSWORD: eb-api
+      MYSQL_DATABASE: eb-api
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    volumes:
+      - eb-api-db:/var/lib/mysql
+
+networks:
+  eb-api-net:
+
+volumes:
+  eb-api-db:

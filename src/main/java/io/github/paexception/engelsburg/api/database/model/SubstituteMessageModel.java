@@ -1,6 +1,11 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.database.model;
 
 import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteMessageDTO;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +28,7 @@ import java.sql.Date;
 @Table
 public class SubstituteMessageModel {
 
+	@Setter(AccessLevel.NONE)
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int substituteMessageId;
@@ -54,5 +60,4 @@ public class SubstituteMessageModel {
 				this.messages
 		);
 	}
-
 }

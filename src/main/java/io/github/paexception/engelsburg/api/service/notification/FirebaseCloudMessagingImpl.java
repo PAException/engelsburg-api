@@ -1,9 +1,15 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.service.notification;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.messaging.BatchResponse;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
@@ -18,6 +24,7 @@ import org.springframework.stereotype.Component;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -31,6 +38,8 @@ public class FirebaseCloudMessagingImpl implements LoggingComponent {
 	 */
 	@Bean
 	public void init() {
+		if (!Environment.PRODUCTION) return;
+		if (!FirebaseApp.getApps().isEmpty()) return;
 		try {
 			FileInputStream serviceAccount = new FileInputStream(Environment.GOOGLE_ACCOUNT_CREDENTIALS);
 
@@ -40,7 +49,7 @@ public class FirebaseCloudMessagingImpl implements LoggingComponent {
 
 			FirebaseApp.initializeApp(options);
 		} catch (IOException e) {
-			this.logError("Couldn't initialize firebase cloud messaging", e, LOGGER);
+			this.logError("[FCM] Couldn't initialize firebase cloud messaging", e, LOGGER);
 		}
 
 	}
@@ -50,12 +59,14 @@ public class FirebaseCloudMessagingImpl implements LoggingComponent {
 	 *
 	 * @param title  of notification
 	 * @param body   of notification
+	 * @param data   of notification
 	 * @param topics to send notification to
 	 */
-	public void sendNotificationToTopics(String title, String body, String... topics) {
+	public void sendNotificationToTopics(String title, String body, Map<String, String> data, String... topics) {
+		if (!Environment.PRODUCTION) return;
 		try {
 			Message.Builder messageBuilder = Message.builder().setNotification(Notification.builder()
-					.setTitle(title).setBody(body).build());
+					.setTitle(title).setBody(body).build()).putAllData(data);
 
 			for (String topic : topics)
 				FirebaseMessaging.getInstance().sendAsync(messageBuilder.setTopic(topic
@@ -65,9 +76,9 @@ public class FirebaseCloudMessagingImpl implements LoggingComponent {
 						.replace("ä", "ae")
 						.replace("ö", "oe")
 						.replace("ü", "ue")
-						.toLowerCase()).build(), !Environment.PRODUCTION);
+						.toLowerCase()).build());
 		} catch (Exception e) {
-			this.logError("Couldn't send notification", e, LOGGER);
+			this.logError("[FCM] Couldn't send notification", e, LOGGER);
 		}
 	}
 
@@ -76,23 +87,21 @@ public class FirebaseCloudMessagingImpl implements LoggingComponent {
 	 *
 	 * @param title  of notification
 	 * @param body   of notification
+	 * @param data   of notification
 	 * @param tokens devices to send notification to
+	 * @return batchResponse of send notifications
 	 */
-	public void sendMulticastNotification(String title, String body, List<String> tokens) {
-		try {
-			if (tokens.size() > 0) {
-				MulticastMessage multicastMessage = MulticastMessage.builder()
-						.addAllTokens(tokens)
-						.setNotification(Notification.builder()
-								.setTitle(title)
-								.setBody(body)
-								.build())
-						.build();
-				FirebaseMessaging.getInstance().sendMulticastAsync(multicastMessage, !Environment.PRODUCTION);
-			}
-		} catch (Exception e) {
-			this.logError("Couldn't send notification", e, LOGGER);
-		}
+	public BatchResponse sendMulticastNotification(String title, String body,
+			List<String> tokens, Map<String, String> data) throws FirebaseMessagingException {
+		MulticastMessage multicastMessage = MulticastMessage.builder()
+				.addAllTokens(tokens)
+				.putAllData(data)
+				.setNotification(Notification.builder()
+						.setTitle(title)
+						.setBody(body)
+						.build())
+				.build();
+		return FirebaseMessaging.getInstance().sendMulticast(multicastMessage, !Environment.PRODUCTION);
 	}
 
 	/**

@@ -1,0 +1,31 @@
+#
+# Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+#
+server:
+  port: ${SERVER_PORT}
+  ssl:
+    enabled: ${SSL_ENABLED}
+    key-alias: tomcat
+    key-store-type: PKCS12
+    key-store: ${SSL_KEYSTORE}
+    key-store-password: ${SSL_KEYSTORE_PASSWORD}
+    key-password: ${SSL_KEYSTORE_KEY_PASSWORD}
+spring:
+  jpa:
+    open-in-view: 'true'
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: io.github.paexception.engelsburg.api.spring.PrefixNamingStrategy
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDB102Dialect
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    url: jdbc:mariadb://${DATABASE_HOSTNAME}:${DATABASE_PORT}/${DATABASE_DATABASE}
+springdoc:
+  swagger-ui:
+    path: /api-docs-ui
+    tagsSorter: alpha

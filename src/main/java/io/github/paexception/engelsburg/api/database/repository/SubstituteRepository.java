@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.database.repository;
 
 import io.github.paexception.engelsburg.api.database.model.SubstituteModel;
@@ -17,28 +21,20 @@ public interface SubstituteRepository extends JpaRepository<SubstituteModel, Int
 
 	List<SubstituteModel> findAllByDate(Date date);
 
-	List<SubstituteModel> findAllByDateGreaterThanEqualAndClassName(Date date, String className);
-
-	List<SubstituteModel> findAllByDateAndTeacher(Date date, String teacher);
-
-	List<SubstituteModel> findAllByDateAndTeacherAndLesson(Date date, String teacher, int lesson);
-
-	List<SubstituteModel> findAllByDateAndTeacherAndClassName(Date date, String teacher, String className);
-
-	List<SubstituteModel> findAllByDateAndTeacherAndLessonAndClassName(Date date, String teacher, int lesson,
-			String className);
-
-	List<SubstituteModel> findAllByDateAndSubstituteTeacher(Date date, String substituteTeacher);
-
-	List<SubstituteModel> findAllByDateGreaterThanEqual(Date date);
-
-	List<SubstituteModel> findAllByDateGreaterThanEqualAndClassNameIsLike(Date date, String className);
-
 	Optional<SubstituteModel> findByDateAndLessonAndTeacher(Date date, int lesson, String teacher);
+
+	default Optional<SubstituteModel> findByDateAndLessonAndClassNameLike(Date date, int lesson, String className) {
+		return this.findByDateAndLessonAndClassNameIsLike(date, lesson, likeClassName(className));
+	}
 
 	Optional<SubstituteModel> findByDateAndLessonAndClassNameIsLike(Date date, int lesson, String className);
 
 	Optional<SubstituteModel> findByDateAndLessonAndSubject(Date date, int lesson, String subject);
 
-	List<SubstituteModel> findAllByDateLessThanEqual(Date date);
+	List<SubstituteModel> findAllByDateGreaterThanEqual(Date date);
+
+	List<SubstituteModel> findAllByDateGreaterThanEqualAndClassNameIn(Date date, List<String> classes);
+
+	List<SubstituteModel> findAllByDateGreaterThanEqualAndTeacherInOrDateGreaterThanEqualAndSubstituteTeacherIn(
+			Date date, List<String> teacher, Date date2, List<String> substituteTeacher);
 }

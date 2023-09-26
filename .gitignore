@@ -228,3 +228,5 @@ nbdist/
 
 .idea/codeStyles
 .idea/
+
+development-compose.yml

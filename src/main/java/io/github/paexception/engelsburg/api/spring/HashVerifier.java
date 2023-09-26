@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.spring;
 
 import lombok.NoArgsConstructor;
@@ -36,8 +40,10 @@ public class HashVerifier implements ResponseBodyAdvice<Object> {
 
 		if (oldHash != null && newHash != null)
 			if (oldHash.size() != 0 && newHash.size() != 0)
-				if (oldHash.get(0).trim().equals(newHash.get(0).trim()))
+				if (oldHash.get(0).trim().equals(newHash.get(0).trim())) {
 					response.setStatusCode(HttpStatus.NOT_MODIFIED);
+					return null;
+				}
 
 		return body;
 	}

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.spring;
 
 import org.hibernate.boot.model.naming.Identifier;

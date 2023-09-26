@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.util;
 
 import lombok.AccessLevel;
@@ -23,13 +27,6 @@ public class Constants {
 	}
 
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class Grade {
-
-		public static final String NAME_KEY = "grade";
-
-	}
-
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class Information {
 
 		public static final String NAME_KEY = "information";
@@ -37,9 +34,9 @@ public class Constants {
 	}
 
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class Notification {
+	public static class NotificationSettings {
 
-		public static final String NAME_KEY = "notification";
+		public static final String NAME_KEY = "notification_settings";
 
 	}
 
@@ -54,20 +51,6 @@ public class Constants {
 	public static class SubstituteMessage {
 
 		public static final String NAME_KEY = "substitute_message";
-
-	}
-
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class Task {
-
-		public static final String NAME_KEY = "task";
-
-	}
-
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class Timetable {
-
-		public static final String NAME_KEY = "timetable";
 
 	}
 

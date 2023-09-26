@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.spring;
 
 import io.github.paexception.engelsburg.api.util.Error;
@@ -35,7 +39,9 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
 	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Object> exception(Exception exception) {
-		this.logError("Caught unhandled error reaching the end of the endpoint pipeline", exception, LOGGER);
+		this.logError(
+				"[RestControllerExceptionHandler] Caught unhandled error reaching the end of the endpoint pipeline",
+				exception, LOGGER);
 
 		return Result.of(Error.INTERNAL_SERVER_ERROR, "An internal server error occurred!").getHttpResponse();
 	}
@@ -60,8 +66,8 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
 		} else if (ex instanceof HttpMessageNotReadableException) {
 			return Result.of(Error.INVALID_PARAM, "possible missing body or content type").getHttpResponse();
 		} else if (ex instanceof MissingServletRequestParameterException) {
-			return Result.of(Error.INVALID_PARAM, "missing request param: "
-					+ ((MissingServletRequestParameterException) ex).getParameterName()).getHttpResponse();
+			return Result.of(Error.INVALID_PARAM,
+					((MissingServletRequestParameterException) ex).getParameterName()).getHttpResponse();
 		} else return Result.of(Error.fromHttpStatus(status)).getHttpResponse();
 	}
 

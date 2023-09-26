@@ -1,51 +1,36 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.controller.reserved;
 
 import io.github.paexception.engelsburg.api.database.model.SubstituteModel;
 import io.github.paexception.engelsburg.api.database.repository.SubstituteRepository;
 import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
-import io.github.paexception.engelsburg.api.endpoint.dto.UserDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.GetSubstitutesResponseDTO;
 import io.github.paexception.engelsburg.api.service.notification.NotificationService;
 import io.github.paexception.engelsburg.api.service.scheduled.SubstituteUpdateService;
 import io.github.paexception.engelsburg.api.util.Error;
 import io.github.paexception.engelsburg.api.util.Result;
-import org.apache.commons.lang3.time.DateUtils;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import static io.github.paexception.engelsburg.api.util.Constants.Substitute.NAME_KEY;
 
 /**
  * Controller for substitutes.
  */
 @Component
+@AllArgsConstructor
 public class SubstituteController {
 
 	private final SubstituteRepository substituteRepository;
 	private final NotificationService notificationService;
-
-	public SubstituteController(
-			SubstituteRepository substituteRepository, NotificationService notificationService) {
-		this.substituteRepository = substituteRepository;
-		this.notificationService = notificationService;
-	}
-
-	/**
-	 * Checks if sender has permission to get past substitutes.
-	 *
-	 * @param userDTO user information
-	 * @param date    specified
-	 * @return true if permitted, false if not
-	 */
-	private static boolean pastTimeCheck(UserDTO userDTO, long date) {
-		if (!userDTO.hasScope("substitute.read.all")) {
-			return DateUtils.isSameDay(new Date(System.currentTimeMillis()),
-					new Date(date)) || System.currentTimeMillis() <= date; //Same day or in the future
-		} else return true;
-	}
 
 	/**
 	 * Checks if a string is not blank, empty or null.
@@ -58,162 +43,13 @@ public class SubstituteController {
 	}
 
 	/**
-	 * Update substitutes.
-	 * Only {@link SubstituteUpdateService} is supposed to call
-	 * this function!
-	 *
-	 * @param fetchedDTOs with all crawled substitutes
-	 * @param date        of substitutes
-	 */
-	@Transactional
-	public void updateSubstitutes(List<SubstituteDTO> fetchedDTOs, Date date) {
-		this.substituteRepository.findAllByDate(date).stream().map(SubstituteModel::toResponseDTO)
-				.forEach(dto -> fetchedDTOs.removeIf(
-						fetchedDTO -> fetchedDTO.equals(dto))); //Filter new or changed substitutes
-		fetchedDTOs.removeIf(dto -> {
-			if (Character.isDigit(dto.getClassName().charAt(0))) { //5a-10e
-				Optional<SubstituteModel> optionalSubstitute = this.substituteRepository.findByDateAndLessonAndClassNameIsLike(
-						date, dto.getLesson(), SubstituteRepository.likeClassName(dto.getClassName()));
-				if (optionalSubstitute.isPresent()) {
-					this.substituteRepository.save(
-							this.createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
-					return true;
-				}
-			} else { //E1-Q4
-				if (dto.getTeacher() == null || dto.getTeacher().isBlank()) {
-					Optional<SubstituteModel> optionalSubstitute = this.substituteRepository.findByDateAndLessonAndSubject(
-							date, dto.getLesson(), dto.getSubject());
-					if (optionalSubstitute.isPresent()) {
-						this.substituteRepository.save(
-								this.createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
-						return true;
-					}
-				} else {
-					Optional<SubstituteModel> optionalSubstitute = this.substituteRepository.findByDateAndLessonAndTeacher(
-							date, dto.getLesson(), dto.getTeacher());
-					if (optionalSubstitute.isPresent()) {
-						this.substituteRepository.save(
-								this.createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
-						return true;
-					}
-				}
-			}
-
-			this.substituteRepository.save(this.createSubstitute(-1, dto));
-			return false;
-		});
-
-		if (!fetchedDTOs.isEmpty()) this.notificationService.sendSubstituteNotifications(fetchedDTOs);
-	}
-
-	/**
-	 * Get all substitutes by Teacher.
-	 *
-	 * @param teacher   filter by teacher
-	 * @param lesson    filter by lesson
-	 * @param className filter by className
-	 * @param date      filter by date
-	 * @param userDTO   user information
-	 * @return all found substitutes
-	 */
-	public Result<GetSubstitutesResponseDTO> getSubstitutesByTeacher(String teacher, int lesson, String className,
-			long date, UserDTO userDTO) {
-		if (date < 0) date = System.currentTimeMillis();
-		if (!pastTimeCheck(userDTO, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
-
-		List<SubstituteModel> substitutes;
-		if (lesson != -1) {
-			if (notBlank(className)) {
-				substitutes = this.substituteRepository.findAllByDateAndTeacherAndLessonAndClassName(
-						new Date(date), teacher, lesson, className);
-			} else {
-				substitutes = this.substituteRepository.findAllByDateAndTeacherAndLesson(
-						new Date(date), teacher, lesson);
-			}
-		} else if (notBlank(className)) {
-			substitutes = this.substituteRepository.findAllByDateAndTeacherAndClassName(
-					new Date(date), teacher, className);
-		} else {
-			substitutes = this.substituteRepository.findAllByDateAndTeacher(
-					new Date(date), teacher);
-		}
-		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
-
-		return this.returnSubstitutes(substitutes);
-	}
-
-	/**
-	 * Get all substitutes by the SubstituteTeacher.
-	 *
-	 * @param teacher filter by substitute teacher
-	 * @param date    filter by date
-	 * @param userDTO user information
-	 * @return all found substitutes
-	 */
-	public Result<GetSubstitutesResponseDTO> getSubstitutesBySubstituteTeacher(String teacher, long date,
-			UserDTO userDTO) {
-		if (date < 0) date = System.currentTimeMillis();
-		if (!pastTimeCheck(userDTO, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
-
-		List<SubstituteModel> substitutes = this.substituteRepository.findAllByDateAndSubstituteTeacher(
-				new Date(date), teacher.toUpperCase());
-		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
-
-		return this.returnSubstitutes(substitutes);
-	}
-
-	/**
-	 * Get all substitutes by a class name.
-	 *
-	 * @param className filter by className
-	 * @param date      filter by date
-	 * @param userDTO   user information
-	 * @return all found substitutes
-	 */
-	public Result<GetSubstitutesResponseDTO> getSubstitutesByClassName(String className, long date, UserDTO userDTO) {
-		if (date < 0) date = System.currentTimeMillis();
-		if (!pastTimeCheck(userDTO, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
-
-		List<SubstituteModel> substitutes;
-		if (Character.isDigit(className.charAt(0)))
-			substitutes = this.substituteRepository.findAllByDateGreaterThanEqualAndClassNameIsLike(
-					new Date(date), SubstituteRepository.likeClassName(className)); //Include like 5abcde
-		else substitutes = this.substituteRepository.findAllByDateGreaterThanEqualAndClassName(
-				new Date(date), className);
-		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
-
-		return this.returnSubstitutes(substitutes);
-	}
-
-	/**
-	 * Get all substitutes since date.
-	 *
-	 * @param date    can't be in the past
-	 * @param userDTO user information
-	 * @return all found substitutes
-	 */
-	public Result<GetSubstitutesResponseDTO> getAllSubstitutes(long date, UserDTO userDTO) {
-		List<SubstituteModel> substitutes;
-		if (date < 0) {
-			substitutes = this.substituteRepository.findAllByDateGreaterThanEqual(new Date(System.currentTimeMillis()));
-		} else {
-			if (!pastTimeCheck(userDTO, date)) return Result.of(Error.FORBIDDEN, NAME_KEY);
-			substitutes = this.substituteRepository.findAllByDateLessThanEqual(new Date(date));
-		}
-
-		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
-
-		return this.returnSubstitutes(substitutes);
-	}
-
-	/**
 	 * Create a {@link SubstituteModel} out of a {@link SubstituteDTO}.
 	 *
 	 * @param substituteId id of substitute
 	 * @param dto          with information
 	 * @return created substitute model
 	 */
-	private SubstituteModel createSubstitute(int substituteId, SubstituteDTO dto) {
+	private static SubstituteModel createSubstitute(int substituteId, SubstituteDTO dto) {
 		return new SubstituteModel(
 				substituteId,
 				dto.getDate(),
@@ -230,14 +66,93 @@ public class SubstituteController {
 	}
 
 	/**
-	 * Function to convert a list of {@link SubstituteModel} into a list of {@link GetSubstitutesResponseDTO}.
+	 * Update substitutes.
+	 * Only {@link SubstituteUpdateService} is supposed to call
+	 * this function!
 	 *
-	 * @param substitutes list to convert
-	 * @return converted list of {@link GetSubstitutesResponseDTO}
+	 * @param fetchedDTOs with all crawled substitutes
+	 * @param date        of substitutes
 	 */
-	private Result<GetSubstitutesResponseDTO> returnSubstitutes(List<SubstituteModel> substitutes) {
-		return Result.of(new GetSubstitutesResponseDTO(substitutes.stream()
-				.map(SubstituteModel::toResponseDTO).collect(Collectors.toList())));
+	@Transactional
+	public void updateSubstitutes(List<SubstituteDTO> fetchedDTOs, Date date) {
+		//Get all substitutes by date, remove all which are also in fetched dtos
+		for (SubstituteModel substitute : this.substituteRepository.findAllByDate(date))
+			fetchedDTOs.remove(substitute.toResponseDTO());
+
+		//Check if substitutes have been updated or newly created
+		List<SubstituteDTO> updated = new ArrayList<>(), created = new ArrayList<>();
+		List<SubstituteModel> toSave = new ArrayList<>();
+		for (SubstituteDTO dto : fetchedDTOs) {
+			//Get optional substitute based on dto information
+			Optional<SubstituteModel> optionalSubstitute;
+			if (Character.isDigit(dto.getClassName().charAt(0))) { //5a-10e
+				optionalSubstitute = this.substituteRepository
+						.findByDateAndLessonAndClassNameLike(date, dto.getLesson(), dto.getClassName());
+			} else if (notBlank(dto.getTeacher())) { //E1-Q4 with teacher
+				optionalSubstitute = this.substituteRepository
+						.findByDateAndLessonAndTeacher(date, dto.getLesson(), dto.getTeacher());
+			} else { //E1-Q4 without teacher
+				optionalSubstitute = this.substituteRepository
+						.findByDateAndLessonAndSubject(date, dto.getLesson(), dto.getSubject());
+			}
+
+			//Check if the substitute was newly created or updated
+			if (optionalSubstitute.isPresent()) {
+				//Update substitute and add to updated list
+				toSave.add(createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
+				updated.add(dto);
+			} else {
+				//Save newly created substitute and add to created list
+				toSave.add(createSubstitute(-1, dto));
+				created.add(dto);
+			}
+		}
+		this.substituteRepository.saveAll(toSave);
+
+		//Send notifications if lists are not empty
+		if (!updated.isEmpty()) this.notificationService.sendSubstituteNotifications(updated, false);
+		if (!created.isEmpty()) this.notificationService.sendSubstituteNotifications(created, true);
 	}
 
+	/**
+	 * Get substitutes by specific filter.
+	 * All parameters are optional.
+	 *
+	 * @param classNameFilter (optional) filter by className
+	 * @param teacherFilter   (optional) filter by teacher
+	 * @return substitutes with specific filters
+	 */
+	public Result<GetSubstitutesResponseDTO> getSubstitutes(String classNameFilter, String teacherFilter) {
+		List<String> classes = classNameFilter == null || classNameFilter.isBlank()
+				? new ArrayList<>()
+				: Arrays.asList(classNameFilter.split(","));
+		List<String> teacher = teacherFilter == null || teacherFilter.isBlank()
+				? new ArrayList<>()
+				: Arrays.asList(teacherFilter.split(","));
+		final Date date = new Date(System.currentTimeMillis());
+
+		//Get all substitute based on optional parameters
+		List<SubstituteModel> substitutes = new ArrayList<>();
+		if (teacher.isEmpty() && classes.isEmpty()) {
+			substitutes = this.substituteRepository.findAllByDateGreaterThanEqual(date);
+		}
+		if (!classes.isEmpty()) {
+			substitutes.addAll(this.substituteRepository.findAllByDateGreaterThanEqualAndClassNameIn(date, classes));
+		}
+		if (!teacher.isEmpty()) {
+			substitutes.addAll(
+					this.substituteRepository.findAllByDateGreaterThanEqualAndTeacherInOrDateGreaterThanEqualAndSubstituteTeacherIn(
+							date, teacher, date, teacher
+					)
+			);
+		}
+
+		//If no substitutes available return error
+		if (substitutes.isEmpty()) return Result.of(Error.NOT_FOUND, NAME_KEY);
+
+		//Map substitutes to response dtos and return them
+		List<SubstituteDTO> dtos = new ArrayList<>();
+		for (SubstituteModel substitute : substitutes) dtos.add(substitute.toResponseDTO());
+		return Result.of(new GetSubstitutesResponseDTO(dtos));
+	}
 }

@@ -1,6 +1,9 @@
+/*
+ * Copyright (c) 2022 Paul Huerkamp. All rights reserved.
+ */
+
 package io.github.paexception.engelsburg.api.util;
 
-import io.github.paexception.engelsburg.api.service.notification.NotificationService;
 import org.slf4j.Logger;
 
 /**
@@ -10,7 +13,6 @@ public interface LoggingComponent {
 
 	/**
 	 * Logs an error which is also send as notification.
-	 * {@link NotificationService#sendErrorNotifications(String, Throwable)}
 	 *
 	 * <p>Should be called on every error log instead of {@link Logger#error(String, Throwable)},
 	 * otherwise notification won't be sent.</p>
@@ -21,7 +23,5 @@ public interface LoggingComponent {
 	 */
 	default void logError(String msg, Throwable throwable, Logger logger) {
 		logger.error(msg, throwable);
-		NotificationService.sendErrorNotifications(msg, throwable);
 	}
-
 }
