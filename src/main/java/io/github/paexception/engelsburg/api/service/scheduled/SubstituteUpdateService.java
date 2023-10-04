@@ -87,8 +87,10 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 							.replaceAll("\"", "");
 
 					//Update current classes
-					this.informationController.setCurrentClasses(rawClasses.split(","));
-					LOGGER.trace("[SUBSTITUTE] Updated classes");
+					if (informationController != null) {
+						this.informationController.setCurrentClasses(rawClasses.split(","));
+						LOGGER.trace("[SUBSTITUTE] Updated classes");
+					} else LOGGER.warn("[SUBSTITUTE] DRY RUN! Did not write classes to database");
 				} else LOGGER.trace("[SUBSTITUTE] Classes did not change");
 			}
 
@@ -140,11 +142,13 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 				//Remove the already used date elements, [2] - [8]
 				List<Element> substituteContentToParse = substitute.children();
 				for (Element paragraph : substituteContentToParse) {
-					if (!paragraph.tagName().equals("p") || paragraph.children().isEmpty()) continue;
+					//if (!paragraph.tagName().equals("p") || paragraph.children().isEmpty()) continue;
+					if ((!paragraph.tagName().equals("p") && !paragraph.tagName().equals("table")) || paragraph.children().isEmpty()) continue;
 
-					Element table = paragraph.child(0);
+					//Element table = paragraph.child(0);
+					Element table = paragraph; //Might be a bug
+
 					//If the tagName is not equal to "table", there will be information about the current date, --> [16]
-
 					if (table.tagName().equals("table")) {
 						//If table has class "subst" then it will contain the actual substitutes
 						//Otherwise it will contain the substitute messages
@@ -205,7 +209,10 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 
 							//After cycling through the list update all substitutes to the controller
 							if (!substitutes.isEmpty()) {
-								this.substituteController.updateSubstitutes(substitutes, currentDate);
+								if (this.substituteController != null) {
+									this.substituteController.updateSubstitutes(substitutes, currentDate);
+								} else LOGGER.warn("[SUBSTITUTE] DRY RUN! Did not write substitutes to database");
+
 								LOGGER.trace("[SUBSTITUTE] Updated substitutes: " + substitutes.size());
 								count += substitutes.size();
 							} else LOGGER.trace("[SUBSTITUTE] No substitutes updated");
@@ -231,9 +238,11 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 							}
 
 							//Update substitute message of current day to the controller
-							this.substituteMessageController.clearSubstituteMessages(currentDate);
-							this.substituteMessageController.createSubstituteMessage(dto);
-							LOGGER.trace("[SUBSTITUTE] Updated substitute message");
+							if (substituteMessageController != null) {
+								this.substituteMessageController.clearSubstituteMessages(currentDate);
+								this.substituteMessageController.createSubstituteMessage(dto);
+								LOGGER.trace("[SUBSTITUTE] Updated substitute message");
+							} else LOGGER.warn("[SUBSTITUTE] DRY RUN! Did not write substitute messages to database");
 						}
 					} else {
 						//Update the current date
@@ -243,6 +252,7 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 							dayAndMonth = rawDate.substring(0, rawDate.lastIndexOf('.'));
 							currentDate = this.parseDate(dayAndMonth, weeks.get(week));
 							LOGGER.trace("[SUBSTITUTE] Switching to new date: " + dayAndMonth + "." + weeks.get(week));
+							System.out.println("[SUBSTITUTE] Switching to new date: " + dayAndMonth + "." + weeks.get(week));
 						}
 					}
 				}
