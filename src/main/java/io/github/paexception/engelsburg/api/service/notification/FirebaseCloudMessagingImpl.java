@@ -11,8 +11,10 @@ import com.google.firebase.messaging.BatchResponse;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
+import com.google.firebase.messaging.SendResponse;
 import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import lombok.AccessLevel;
@@ -23,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -89,9 +92,9 @@ public class FirebaseCloudMessagingImpl implements LoggingComponent {
 	 * @param body   of notification
 	 * @param data   of notification
 	 * @param tokens devices to send notification to
-	 * @return batchResponse of send notifications
+	 * @return list of token that failed
 	 */
-	public BatchResponse sendMulticastNotification(String title, String body,
+	public List<String> sendMulticastNotification(String title, String body,
 			List<String> tokens, Map<String, String> data) throws FirebaseMessagingException {
 		MulticastMessage multicastMessage = MulticastMessage.builder()
 				.addAllTokens(tokens)
@@ -101,7 +104,21 @@ public class FirebaseCloudMessagingImpl implements LoggingComponent {
 						.setBody(body)
 						.build())
 				.build();
-		return FirebaseMessaging.getInstance().sendMulticast(multicastMessage, !Environment.PRODUCTION);
+
+		BatchResponse responses = FirebaseMessaging.getInstance().sendMulticast(multicastMessage, !Environment.PRODUCTION);
+
+		//Get all tokens that failed
+		List<String> invalidTokens = new ArrayList<>();
+		List<SendResponse> responsesResponses = responses.getResponses();
+		for (int i = 0; i < responsesResponses.size(); i++) {
+			SendResponse response = responsesResponses.get(i);
+			if (response.isSuccessful()) continue;
+
+			if (response.getException().getMessagingErrorCode().equals(MessagingErrorCode.UNREGISTERED))
+				invalidTokens.add(tokens.get(i));
+		}
+
+		return invalidTokens;
 	}
 
 	/**
