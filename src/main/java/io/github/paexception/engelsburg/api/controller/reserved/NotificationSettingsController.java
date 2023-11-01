@@ -118,6 +118,6 @@ public class NotificationSettingsController {
 	@Transactional
 	public void deleteInvalidTokens(List<String> invalidTokens) {
 		//Delete all invalid tokens
-		this.tokenRepository.deleteAllByTokenIn(invalidTokens);
+		if (!invalidTokens.isEmpty()) this.tokenRepository.deleteAllByTokenIn(invalidTokens);
 	}
 }

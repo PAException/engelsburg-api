@@ -29,8 +29,11 @@ import static io.github.paexception.engelsburg.api.util.Constants.Substitute.NAM
 @AllArgsConstructor
 public class SubstituteController {
 
+	private static long timestamp = 0;
+
 	private final SubstituteRepository substituteRepository;
 	private final NotificationService notificationService;
+
 
 	/**
 	 * Checks if a string is not blank, empty or null.
@@ -75,6 +78,8 @@ public class SubstituteController {
 	 */
 	@Transactional
 	public void updateSubstitutes(List<SubstituteDTO> fetchedDTOs, Date date) {
+		timestamp = System.currentTimeMillis();
+
 		List<SubstituteDTO> current = new ArrayList<>();
 		for (SubstituteModel substitute : this.substituteRepository.findAllByDate(date)) {
 			current.add(substitute.toResponseDTO());
@@ -137,6 +142,6 @@ public class SubstituteController {
 		//Map substitutes to response dtos and return them
 		List<SubstituteDTO> dtos = new ArrayList<>();
 		for (SubstituteModel substitute : substitutes) dtos.add(substitute.toResponseDTO());
-		return Result.of(new GetSubstitutesResponseDTO(dtos));
+		return Result.of(new GetSubstitutesResponseDTO(dtos, timestamp));
 	}
 }
