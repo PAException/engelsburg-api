@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.sql.Date;
+import java.util.Objects;
 
 @Data
 @NoArgsConstructor
@@ -42,4 +43,25 @@ public class SubstituteDTO {
 		return this;
 	}
 
+	@Override
+	public boolean equals(Object other) {
+		if (this == other) return true;
+		if (other == null || getClass() != other.getClass()) return false;
+
+		SubstituteDTO dto = (SubstituteDTO) other;
+		if (!Objects.equals(date, dto.date)) return false;
+		if (lesson != dto.lesson) return false;
+		if (!Objects.equals(className, dto.className)) return false;
+
+		if (!Character.isDigit(className.charAt(0))) { //Only for E1 - Q4
+			return Objects.equals(teacher, dto.teacher);
+		}
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(date, className, lesson, teacher);
+	}
 }
