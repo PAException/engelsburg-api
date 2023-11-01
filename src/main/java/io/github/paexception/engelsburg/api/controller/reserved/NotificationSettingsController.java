@@ -102,8 +102,13 @@ public class NotificationSettingsController {
 		//Add all possible combinations
 		List<String> combinations = new ArrayList<>();
 		for (int i = lower; i <= upper; i++) {
-			combinations.add(prefix + "." + day + "." + i + "." + teacher);
-			combinations.add(prefix + "." + day + "." + i + "." + className);
+			if (teacher != null && !teacher.isEmpty()) {
+				combinations.add(prefix + "." + day + "." + i + "." + teacher);
+			}
+
+			if (className != null && !className.isEmpty()) {
+				combinations.add(prefix + "." + day + "." + i + "." + className);
+			}
 		}
 
 		//Return all tokens that matched the combinations

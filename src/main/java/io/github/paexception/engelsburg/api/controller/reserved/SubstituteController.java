@@ -19,7 +19,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+
 import static io.github.paexception.engelsburg.api.util.Constants.Substitute.NAME_KEY;
 
 /**
@@ -75,38 +75,22 @@ public class SubstituteController {
 	 */
 	@Transactional
 	public void updateSubstitutes(List<SubstituteDTO> fetchedDTOs, Date date) {
-		//Get all substitutes by date, remove all which are also in fetched dtos
-		for (SubstituteModel substitute : this.substituteRepository.findAllByDate(date))
-			fetchedDTOs.remove(substitute.toResponseDTO());
+		List<SubstituteDTO> current = new ArrayList<>();
+		for (SubstituteModel substitute : this.substituteRepository.findAllByDate(date)) {
+			current.add(substitute.toResponseDTO());
+		}
+		this.substituteRepository.deleteAllByDate(date);
 
 		//Check if substitutes have been updated or newly created
 		List<SubstituteDTO> updated = new ArrayList<>(), created = new ArrayList<>();
 		List<SubstituteModel> toSave = new ArrayList<>();
-		for (SubstituteDTO dto : fetchedDTOs) {
-			//Get optional substitute based on dto information
-			Optional<SubstituteModel> optionalSubstitute;
-			if (Character.isDigit(dto.getClassName().charAt(0))) { //5a-10e
-				optionalSubstitute = this.substituteRepository
-						.findByDateAndLessonAndClassNameLike(date, dto.getLesson(), dto.getClassName());
-			} else if (notBlank(dto.getTeacher())) { //E1-Q4 with teacher
-				optionalSubstitute = this.substituteRepository
-						.findByDateAndLessonAndTeacher(date, dto.getLesson(), dto.getTeacher());
-			} else { //E1-Q4 without teacher
-				optionalSubstitute = this.substituteRepository
-						.findByDateAndLessonAndSubject(date, dto.getLesson(), dto.getSubject());
-			}
+		for (SubstituteDTO dto: fetchedDTOs) {
+			if (current.contains(dto)) updated.add(dto);
+			else created.add(dto);
 
-			//Check if the substitute was newly created or updated
-			if (optionalSubstitute.isPresent()) {
-				//Update substitute and add to updated list
-				toSave.add(createSubstitute(optionalSubstitute.get().getSubstituteId(), dto));
-				updated.add(dto);
-			} else {
-				//Save newly created substitute and add to created list
-				toSave.add(createSubstitute(-1, dto));
-				created.add(dto);
-			}
+			toSave.add(createSubstitute(-1, dto));
 		}
+
 		this.substituteRepository.saveAll(toSave);
 
 		//Send notifications if lists are not empty
