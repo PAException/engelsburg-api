@@ -16,5 +16,6 @@ import java.util.List;
 public class GetSubstitutesResponseDTO {
 
 	private List<SubstituteDTO> substitutes;
+	private long timestamp;
 
 }
