@@ -10,6 +10,7 @@ import io.github.paexception.engelsburg.api.service.HtmlFetchingService;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import lombok.AllArgsConstructor;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -38,16 +39,26 @@ public class SolarSystemUpdateService extends HtmlFetchingService implements Log
 			Document doc = this.request(
 					"https://www.sunnyportal.com/Templates/PublicPageOverview.aspx?plant=554d90c7-84a2-474c-94db-d2ac5f5af3c3&splang=de-de");
 
-			if (this.checkChanges(doc.getElementById(
-					"ctl00_ContentPlaceHolder1_PublicPagePlaceholder_PageUserControl_ctl00_UpdatePanel0"), "data")) {
-				String date = doc.getElementById(
-						"ctl00_ContentPlaceHolder1_PublicPagePlaceholder_PageUserControl_ctl00_UserControl0_LabelTime").text();
-				String energy = doc.getElementById(
-						"ctl00_ContentPlaceHolder1_PublicPagePlaceholder_PageUserControl_ctl00_UserControl0_LabelETotalValue").text();
-				String co2avoidance = doc.getElementById(
-						"ctl00_ContentPlaceHolder1_PublicPagePlaceholder_PageUserControl_ctl00_UserControl0_LabelCO2Value").text();
-				String payment = doc.getElementById(
-						"ctl00_ContentPlaceHolder1_PublicPagePlaceholder_PageUserControl_ctl00_UserControl0_LabelRevenueValue").text();
+			final String panelId = "ctl00_ContentPlaceHolder1_PublicPagePlaceholder_PageUserControl_ctl00_UpdatePanel0";
+			final String dateId = "ctl00_ContentPlaceHolder1_PublicPagePlaceholder_PageUserControl_ctl00_UserControl0_LabelTime";
+			final String energyId = "ctl00_ContentPlaceHolder1_PublicPagePlaceholder_PageUserControl_ctl00_UserControl0_LabelETotalValue";
+			final String co2Id = "ctl00_ContentPlaceHolder1_PublicPagePlaceholder_PageUserControl_ctl00_UserControl0_LabelCO2Value";
+			final String paymentId = "ctl00_ContentPlaceHolder1_PublicPagePlaceholder_PageUserControl_ctl00_UserControl0_LabelRevenueValue";
+
+			Element element;
+			String date, energy, co2avoidance, payment;
+			if (this.checkChanges(doc.getElementById(panelId), "data")) {
+				element = doc.getElementById(dateId);
+				date = element != null ? element.text() : "--";
+
+				element = doc.getElementById(energyId);
+				energy = element != null ? element.text() : "-- kWh";
+
+				element = doc.getElementById(co2Id);
+				co2avoidance = element != null ? element.text() : "-- kg";
+
+				element = doc.getElementById(paymentId);
+				payment = element != null ? element.text() : "--";
 
 				this.solarSystemController.update(date, energy, co2avoidance, payment);
 				LOGGER.info("[SOLAR] Updated");
