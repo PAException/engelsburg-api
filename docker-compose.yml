@@ -16,6 +16,7 @@ services:
       eb-api-net:
     environment:
       PRODUCTION: true
+      BLURHASH: false
       DATABASE_HOSTNAME: eb-api-db
       DATABASE_PORT: 3306
       DATABASE_DATABASE: eb-api

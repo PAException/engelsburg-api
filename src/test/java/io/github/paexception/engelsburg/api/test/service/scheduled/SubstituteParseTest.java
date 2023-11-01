@@ -2,6 +2,7 @@ package io.github.paexception.engelsburg.api.test.service.scheduled;
 
 import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
 import io.github.paexception.engelsburg.api.service.scheduled.SubstituteUpdateService;
+
 import org.junit.jupiter.api.Test;
 
 import java.sql.Date;
@@ -13,7 +14,7 @@ public class SubstituteParseTest {
     public void testSubstituteParse() {
         new SubstituteUpdateService(null, null, null).updateSubstitutes();
     }
-
+    
     @Test
     public void substituteDTOEqualTest() {
         //Correct 5a - 10e
@@ -184,5 +185,4 @@ public class SubstituteParseTest {
 
         assert !Objects.equals(dto11, dto12);
     }
-
 }

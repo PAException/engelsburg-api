@@ -105,9 +105,9 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 					counter++;
 				}
 
-				if (jsonArticles.size() == 100) {
-					this.updateArticles(date, page + 1).forEach(this.articleController::createOrUpdateArticle);
+				if (json.toString().startsWith("[")) { //Errors start with {
 					LOGGER.info("[ARTICLE] Still fetching articles (current count: " + counter + ")");
+					this.updateArticles(date, page + 1).forEach(this.articleController::createOrUpdateArticle);
 				}
 			}
 		} catch (IOException | ParseException e) {
@@ -138,8 +138,9 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 			this.logError("[ARTICLE] Couldn't load media: " + articleId, e, LOGGER);
 		}
 
-		if (Environment.PRODUCTION) {
+		if (Environment.BLURHASH) {
 			try {
+				LOGGER.trace("[ARTICLE] Loading blurhash of " + articleId);
 				//content = WordpressAPI.applyBlurHashToAllImages(Jsoup.parse(content)).toString(); --> not needed
 				blurHash = mediaUrl != null ? WordPressAPI.getBlurHash(mediaUrl) : null;
 			} catch (IOException e) {
