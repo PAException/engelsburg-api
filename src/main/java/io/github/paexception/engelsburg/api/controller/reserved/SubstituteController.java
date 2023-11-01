@@ -34,27 +34,15 @@ public class SubstituteController {
 	private final SubstituteRepository substituteRepository;
 	private final NotificationService notificationService;
 
-
-	/**
-	 * Checks if a string is not blank, empty or null.
-	 *
-	 * @param value string to check
-	 * @return true if given string is not blank or null
-	 */
-	private static boolean notBlank(String value) {
-		return value != null && !value.isBlank();
-	}
-
 	/**
 	 * Create a {@link SubstituteModel} out of a {@link SubstituteDTO}.
 	 *
-	 * @param substituteId id of substitute
 	 * @param dto          with information
 	 * @return created substitute model
 	 */
-	private static SubstituteModel createSubstitute(int substituteId, SubstituteDTO dto) {
+	private static SubstituteModel createSubstitute(SubstituteDTO dto) {
 		return new SubstituteModel(
-				substituteId,
+				-1,
 				dto.getDate(),
 				dto.getClassName(),
 				dto.getLesson(),
@@ -90,10 +78,11 @@ public class SubstituteController {
 		List<SubstituteDTO> updated = new ArrayList<>(), created = new ArrayList<>();
 		List<SubstituteModel> toSave = new ArrayList<>();
 		for (SubstituteDTO dto: fetchedDTOs) {
-			if (current.contains(dto)) updated.add(dto);
-			else created.add(dto);
+			if (current.stream().anyMatch(substituteDTO -> substituteDTO.sameBase(dto))) {
+				if (!current.contains(dto)) updated.add(dto);
+			} else created.add(dto);
 
-			toSave.add(createSubstitute(-1, dto));
+			toSave.add(createSubstitute(dto));
 		}
 
 		this.substituteRepository.saveAll(toSave);

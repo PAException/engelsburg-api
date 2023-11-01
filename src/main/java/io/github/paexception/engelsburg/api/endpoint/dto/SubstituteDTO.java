@@ -43,12 +43,7 @@ public class SubstituteDTO {
 		return this;
 	}
 
-	@Override
-	public boolean equals(Object other) {
-		if (this == other) return true;
-		if (other == null || getClass() != other.getClass()) return false;
-
-		SubstituteDTO dto = (SubstituteDTO) other;
+	public boolean sameBase(SubstituteDTO dto) {
 		if (!Objects.equals(date, dto.date)) return false;
 		if (lesson != dto.lesson) return false;
 		if (!Objects.equals(className, dto.className)) return false;
@@ -61,7 +56,15 @@ public class SubstituteDTO {
 	}
 
 	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		SubstituteDTO that = (SubstituteDTO) o;
+		return lesson == that.lesson && Objects.equals(date, that.date) && Objects.equals(className, that.className) && Objects.equals(subject, that.subject) && Objects.equals(substituteTeacher, that.substituteTeacher) && Objects.equals(teacher, that.teacher) && Objects.equals(type, that.type) && Objects.equals(substituteOf, that.substituteOf) && Objects.equals(room, that.room) && Objects.equals(text, that.text);
+	}
+
+	@Override
 	public int hashCode() {
-		return Objects.hash(date, className, lesson, teacher);
+		return Objects.hash(date, className, lesson, subject, substituteTeacher, teacher, type, substituteOf, room, text);
 	}
 }
