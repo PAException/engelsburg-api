@@ -252,7 +252,6 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 							dayAndMonth = rawDate.substring(0, rawDate.lastIndexOf('.'));
 							currentDate = this.parseDate(dayAndMonth, weeks.get(week));
 							LOGGER.trace("[SUBSTITUTE] Switching to new date: " + dayAndMonth + "." + weeks.get(week));
-							System.out.println("[SUBSTITUTE] Switching to new date: " + dayAndMonth + "." + weeks.get(week));
 						}
 					}
 				}

@@ -30,7 +30,7 @@ public class SubstituteModel {
 	@Setter(AccessLevel.NONE)
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int substituteId;
+	private long substituteId;
 
 	@NotNull
 	private Date date;
