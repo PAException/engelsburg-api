@@ -311,9 +311,15 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 	private void appendTextOnLastSubstitute(Element row, List<SubstituteDTO> substitutes) {
 		int indexOfLastSubstitute = substitutes.size() - 1;
 		String textToAppend = row.children().get(row.children().size() - 1).text();
-		SubstituteDTO dto = substitutes.get(indexOfLastSubstitute);
 
-		substitutes.set(indexOfLastSubstitute, dto.appendText(textToAppend));
+		for (; indexOfLastSubstitute >= 0; indexOfLastSubstitute--) {
+			SubstituteDTO dto = substitutes.get(indexOfLastSubstitute);
+			substitutes.set(indexOfLastSubstitute, dto.appendText(textToAppend));
+
+			if (indexOfLastSubstitute > 0) {
+				if (!dto.sameBase(substitutes.get(indexOfLastSubstitute - 1))) break;
+			}
+		}
 	}
 
 	/**
