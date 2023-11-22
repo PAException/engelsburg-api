@@ -34,7 +34,6 @@ public class SubstituteModel {
 
 	@NotNull
 	private Date date;
-	@NotBlank
 	private String className;
 	private int lesson;
 	private String subject;
