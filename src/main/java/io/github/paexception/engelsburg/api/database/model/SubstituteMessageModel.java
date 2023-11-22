@@ -31,7 +31,7 @@ public class SubstituteMessageModel {
 	@Setter(AccessLevel.NONE)
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int substituteMessageId;
+	private long substituteMessageId;
 
 	@NotNull
 	@Column(unique = true)

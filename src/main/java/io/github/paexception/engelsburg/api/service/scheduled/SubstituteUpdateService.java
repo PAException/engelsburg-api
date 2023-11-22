@@ -185,8 +185,8 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 
 								//If the row does not contain a className then this row is used to extend the text from
 								// the previous substitute, so it needs to be added to the latest substitute
-								String className = row.child(0).text();
-								if (!substitutes.isEmpty() && !className.matches("(.*)[0-9](.*)")) {
+								String lesson = row.child(1).text();
+								if (!substitutes.isEmpty() && !lesson.matches("(.*)[0-9](.*)")) {
 									this.appendTextOnLastSubstitute(row, substitutes);
 									String appendedText = substitutes.get(substitutes.size() - 1).getText();
 
@@ -195,8 +195,6 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 									for (int i = 1; i <= splitSubstitute; i++) {
 										substitutes.get(substitutes.size() - 1 - i).setText(appendedText);
 									}
-
-									splitSubstitute = 0;
 								} else {
 									var newDtos = this.createSubstituteDTOs(row, currentDate);
 
@@ -252,7 +250,6 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 							dayAndMonth = rawDate.substring(0, rawDate.lastIndexOf('.'));
 							currentDate = this.parseDate(dayAndMonth, weeks.get(week));
 							LOGGER.trace("[SUBSTITUTE] Switching to new date: " + dayAndMonth + "." + weeks.get(week));
-							System.out.println("[SUBSTITUTE] Switching to new date: " + dayAndMonth + "." + weeks.get(week));
 						}
 					}
 				}
@@ -277,7 +274,7 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 		List<SubstituteDTO> dtos = new ArrayList<>();
 		SubstituteDTO dto = new SubstituteDTO();
 		dto.setDate(currentDate);
-		dto.setClassName(row.child(0).text());
+		if (row.child(0).text().matches("(.*)[0-9](.*)")) dto.setClassName(row.child(0).text());
 		String lessons = row.child(1).text().replace(" ", "");
 		if (lessons.contains("-")) { //5 - 6, //3 - 6
 			int low = Integer.parseInt(lessons.substring(0, lessons.indexOf("-"))),
