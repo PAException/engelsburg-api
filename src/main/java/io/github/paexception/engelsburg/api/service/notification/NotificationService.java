@@ -11,12 +11,17 @@ import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.SubstituteNotificationDTO;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import javax.validation.constraints.NotNull;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -82,32 +87,31 @@ public class NotificationService implements LoggingComponent {
 	 * @return formatted text
 	 */
 	private static String getSubstituteText(@NotNull SubstituteNotificationDTO substitute) {
-		return (substitute.getClassName() == null ? "" : substitute.getClassName()) +
-				(substitute.getClassName() == null ? "" : " – ") +
-				(substitute.getSubject() == null ? "" : substitute.getSubject()) + " (" +
-				(substitute.getSubstituteTeacher() == null || substitute.getSubstituteTeacher().equals("+")
-						? ""
-						: substitute.getSubstituteTeacher()) +
-				(substitute.getSubstituteTeacher() != null &&
-						!substitute.getSubstituteTeacher().equals("+") &&
-						substitute.getTeacher() == null
-						? ")"
-						: "") +
-				(substitute.getSubstituteTeacher() != null &&
-						!substitute.getSubstituteTeacher().equals("+") &&
-						substitute.getTeacher() != null &&
-						!substitute.getSubstituteTeacher().equals(substitute.getTeacher())
-						? " statt "
-						: "") +
-				(substitute.getTeacher() == null || substitute.getTeacher().equals(substitute.getSubstituteTeacher())
-						? ""
-						: substitute.getTeacher()) +
-				(substitute.getTeacher() != null ? ")" : "") +
-				(substitute.getRoom() == null ? "" : " in " + substitute.getRoom()) +
-				(substitute.getText() == null || substitute.getText().isEmpty()
-						? ""
-						: " – " + substitute.getText()) +
-				(substitute.getSubstituteOf() == null ? "" : " – " + substitute.getSubstituteOf());
+		String lesson = "[" + substitute.getLesson() + "]";
+		String type = " " + substitute.getType();
+		String className = "";
+		if (substitute.getClassName() != null) className = " - " + substitute.getClassName();
+
+		String subject = "";
+		if (substitute.getSubject() != null) subject = " - " + substitute.getSubject();
+
+		String teachers = "";
+		if (substitute.getTeacher() != null && substitute.getSubstituteTeacher() != null) {
+			teachers = " (" + substitute.getSubstituteTeacher() + " statt " + substitute.getTeacher() + ")";
+		} else if (substitute.getSubstituteTeacher() != null) {
+			teachers = " (" + substitute.getSubstituteTeacher() + ")";
+		}
+
+		String room = "";
+		if (substitute.getRoom() != null) room = " in " + substitute.getRoom();
+
+		String text = "";
+		if (substitute.getText() != null) text = " - " + substitute.getText();
+
+		String substituteOf = "";
+		if (substitute.getSubstituteOf() != null) substituteOf = " - " + substitute.getSubstituteOf();
+
+		return lesson + type + className + subject + teachers + room + text + substituteOf;
 	}
 
 	/**
@@ -118,8 +122,17 @@ public class NotificationService implements LoggingComponent {
 	 * @return title
 	 */
 	private static String getSubstituteTitle(SubstituteNotificationDTO substitute, boolean created) {
-		return (!created ? "Geändert" + ": " : "")
-				+ substitute.getLesson() + " " + substitute.getType();
+		String actuality = created ? "Neue" : "Geänderte";
+		String relationalDay;
+		if (DateUtils.isSameDay(substitute.getDate(), Date.from(Instant.now()))) {
+			relationalDay = "heute";
+		} else if (DateUtils.isSameDay(substitute.getDate(), Date.from(Instant.now().plus(Duration.ofDays(1))))) {
+			relationalDay = "morgen";
+		} else {
+			relationalDay = "den " + DateTimeFormatter.ofPattern("dd.MM.").format(substitute.getDate().toInstant());
+		}
+
+		return actuality + " Vertretung für " + relationalDay;
 	}
 
 	/**
