@@ -195,8 +195,6 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 									for (int i = 1; i <= splitSubstitute; i++) {
 										substitutes.get(substitutes.size() - 1 - i).setText(appendedText);
 									}
-
-									splitSubstitute = 0;
 								} else {
 									var newDtos = this.createSubstituteDTOs(row, currentDate);
 
