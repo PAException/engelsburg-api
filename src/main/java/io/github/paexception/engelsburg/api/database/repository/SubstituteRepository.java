@@ -7,9 +7,9 @@ package io.github.paexception.engelsburg.api.database.repository;
 import io.github.paexception.engelsburg.api.database.model.SubstituteModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
 import java.sql.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface SubstituteRepository extends JpaRepository<SubstituteModel, Integer> {
@@ -19,6 +19,7 @@ public interface SubstituteRepository extends JpaRepository<SubstituteModel, Int
 	 * 9c  --> 9%c%
 	 * 10c --> 10%c%
 	 * should not be used vor E1 - Q4
+	 *
 	 * @param className to convert
 	 * @return parsed parameter
 	 */
@@ -29,17 +30,15 @@ public interface SubstituteRepository extends JpaRepository<SubstituteModel, Int
 
 	List<SubstituteModel> findAllByDate(Date date);
 
-	Optional<SubstituteModel> findByDateAndLessonAndTeacher(Date date, int lesson, String teacher);
+	List<SubstituteModel> findAllByDateGreaterThanEqual(Date date);
 
-	default Optional<SubstituteModel> findByDateAndLessonAndClassNameLike(Date date, int lesson, String className) {
-		return this.findByDateAndLessonAndClassNameIsLike(date, lesson, likeClassName(className));
+	List<SubstituteModel> findAllByDateGreaterThanEqualAndClassNameIsNull(Date date);
+
+	default List<SubstituteModel> findAllByDateGreaterThanEqualAndClassNameVariations(Date date, String className) {
+		return this.findByDateGreaterThanEqualAndClassNameIsLike(date, likeClassName(className));
 	}
 
-	Optional<SubstituteModel> findByDateAndLessonAndClassNameIsLike(Date date, int lesson, String className);
-
-	Optional<SubstituteModel> findByDateAndLessonAndSubject(Date date, int lesson, String subject);
-
-	List<SubstituteModel> findAllByDateGreaterThanEqual(Date date);
+	List<SubstituteModel> findByDateGreaterThanEqualAndClassNameIsLike(Date date, String className);
 
 	List<SubstituteModel> findAllByDateGreaterThanEqualAndClassNameIn(Date date, List<String> classes);
 

@@ -15,10 +15,13 @@ import io.github.paexception.engelsburg.api.util.Result;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.github.paexception.engelsburg.api.util.Constants.Substitute.NAME_KEY;
 
@@ -37,7 +40,7 @@ public class SubstituteController {
 	/**
 	 * Create a {@link SubstituteModel} out of a {@link SubstituteDTO}.
 	 *
-	 * @param dto          with information
+	 * @param dto with information
 	 * @return created substitute model
 	 */
 	private static SubstituteModel createSubstitute(SubstituteDTO dto) {
@@ -77,7 +80,7 @@ public class SubstituteController {
 		//Check if substitutes have been updated or newly created
 		List<SubstituteDTO> updated = new ArrayList<>(), created = new ArrayList<>();
 		List<SubstituteModel> toSave = new ArrayList<>();
-		for (SubstituteDTO dto: fetchedDTOs) {
+		for (SubstituteDTO dto : fetchedDTOs) {
 			if (current.stream().anyMatch(substituteDTO -> substituteDTO.sameBase(dto))) {
 				if (!current.contains(dto)) updated.add(dto);
 			} else created.add(dto);
@@ -113,9 +116,17 @@ public class SubstituteController {
 		List<SubstituteModel> substitutes = new ArrayList<>();
 		if (teacher.isEmpty() && classes.isEmpty()) {
 			substitutes = this.substituteRepository.findAllByDateGreaterThanEqual(date);
+		} else {
+			substitutes = this.substituteRepository.findAllByDateGreaterThanEqualAndClassNameIsNull(date);
 		}
+
 		if (!classes.isEmpty()) {
 			substitutes.addAll(this.substituteRepository.findAllByDateGreaterThanEqualAndClassNameIn(date, classes));
+
+			substitutes.addAll(
+					classes.stream().filter(className -> className.length() >= 3 && !(Character.isDigit(className.charAt(1)) && className.length() == 3)).map(
+							className -> this.substituteRepository.findAllByDateGreaterThanEqualAndClassNameVariations(date, className)
+					).flatMap(Collection::stream).collect(Collectors.toList()));
 		}
 		if (!teacher.isEmpty()) {
 			substitutes.addAll(
