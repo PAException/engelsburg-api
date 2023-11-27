@@ -129,7 +129,7 @@ public class NotificationService implements LoggingComponent {
 		} else if (DateUtils.isSameDay(substitute.getDate(), Date.from(Instant.now().plus(Duration.ofDays(1))))) {
 			relationalDay = "morgen";
 		} else {
-			relationalDay = "den " + DateTimeFormatter.ofPattern("dd.MM.").format(substitute.getDate().toInstant());
+			relationalDay = "den " + DateTimeFormatter.ofPattern("dd.MM.").format(substitute.getDate().toLocalDate());
 		}
 
 		return actuality + " Vertretung für " + relationalDay;

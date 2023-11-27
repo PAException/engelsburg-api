@@ -48,7 +48,7 @@ public class SubstituteDTO {
 		if (lesson != dto.lesson) return false;
 		if (!Objects.equals(className, dto.className)) return false;
 
-		if (!Character.isDigit(className.charAt(0))) { //Only for E1 - Q4
+		if (className != null && !Character.isDigit(className.charAt(0))) { //Only for E1 - Q4
 			return Objects.equals(teacher, dto.teacher);
 		}
 
