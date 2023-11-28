@@ -19,9 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import static io.github.paexception.engelsburg.api.util.Constants.Substitute.NAME_KEY;
 
@@ -104,36 +104,32 @@ public class SubstituteController {
 	 * @return substitutes with specific filters
 	 */
 	public Result<GetSubstitutesResponseDTO> getSubstitutes(String classNameFilter, String teacherFilter) {
-		List<String> classes = classNameFilter == null || classNameFilter.isBlank()
-				? new ArrayList<>()
-				: Arrays.asList(classNameFilter.split(","));
-		List<String> teacher = teacherFilter == null || teacherFilter.isBlank()
-				? new ArrayList<>()
-				: Arrays.asList(teacherFilter.split(","));
+		Set<String> classes = classNameFilter == null || classNameFilter.isBlank()
+				? new HashSet<>()
+				: new HashSet<>(Arrays.asList(classNameFilter.split(",")));
+		Set<String> teachers = teacherFilter == null || teacherFilter.isBlank()
+				? new HashSet<>()
+				: new HashSet<>(Arrays.asList(teacherFilter.split(",")));
 		final Date date = new Date(System.currentTimeMillis());
 
-		//Get all substitute based on optional parameters
-		List<SubstituteModel> substitutes = new ArrayList<>();
-		if (teacher.isEmpty() && classes.isEmpty()) {
-			substitutes = this.substituteRepository.findAllByDateGreaterThanEqual(date);
+		final List<SubstituteModel> substitutes = new ArrayList<>();
+		if (classes.isEmpty() && teachers.isEmpty()) {
+			substitutes.addAll(this.substituteRepository.findAllByDateGreaterThanEqual(date));
 		} else {
-			substitutes = this.substituteRepository.findAllByDateGreaterThanEqualAndClassNameIsNull(date);
-		}
+			for (SubstituteModel substitute : this.substituteRepository.findAllByDateGreaterThanEqual(date)) {
+				List<String> classNames = substitute.getClassName() == null
+						? new ArrayList<>()
+						: SubstituteModel.splitClasses(substitute.getClassName());
 
-		if (!classes.isEmpty()) {
-			substitutes.addAll(this.substituteRepository.findAllByDateGreaterThanEqualAndClassNameIn(date, classes));
+				String teacher = substitute.getTeacher();
+				String substituteTeacher = substitute.getSubstituteTeacher();
 
-			substitutes.addAll(
-					classes.stream().filter(className -> className.length() >= 3 && !(Character.isDigit(className.charAt(1)) && className.length() == 3)).map(
-							className -> this.substituteRepository.findAllByDateGreaterThanEqualAndClassNameVariations(date, className)
-					).flatMap(Collection::stream).collect(Collectors.toList()));
-		}
-		if (!teacher.isEmpty()) {
-			substitutes.addAll(
-					this.substituteRepository.findAllByDateGreaterThanEqualAndTeacherInOrDateGreaterThanEqualAndSubstituteTeacherIn(
-							date, teacher, date, teacher
-					)
-			);
+				if (classNames.isEmpty()) substitutes.add(substitute);
+				else if (classes.stream().anyMatch(classNames::contains)) substitutes.add(substitute);
+				else if (teacher != null && (teachers.contains(teacher) || teachers.contains(substituteTeacher))) {
+					substitutes.add(substitute);
+				}
+			}
 		}
 
 		//If no substitutes available return error
