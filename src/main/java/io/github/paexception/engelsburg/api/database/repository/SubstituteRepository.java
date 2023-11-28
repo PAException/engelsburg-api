@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -40,10 +41,10 @@ public interface SubstituteRepository extends JpaRepository<SubstituteModel, Int
 
 	List<SubstituteModel> findByDateGreaterThanEqualAndClassNameIsLike(Date date, String className);
 
-	List<SubstituteModel> findAllByDateGreaterThanEqualAndClassNameIn(Date date, List<String> classes);
+	List<SubstituteModel> findAllByDateGreaterThanEqualAndClassNameIn(Date date, Collection<String> classes);
 
 	List<SubstituteModel> findAllByDateGreaterThanEqualAndTeacherInOrDateGreaterThanEqualAndSubstituteTeacherIn(
-			Date date, List<String> teacher, Date date2, List<String> substituteTeacher);
+			Date date, Collection<String> teacher, Date date2, Collection<String> substituteTeacher);
 
 	void deleteAllByDate(Date date);
 }

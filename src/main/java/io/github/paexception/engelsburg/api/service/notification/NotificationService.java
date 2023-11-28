@@ -6,6 +6,7 @@ package io.github.paexception.engelsburg.api.service.notification;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 import io.github.paexception.engelsburg.api.controller.reserved.NotificationSettingsController;
+import io.github.paexception.engelsburg.api.database.model.SubstituteModel;
 import io.github.paexception.engelsburg.api.endpoint.dto.ArticleDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.response.SubstituteNotificationDTO;
@@ -16,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+
 import javax.validation.constraints.NotNull;
 import java.time.Duration;
 import java.time.Instant;
@@ -36,49 +38,6 @@ public class NotificationService implements LoggingComponent {
 	private static final FirebaseCloudMessagingImpl FCM = FirebaseCloudMessagingImpl.getInstance();
 
 	private final NotificationSettingsController notificationSettingsController;
-
-	/**
-	 * Splits possible className merges like 10ab to 10a, 10b to send notifications to specific topics.
-	 *
-	 * @param className to split
-	 * @return list of classNames
-	 */
-	private static List<String> splitClasses(String className) {
-		if (className.length() <= 2 || (Character.isDigit(className.charAt(1)) && className.length() == 3)) {
-			return List.of(className);
-		} else { //5ab or 5ab6ab or E2Q2Q4
-			List<String> strings = new ArrayList<>();
-			StringBuilder curr = new StringBuilder();
-			char c;
-			boolean write = false, adv = false;
-			for (int i = 0; i < className.length(); i++) {
-				c = className.charAt(i);
-				if (Character.isDigit(c)) {
-					if (!adv || write) {
-						if (!write) {
-							write = true;
-							curr = new StringBuilder();
-						}
-						curr.append(c);
-					} else {
-						strings.add(curr.toString() + c);
-						curr = new StringBuilder();
-					}
-				} else {
-					if (Character.isLowerCase(c)) {
-						write = false;
-						strings.add(curr.toString() + c);
-					} else {
-						curr = new StringBuilder();
-						adv = true;
-						curr.append(c);
-					}
-				}
-			}
-
-			return strings;
-		}
-	}
 
 	/**
 	 * Return a formatted text to display substitutes.
@@ -229,7 +188,7 @@ public class NotificationService implements LoggingComponent {
 
 				//Classes
 				if (dto.getClassName() != null) {
-					for (String className : splitClasses(dto.getClassName().toUpperCase()))
+					for (String className : SubstituteModel.splitClasses(dto.getClassName().toUpperCase()))
 						tokens.addAll(this.notificationSettingsController.getTokensOf("substitute.class." + className));
 				}
 
