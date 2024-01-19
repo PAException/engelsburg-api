@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.sql.Date;
 import java.text.ParseException;
@@ -95,7 +96,10 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 			}
 
 			for (int week : weeks.keySet()) { //Iterate weeks
-				String requestUrl = "https://engelsburg.smmp.de/vertretungsplaene/eng/Stp_Upload/" + week + "/w/w00000.htm";
+
+				String convertedWeek = String.valueOf(week);
+				if (convertedWeek.length() == 1) convertedWeek = "0" + convertedWeek;
+				String requestUrl = "https://engelsburg.smmp.de/vertretungsplaene/eng/Stp_Upload/" + convertedWeek + "/w/w00000.htm";
 				//e.g.
 				// 1 <div id="vertretung">
 				// 2   <a name="1">&nbsp;</a>
