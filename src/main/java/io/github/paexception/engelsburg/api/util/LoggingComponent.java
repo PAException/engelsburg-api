@@ -24,4 +24,8 @@ public interface LoggingComponent {
 	default void logError(String msg, Throwable throwable, Logger logger) {
 		logger.error(msg, throwable);
 	}
+
+	default void logExpectedError(String msg, Exception exception, Logger logger) {
+		logger.error(msg + " because of " + exception.getClass().getCanonicalName() + ": " + exception.getMessage());
+	}
 }

@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.sql.Date;
 import java.text.ParseException;
@@ -60,7 +61,7 @@ public class EventUpdateService extends JsonFetchingService implements LoggingCo
 				LOGGER.info("[EVENT] Updated");
 			} else LOGGER.debug("[EVENT] Not changed");
 		} catch (IOException e) {
-			this.logError("[EVENT] Couldn't fetch", e, LOGGER);
+			this.logExpectedError("[EVENT] Couldn't fetch", e, LOGGER);
 		}
 	}
 

@@ -139,8 +139,9 @@ public class NotificationService implements LoggingComponent {
 						dtos.get(same.get(same.size() - 1)),
 						low + " - " + high
 				));
+				int indexOffset = 0;
 				for (Integer element : same) {
-					dtos.remove(element.intValue());
+					dtos.remove(element - indexOffset++);
 				}
 			} else {
 				notificationDTOs.add(SubstituteNotificationDTO.fromSubstituteDTO(dto, null));

@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
 import java.io.DataInputStream;
 import java.net.URL;
 
@@ -74,7 +75,7 @@ public class SolarSystemUpdateService extends HtmlFetchingService implements Log
 
 			if (this.checkChanges(html, "text")) this.solarSystemController.updateText(html);
 		} catch (Exception e) { //IO and NullPointer
-			this.logError("[SOLAR] Couldn't fetch", e, LOGGER);
+			this.logExpectedError("[SOLAR] Couldn't fetch", e, LOGGER);
 		}
 	}
 
