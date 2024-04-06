@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 
 @Service
@@ -46,14 +47,14 @@ public class CafeteriaUpdateService extends JsonFetchingService implements Loggi
 					content = WordPressAPI.applyBlurHashToAllImages(Jsoup.parse(content)).toString();
 					blurHash = mediaUrl != null ? WordPressAPI.getBlurHash(mediaUrl) : null;
 				} catch (IOException e) {
-					this.logError("[CAFETERIA] Couldn't load blur hash of image", e, LOGGER);
+					this.logExpectedError("[CAFETERIA] Couldn't load blur hash of image", e, LOGGER);
 				}
 
 				this.cafeteriaController.update(new CafeteriaInformationDTO(content, link, mediaUrl, blurHash));
 				LOGGER.info("[CAFETERIA] Updated");
 			} else LOGGER.debug("[CAFETERIA] Not changed");
 		} catch (IOException e) {
-			this.logError("[CAFETERIA] Couldn't fetch", e, LOGGER);
+			this.logExpectedError("[CAFETERIA] Couldn't fetch", e, LOGGER);
 		}
 	}
 

@@ -263,7 +263,7 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 			if (count > 0) LOGGER.info("[SUBSTITUTE] Fetched " + count);
 			else LOGGER.debug("[SUBSTITUTE] Not changed");
 		} catch (IOException | ParseException e) {
-			this.logError("[SUBSTITUTE] Couldn't fetch", e, LOGGER);
+			this.logExpectedError("[SUBSTITUTE] Couldn't fetch", e, LOGGER);
 		}
 	}
 

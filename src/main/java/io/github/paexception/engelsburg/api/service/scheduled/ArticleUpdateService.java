@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,6 +40,8 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	private static final Logger LOGGER = LoggerFactory.getLogger(ArticleUpdateService.class);
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	private static int counter = 0;
+	private static long lastArticleTime = 0;
+
 	private final ArticleController articleController;
 	private final NotificationService notificationService;
 
@@ -51,7 +54,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 
 		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
 		LOGGER.debug("[ARTICLE] Fetching...");
-		List<ArticleDTO> articles = this.updateArticles(DATE_FORMAT.format(System.currentTimeMillis() - 60 * 1000), 1);
+		List<ArticleDTO> articles = this.updateArticles(DATE_FORMAT.format(lastArticleTime + 1), 1);
 		if (articles.isEmpty()) LOGGER.debug("[ARTICLE] Not updated");
 		else LOGGER.debug("[ARTICLE] Fetched " + articles.size());
 
@@ -107,12 +110,19 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 
 				if (json.toString().startsWith("[")) { //Errors start with {
 					LOGGER.info("[ARTICLE] Still fetching articles (current count: " + counter + ")");
-					this.updateArticles(date, page + 1).forEach(this.articleController::createOrUpdateArticle);
+					if (jsonArticles.size() == 100) {
+						this.updateArticles(date, page + 1).forEach(this.articleController::createOrUpdateArticle);
+					}
 				}
 			}
 		} catch (IOException | ParseException e) {
-			this.logError("[ARTICLE] Couldn't fetch", e, LOGGER);
+			this.logExpectedError("[ARTICLE] Couldn't fetch", e, LOGGER);
 		}
+
+		if (!dtos.isEmpty()) {
+			lastArticleTime = dtos.get(0).getDate();
+		}
+
 		return dtos;
 	}
 
@@ -134,8 +144,8 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 		try {
 			mediaUrl = WordPressAPI.getFeaturedMedia(article.getAsJsonObject().get("featured_media").getAsInt(),
 					content);
-		} catch (Exception e) {
-			this.logError("[ARTICLE] Couldn't load media: " + articleId, e, LOGGER);
+		} catch (IOException e) {
+			this.logExpectedError("[ARTICLE] Couldn't load media: " + articleId, e, LOGGER);
 		}
 
 		if (Environment.BLURHASH) {
@@ -144,7 +154,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 				//content = WordpressAPI.applyBlurHashToAllImages(Jsoup.parse(content)).toString(); --> not needed
 				blurHash = mediaUrl != null ? WordPressAPI.getBlurHash(mediaUrl) : null;
 			} catch (IOException e) {
-				this.logError("[ARTICLE] Couldn't load blur hash of image", e, LOGGER);
+				this.logExpectedError("[ARTICLE] Couldn't load blur hash of image", e, LOGGER);
 			}
 		}
 
@@ -168,6 +178,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 		LOGGER.debug("[ARTICLE] Starting fetching past articles");
 		Result<GetArticlesResponseDTO> lastArticle = this.articleController.getArticlesAfter(-1, new Paging(0, 1));
 		if (lastArticle.isResultPresent()) { //Empty would be an error
+			lastArticleTime = lastArticle.getResult().getArticles().get(0).getDate();
 			this.updateArticles(DATE_FORMAT.format(lastArticle.getResult().getArticles().get(0).getDate()), 1)
 					.forEach(this.articleController::createOrUpdateArticle);
 		} else {

@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -114,7 +115,9 @@ public class FirebaseCloudMessagingImpl implements LoggingComponent {
 			SendResponse response = responsesResponses.get(i);
 			if (response.isSuccessful()) continue;
 
-			if (response.getException().getMessagingErrorCode().equals(MessagingErrorCode.UNREGISTERED))
+			if (response.getException() != null
+					&& response.getException().getMessagingErrorCode() != null
+					&& response.getException().getMessagingErrorCode().equals(MessagingErrorCode.UNREGISTERED))
 				invalidTokens.add(tokens.get(i));
 		}
 
