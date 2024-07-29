@@ -18,10 +18,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import static io.github.paexception.engelsburg.api.database.model.TeacherModel.Job.BIOLOGIE;
 import static io.github.paexception.engelsburg.api.database.model.TeacherModel.Job.CHEMIE;
 import static io.github.paexception.engelsburg.api.database.model.TeacherModel.Job.DEUTSCH;

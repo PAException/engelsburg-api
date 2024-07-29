@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import io.github.paexception.engelsburg.api.controller.shared.SolarSystemController;
 import io.github.paexception.engelsburg.api.service.HtmlFetchingService;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
+import io.sentry.spring.checkin.SentryCheckIn;
 import lombok.AllArgsConstructor;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -33,6 +34,7 @@ public class SolarSystemUpdateService extends HtmlFetchingService implements Log
 	 * Scheduled function to update the solar system status.
 	 */
 	@Scheduled(fixedRate = 5 * 60 * 1000)
+	@SentryCheckIn("scheduled.solar")
 	public void updateSolarSystemInfo() {
 		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
 		LOGGER.debug("[SOLAR] Fetching...");

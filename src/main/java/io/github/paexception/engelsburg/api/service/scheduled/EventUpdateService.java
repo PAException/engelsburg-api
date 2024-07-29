@@ -9,6 +9,7 @@ import io.github.paexception.engelsburg.api.controller.shared.EventController;
 import io.github.paexception.engelsburg.api.endpoint.dto.EventDTO;
 import io.github.paexception.engelsburg.api.service.JsonFetchingService;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
+import io.sentry.spring.checkin.SentryCheckIn;
 import lombok.AllArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -38,6 +39,7 @@ public class EventUpdateService extends JsonFetchingService implements LoggingCo
 	 * Scheduled function to update events every hour.
 	 */
 	@Scheduled(fixedRate = 5 * 60 * 1000)
+	@SentryCheckIn("scheduled.event")
 	public void updateEvents() {
 		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
 		LOGGER.debug("[EVENT] Fetching...");
