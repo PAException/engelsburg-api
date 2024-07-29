@@ -11,6 +11,7 @@ import io.github.paexception.engelsburg.api.endpoint.dto.SubstituteDTO;
 import io.github.paexception.engelsburg.api.endpoint.dto.request.CreateSubstituteMessageRequestDTO;
 import io.github.paexception.engelsburg.api.service.HtmlFetchingService;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
+import io.sentry.spring.checkin.SentryCheckIn;
 import lombok.AllArgsConstructor;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -42,9 +43,10 @@ public class SubstituteUpdateService extends HtmlFetchingService implements Logg
 	private final InformationController informationController;
 
 	/**
-	 * Scheduled function to update substitutes every 5 minutes.
+	 * Scheduled function to update substitutes every minute.
 	 */
 	@Scheduled(fixedRate = 60 * 1000)
+	@SentryCheckIn("scheduled.substitute")
 	public void updateSubstitutes() {
 		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
 		LOGGER.debug("[SUBSTITUTE] Fetching...");

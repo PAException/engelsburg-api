@@ -27,6 +27,8 @@ services:
       SSL_KEYSTORE:
       SSL_KEYSTORE_PASSWORD:
       SSL_KEYSTORE_KEY_PASSWORD:
+      SENTRY_ENABLED:
+      SENTRY_DSN:
       lets-encrypt-helper.domain:
       lets-encrypt-helper.contact:
       GOOGLE_ACCOUNT_CREDENTIALS:

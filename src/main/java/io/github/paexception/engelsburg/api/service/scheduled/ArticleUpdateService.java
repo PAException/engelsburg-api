@@ -17,6 +17,7 @@ import io.github.paexception.engelsburg.api.util.Environment;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.Result;
 import io.github.paexception.engelsburg.api.util.WordPressAPI;
+import io.sentry.spring.checkin.SentryCheckIn;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	 * Call {@link #updateArticles(String, int)} every minute and return all articles published in that passed 1 minute.
 	 */
 	@Scheduled(fixedRate = 60 * 1000, initialDelay = 60 * 1000)
+	@SentryCheckIn("scheduled.article")
 	public void fetchNewArticles() {
 		if (counter != 0) return; //Locked by past fetch
 
@@ -68,6 +70,7 @@ public class ArticleUpdateService extends JsonFetchingService implements Logging
 	 * Checks for updates of articles every 30 minutes.
 	 */
 	@Scheduled(fixedRate = 30 * 60 * 1000, initialDelay = 30 * 60 * 1000)
+	@SentryCheckIn("scheduled.article-changend")
 	public void checkIfArticlesChanged() {
 		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
 		LOGGER.debug("[ARTICLE] Starting to check for changes...");

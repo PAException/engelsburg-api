@@ -152,6 +152,11 @@
             <artifactId>springdoc-openapi-data-rest</artifactId>
             <version>1.6.15</version>
         </dependency>
+        <dependency>
+            <groupId>io.sentry</groupId>
+            <artifactId>sentry-spring-boot-starter</artifactId>
+            <version>7.12.1</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -240,6 +245,13 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.sentry</groupId>
+                <artifactId>sentry-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <!-- Required to allow auto-install of Sentry SDK and Integrations -->
+                <extensions>true</extensions>
             </plugin>
         </plugins>
     </build>

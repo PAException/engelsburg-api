@@ -10,6 +10,7 @@ import io.github.paexception.engelsburg.api.endpoint.dto.CafeteriaInformationDTO
 import io.github.paexception.engelsburg.api.service.JsonFetchingService;
 import io.github.paexception.engelsburg.api.util.LoggingComponent;
 import io.github.paexception.engelsburg.api.util.WordPressAPI;
+import io.sentry.spring.checkin.SentryCheckIn;
 import lombok.AllArgsConstructor;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ public class CafeteriaUpdateService extends JsonFetchingService implements Loggi
 	 * Scheduled function to update cafeteria information.
 	 */
 	@Scheduled(fixedRate = 2 * 60 * 1000)
+	@SentryCheckIn("scheduled.cafeteria")
 	public void updateCafeteriaInformation() {
 		if ("false".equals(System.getProperty("app.scheduling.enable"))) return;
 		try {
